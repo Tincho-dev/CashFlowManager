@@ -26,8 +26,8 @@ export class AccountRepository {
 
   create(account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'>): Account {
     this.db.run(
-      'INSERT INTO accounts (name, type, balance, currency) VALUES (?, ?, ?, ?)',
-      [account.name, account.type, account.balance, account.currency]
+      'INSERT INTO accounts (name, type, balance, currency, commission_rate) VALUES (?, ?, ?, ?, ?)',
+      [account.name, account.type, account.balance, account.currency, account.commissionRate || 0]
     );
 
     const results = this.db.exec('SELECT last_insert_rowid()');
@@ -39,7 +39,7 @@ export class AccountRepository {
 
   update(id: number, account: Partial<Omit<Account, 'id' | 'createdAt' | 'updatedAt'>>): Account | null {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number)[] = [];
 
     if (account.name !== undefined) {
       updates.push('name = ?');
@@ -56,6 +56,10 @@ export class AccountRepository {
     if (account.currency !== undefined) {
       updates.push('currency = ?');
       values.push(account.currency);
+    }
+    if (account.commissionRate !== undefined) {
+      updates.push('commission_rate = ?');
+      values.push(account.commissionRate);
     }
 
     if (updates.length === 0) {
@@ -89,15 +93,16 @@ export class AccountRepository {
     return this.getById(id);
   }
 
-  private mapRowToAccount(row: any[]): Account {
+  private mapRowToAccount(row: (string | number | Uint8Array | null)[]): Account {
     return {
       id: row[0] as number,
       name: row[1] as string,
       type: row[2] as string,
       balance: row[3] as number,
       currency: row[4] as Currency,
-      createdAt: row[5] as string,
-      updatedAt: row[6] as string,
+      commissionRate: row[5] as number | undefined,
+      createdAt: row[6] as string,
+      updatedAt: row[7] as string,
     };
   }
 }

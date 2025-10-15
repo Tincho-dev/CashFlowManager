@@ -26,34 +26,24 @@ export class InvestmentService {
     return this.investmentRepo.getByType(type);
   }
 
-  createInvestment(
-    accountId: number,
-    type: InvestmentType,
-    name: string,
-    amount: number,
-    currency: Currency,
-    purchaseDate: string,
-    currentValue: number
-  ): Investment {
-    const investment = this.investmentRepo.create({
-      accountId,
-      type,
-      name,
-      amount,
-      currency,
-      purchaseDate,
-      currentValue,
-    });
+  createInvestment(params: {
+    accountId: number;
+    type: InvestmentType;
+    name: string;
+    symbol?: string;
+    quantity?: number;
+    purchasePrice?: number;
+    amount: number;
+    commission?: number;
+    currency: Currency;
+    purchaseDate: string;
+    currentValue: number;
+  }): Investment {
+    const investment = this.investmentRepo.create(params);
 
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_INVESTMENT', {
       investmentId: investment.id,
-      accountId,
-      type,
-      name,
-      amount,
-      currency,
-      purchaseDate,
-      currentValue,
+      ...params,
     });
 
     return investment;
@@ -101,5 +91,91 @@ export class InvestmentService {
       const percentage = investment.amount > 0 ? (gain / investment.amount) * 100 : 0;
       return { investment, gain, percentage };
     });
+  }
+
+  /**
+   * Transfer an investment from one account to another
+   * This is useful for moving assets between comitente accounts
+   */
+  transferInvestment(investmentId: number, toAccountId: number): Investment | null {
+    const investment = this.investmentRepo.getById(investmentId);
+    if (!investment) {
+      console.error('Investment not found');
+      return null;
+    }
+
+    if (investment.accountId === toAccountId) {
+      console.error('Cannot transfer to the same account');
+      return null;
+    }
+
+    const updated = this.investmentRepo.update(investmentId, { accountId: toAccountId });
+
+    if (updated) {
+      LoggingService.info(LogCategory.ACCOUNT, 'TRANSFER_INVESTMENT', {
+        investmentId,
+        fromAccountId: investment.accountId,
+        toAccountId,
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Update investment current value based on latest quotation
+   */
+  async updateInvestmentValue(investmentId: number): Promise<Investment | null> {
+    const investment = this.investmentRepo.getById(investmentId);
+    if (!investment || !investment.symbol || !investment.quantity) {
+      return null;
+    }
+
+    // Import dynamically to avoid circular dependency
+    const QuotationService = (await import('./QuotationService')).default;
+    const quotation = await QuotationService.getQuotation(investment.symbol);
+    
+    if (!quotation) {
+      console.warn(`No quotation found for ${investment.symbol}`);
+      return null;
+    }
+
+    const currentValue = investment.quantity * quotation.price;
+    return this.investmentRepo.update(investmentId, { currentValue });
+  }
+
+  /**
+   * Update all investment values based on latest quotations
+   */
+  async updateAllInvestmentValues(): Promise<void> {
+    const investments = this.investmentRepo.getAll();
+    const updates = investments
+      .filter(inv => inv.symbol && inv.quantity)
+      .map(inv => this.updateInvestmentValue(inv.id));
+    
+    await Promise.all(updates);
+  }
+
+  /**
+   * Calculate total investment cost including commission
+   */
+  calculateTotalCost(params: {
+    quantity: number;
+    purchasePrice: number;
+    commission?: number;
+    commissionRate?: number;
+  }): { amount: number; commission: number } {
+    const { quantity, purchasePrice, commission: fixedCommission, commissionRate } = params;
+    const baseAmount = quantity * purchasePrice;
+    
+    let commission = fixedCommission || 0;
+    if (!fixedCommission && commissionRate) {
+      commission = (baseAmount * commissionRate) / 100;
+    }
+    
+    return {
+      amount: baseAmount + commission,
+      commission,
+    };
   }
 }

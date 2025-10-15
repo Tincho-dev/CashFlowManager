@@ -18,12 +18,13 @@ export class AccountService {
     return this.accountRepo.getById(id);
   }
 
-  createAccount(name: string, type: string, initialBalance: number, currency: Currency): Account {
+  createAccount(name: string, type: string, initialBalance: number, currency: Currency, commissionRate?: number): Account {
     const account = this.accountRepo.create({
       name,
       type,
       balance: initialBalance,
       currency,
+      commissionRate,
     });
     
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_ACCOUNT', {
@@ -32,6 +33,7 @@ export class AccountService {
       type,
       initialBalance,
       currency,
+      commissionRate,
     });
     
     return account;

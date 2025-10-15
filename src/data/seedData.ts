@@ -39,6 +39,30 @@ const seedAccounts: SeedAccount[] = [
     balance: -350.00,
     currency: Currency.USD,
   },
+  {
+    name: 'Investment Account USD',
+    type: 'Investment',
+    balance: 10000.00,
+    currency: Currency.USD,
+  },
+  {
+    name: 'Investment Account ARS',
+    type: 'Investment',
+    balance: 500000.00,
+    currency: Currency.ARS,
+  },
+  {
+    name: 'Cuenta Dólares',
+    type: 'Savings',
+    balance: 2000.00,
+    currency: Currency.USD,
+  },
+  {
+    name: 'Cuenta Pesos',
+    type: 'Savings',
+    balance: 150000.00,
+    currency: Currency.ARS,
+  },
 ];
 
 // Seed transactions - will reference accounts by their index in seedAccounts
@@ -158,6 +182,97 @@ export const seedDatabase = (db: Database): boolean => {
       }
     });
     txStmt.free();
+
+    // Insert seed investments (if we have investment accounts)
+    if (accountIds.length >= 4) {
+      const investmentStmt = db.prepare(
+        `INSERT INTO investments 
+         (account_id, type, name, symbol, quantity, purchase_price, amount, commission, currency, purchase_date, current_value) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+
+      const investments = [
+        {
+          accountId: accountIds[3], // Investment Account USD
+          type: 'STOCKS',
+          name: 'Apple Inc.',
+          symbol: 'AAPL',
+          quantity: 10,
+          purchasePrice: 150.00,
+          amount: 1503.75, // 10 * 150 + 3.75 commission (0.25%)
+          commission: 3.75,
+          currency: Currency.USD,
+          purchaseDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          currentValue: 1550.00, // Will be updated by quotation service
+        },
+        {
+          accountId: accountIds[3], // Investment Account USD
+          type: 'STOCKS',
+          name: 'Microsoft Corporation',
+          symbol: 'MSFT',
+          quantity: 5,
+          purchasePrice: 300.00,
+          amount: 1503.75, // 5 * 300 + 3.75 commission
+          commission: 3.75,
+          currency: Currency.USD,
+          purchaseDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          currentValue: 1520.00,
+        },
+        {
+          accountId: accountIds[4], // Investment Account ARS
+          type: 'STOCKS',
+          name: 'Galicia',
+          symbol: 'GGAL.BA',
+          quantity: 100,
+          purchasePrice: 350.00,
+          amount: 35087.50, // 100 * 350 + 87.50 commission
+          commission: 87.50,
+          currency: Currency.ARS,
+          purchaseDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          currentValue: 36000.00,
+        },
+      ];
+
+      investments.forEach(inv => {
+        investmentStmt.run([
+          inv.accountId,
+          inv.type,
+          inv.name,
+          inv.symbol,
+          inv.quantity,
+          inv.purchasePrice,
+          inv.amount,
+          inv.commission,
+          inv.currency,
+          inv.purchaseDate,
+          inv.currentValue,
+        ]);
+        console.log(`Created investment: ${inv.name} for account ID ${inv.accountId}`);
+      });
+      investmentStmt.free();
+    }
+
+    // Insert seed quotations
+    const quotationStmt = db.prepare(
+      'INSERT INTO quotations (symbol, price, currency, last_updated) VALUES (?, ?, ?, ?)'
+    );
+
+    const quotations = [
+      { symbol: 'AAPL', price: 155.00, currency: Currency.USD },
+      { symbol: 'MSFT', price: 304.00, currency: Currency.USD },
+      { symbol: 'GOOGL', price: 145.00, currency: Currency.USD },
+      { symbol: 'GGAL.BA', price: 360.00, currency: Currency.ARS },
+      { symbol: 'YPF.BA', price: 25000.00, currency: Currency.ARS },
+      { symbol: 'USD/ARS', price: 1050.00, currency: Currency.ARS },
+      { symbol: 'USD/EUR', price: 0.92, currency: Currency.EUR },
+    ];
+
+    const now = new Date().toISOString();
+    quotations.forEach(q => {
+      quotationStmt.run([q.symbol, q.price, q.currency, now]);
+      console.log(`Created quotation: ${q.symbol} = ${q.price} ${q.currency}`);
+    });
+    quotationStmt.free();
 
     // Save the database after seeding
     saveDatabase(db);

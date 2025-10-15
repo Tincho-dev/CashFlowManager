@@ -21,7 +21,11 @@ interface InvestmentDialogProps {
     accountId: number;
     type: InvestmentType;
     name: string;
+    symbol?: string;
+    quantity?: number;
+    purchasePrice?: number;
     amount: number;
+    commission?: number;
     currency: Currency;
     purchaseDate: string;
     currentValue: number;
@@ -30,7 +34,11 @@ interface InvestmentDialogProps {
     accountId: number;
     type: InvestmentType;
     name: string;
+    symbol?: string;
+    quantity?: number;
+    purchasePrice?: number;
     amount: number;
+    commission?: number;
     currency: Currency;
     purchaseDate: string;
     currentValue: number;
@@ -49,6 +57,40 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
   accounts,
 }) => {
   const { t } = useTranslation();
+
+  // Calculate total amount from quantity and price
+  const handleQuantityOrPriceChange = (field: 'quantity' | 'purchasePrice', value: number) => {
+    const updates: Partial<typeof formData> = { [field]: value };
+    
+    if (formData.quantity && formData.purchasePrice) {
+      const quantity = field === 'quantity' ? value : formData.quantity;
+      const price = field === 'purchasePrice' ? value : formData.purchasePrice;
+      const baseAmount = quantity * price;
+      
+      // Get commission from selected account
+      const selectedAccount = accounts.find(a => a.id === formData.accountId);
+      const commissionRate = selectedAccount?.commissionRate || 0;
+      const commission = (baseAmount * commissionRate) / 100;
+      
+      updates.amount = baseAmount + commission;
+      updates.commission = commission;
+      updates.currentValue = baseAmount; // Default current value to purchase amount
+    }
+    
+    setFormData({ ...formData, ...updates });
+  };
+
+  // Calculate quantity and price from total amount
+  const handleAmountChange = (value: number) => {
+    const updates: Partial<typeof formData> = { amount: value };
+    
+    if (formData.quantity && formData.purchasePrice) {
+      const baseAmount = formData.quantity * formData.purchasePrice;
+      updates.commission = value - baseAmount;
+    }
+    
+    setFormData({ ...formData, ...updates });
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -94,16 +136,59 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               fullWidth
             />
             <TextField
+              label="Symbol (Optional)"
+              value={formData.symbol || ''}
+              onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+              fullWidth
+              placeholder="e.g., AAPL, GGAL.BA"
+              helperText="Stock ticker or asset identifier"
+            />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <TextField
+                type="number"
+                label="Quantity"
+                value={formData.quantity || ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                  if (value !== undefined) {
+                    handleQuantityOrPriceChange('quantity', value);
+                  } else {
+                    setFormData({ ...formData, quantity: undefined });
+                  }
+                }}
+                fullWidth
+                inputProps={{ step: '0.01', min: '0' }}
+                helperText="Number of units"
+              />
+              <TextField
+                type="number"
+                label="Purchase Price"
+                value={formData.purchasePrice || ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                  if (value !== undefined) {
+                    handleQuantityOrPriceChange('purchasePrice', value);
+                  } else {
+                    setFormData({ ...formData, purchasePrice: undefined });
+                  }
+                }}
+                fullWidth
+                inputProps={{ step: '0.01', min: '0' }}
+                helperText="Price per unit"
+              />
+            </Box>
+            <TextField
               type="number"
-              label="Initial Amount"
+              label="Total Amount (including commission)"
               value={formData.amount}
               onChange={(e) => {
                 const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                setFormData({ ...formData, amount: value });
+                handleAmountChange(value);
               }}
               required
               fullWidth
               inputProps={{ step: '0.01', min: '0' }}
+              helperText={formData.commission ? `Commission: ${formData.commission.toFixed(2)}` : ''}
             />
             <TextField
               select

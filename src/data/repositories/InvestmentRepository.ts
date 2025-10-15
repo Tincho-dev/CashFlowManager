@@ -47,13 +47,17 @@ export class InvestmentRepository {
   create(investment: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>): Investment {
     this.db.run(
       `INSERT INTO investments 
-       (account_id, type, name, amount, currency, purchase_date, current_value) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (account_id, type, name, symbol, quantity, purchase_price, amount, commission, currency, purchase_date, current_value) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         investment.accountId,
         investment.type,
         investment.name,
+        investment.symbol || null,
+        investment.quantity || null,
+        investment.purchasePrice || null,
         investment.amount,
+        investment.commission || 0,
         investment.currency,
         investment.purchaseDate,
         investment.currentValue,
@@ -69,7 +73,7 @@ export class InvestmentRepository {
 
   update(id: number, investment: Partial<Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>>): Investment | null {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (investment.accountId !== undefined) {
       updates.push('account_id = ?');
@@ -83,9 +87,25 @@ export class InvestmentRepository {
       updates.push('name = ?');
       values.push(investment.name);
     }
+    if (investment.symbol !== undefined) {
+      updates.push('symbol = ?');
+      values.push(investment.symbol || null);
+    }
+    if (investment.quantity !== undefined) {
+      updates.push('quantity = ?');
+      values.push(investment.quantity || null);
+    }
+    if (investment.purchasePrice !== undefined) {
+      updates.push('purchase_price = ?');
+      values.push(investment.purchasePrice || null);
+    }
     if (investment.amount !== undefined) {
       updates.push('amount = ?');
       values.push(investment.amount);
+    }
+    if (investment.commission !== undefined) {
+      updates.push('commission = ?');
+      values.push(investment.commission || 0);
     }
     if (investment.currency !== undefined) {
       updates.push('currency = ?');
@@ -122,18 +142,22 @@ export class InvestmentRepository {
     return true;
   }
 
-  private mapRowToInvestment(row: any[]): Investment {
+  private mapRowToInvestment(row: (string | number | Uint8Array | null)[]): Investment {
     return {
       id: row[0] as number,
       accountId: row[1] as number,
       type: row[2] as InvestmentType,
       name: row[3] as string,
-      amount: row[4] as number,
-      currency: row[5] as Currency,
-      purchaseDate: row[6] as string,
-      currentValue: row[7] as number,
-      createdAt: row[8] as string,
-      updatedAt: row[9] as string,
+      symbol: row[4] as string | undefined,
+      quantity: row[5] as number | undefined,
+      purchasePrice: row[6] as number | undefined,
+      amount: row[7] as number,
+      commission: row[8] as number | undefined,
+      currency: row[9] as Currency,
+      purchaseDate: row[10] as string,
+      currentValue: row[11] as number,
+      createdAt: row[12] as string,
+      updatedAt: row[13] as string,
     };
   }
 }

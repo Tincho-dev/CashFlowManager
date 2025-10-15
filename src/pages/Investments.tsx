@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Container, Box, Typography, Fab, Alert } from '@mui/material';
-import { Plus } from 'lucide-react';
+import { Container, Box, Typography, Fab, Alert, IconButton, Tooltip } from '@mui/material';
+import { Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import type { Investment, Account } from '../types';
 import { Currency, InvestmentType } from '../types';
 import InvestmentCard from '../components/investments/InvestmentCard';
 import InvestmentDialog from '../components/investments/InvestmentDialog';
 import { InvestmentService } from '../services/InvestmentService';
+import QuotationService from '../services/QuotationService';
 
 const Investments: React.FC = () => {
   const { accountService, isInitialized } = useApp();
@@ -17,11 +18,16 @@ const Investments: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [investmentService] = useState(() => new InvestmentService());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [formData, setFormData] = useState<{
     accountId: number;
     type: InvestmentType;
     name: string;
+    symbol?: string;
+    quantity?: number;
+    purchasePrice?: number;
     amount: number;
+    commission?: number;
     currency: Currency;
     purchaseDate: string;
     currentValue: number;
@@ -29,7 +35,11 @@ const Investments: React.FC = () => {
     accountId: 0,
     type: InvestmentType.STOCKS,
     name: '',
+    symbol: undefined,
+    quantity: undefined,
+    purchasePrice: undefined,
     amount: 0,
+    commission: undefined,
     currency: Currency.USD,
     purchaseDate: new Date().toISOString().split('T')[0],
     currentValue: 0,
@@ -61,19 +71,36 @@ const Investments: React.FC = () => {
     if (editingInvestment) {
       investmentService.updateInvestment(editingInvestment.id, formData);
     } else {
-      investmentService.createInvestment(
-        formData.accountId,
-        formData.type,
-        formData.name,
-        formData.amount,
-        formData.currency,
-        formData.purchaseDate,
-        formData.currentValue
-      );
+      investmentService.createInvestment({
+        accountId: formData.accountId,
+        type: formData.type,
+        name: formData.name,
+        symbol: formData.symbol,
+        quantity: formData.quantity,
+        purchasePrice: formData.purchasePrice,
+        amount: formData.amount,
+        commission: formData.commission,
+        currency: formData.currency,
+        purchaseDate: formData.purchaseDate,
+        currentValue: formData.currentValue,
+      });
     }
 
     resetForm();
     loadInvestments();
+  };
+
+  const handleRefreshQuotations = async () => {
+    setIsRefreshing(true);
+    try {
+      await QuotationService.refreshAll();
+      await investmentService.updateAllInvestmentValues();
+      loadInvestments();
+    } catch (error) {
+      console.error('Error refreshing quotations:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleEdit = (investment: Investment) => {
@@ -82,7 +109,11 @@ const Investments: React.FC = () => {
       accountId: investment.accountId,
       type: investment.type,
       name: investment.name,
+      symbol: investment.symbol,
+      quantity: investment.quantity,
+      purchasePrice: investment.purchasePrice,
       amount: investment.amount,
+      commission: investment.commission,
       currency: investment.currency,
       purchaseDate: investment.purchaseDate,
       currentValue: investment.currentValue,
@@ -102,7 +133,11 @@ const Investments: React.FC = () => {
       accountId: accounts.length > 0 ? accounts[0].id : 0,
       type: InvestmentType.STOCKS,
       name: '',
+      symbol: undefined,
+      quantity: undefined,
+      purchasePrice: undefined,
       amount: 0,
+      commission: undefined,
       currency: Currency.USD,
       purchaseDate: new Date().toISOString().split('T')[0],
       currentValue: 0,
@@ -128,15 +163,30 @@ const Investments: React.FC = () => {
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Investments
         </Typography>
-        <Fab
-          color="primary"
-          aria-label="Add investment"
-          onClick={() => setShowModal(true)}
-          size={window.innerWidth < 600 ? 'medium' : 'large'}
-          disabled={accounts.length === 0}
-        >
-          <Plus size={24} />
-        </Fab>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Refresh Quotations">
+            <IconButton
+              color="primary"
+              onClick={handleRefreshQuotations}
+              disabled={isRefreshing}
+              sx={{ 
+                border: '1px solid',
+                borderColor: 'primary.main',
+              }}
+            >
+              <RefreshCw size={20} className={isRefreshing ? 'rotating' : ''} />
+            </IconButton>
+          </Tooltip>
+          <Fab
+            color="primary"
+            aria-label="Add investment"
+            onClick={() => setShowModal(true)}
+            size={window.innerWidth < 600 ? 'medium' : 'large'}
+            disabled={accounts.length === 0}
+          >
+            <Plus size={24} />
+          </Fab>
+        </Box>
       </Box>
 
       {accounts.length === 0 ? (
