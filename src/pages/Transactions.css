@@ -1,5 +1,7 @@
 .transactions-page {
   padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .transactions-table {

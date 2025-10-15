@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Container, Box, Typography, Fab, Alert } from '@mui/material';
 import { Plus } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import type { Account } from '../types';
 import { Currency } from '../types';
 import AccountCard from '../components/accounts/AccountCard';
@@ -10,6 +11,7 @@ import AccountDialog from '../components/accounts/AccountDialog';
 
 const Accounts: React.FC = () => {
   const { accountService, isInitialized } = useApp();
+  const { defaultCurrency } = useCurrency();
   const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -23,7 +25,7 @@ const Accounts: React.FC = () => {
     name: '',
     type: 'Checking',
     balance: 0,
-    currency: Currency.USD,
+    currency: defaultCurrency,
   });
 
   useEffect(() => {

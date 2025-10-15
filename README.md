@@ -5,23 +5,26 @@ A comprehensive personal finance management application built with React, TypeSc
 ## Features
 
 ### Core Functionality
-- 📱 **PWA Support** - Install as a mobile or desktop app
+- 📱 **PWA Support** - Install as a mobile or desktop app with offline-first capability
 - 💰 **Account Management** - Track multiple accounts with different currencies
 - 📊 **Income & Expense Tracking** - Monitor your income and expenses
 - 🔄 **Recurring Transactions** - Set up automatic recurring payments
 - 💳 **Multiple Payment Types** - Support for credit cards, debit cards, cash, transfers, and checks
 - 🌍 **Multi-Currency Support** - Handle transactions in USD, EUR, GBP, ARS, and BRL
-- 📈 **Investment Tracking** - Monitor your investment portfolio (Coming Soon)
+- 💱 **Real-Time Exchange Rates** - Automatic currency conversion with offline caching
+- 📈 **Investment Tracking** - Monitor your investment portfolio with live stock prices
 - 💵 **Loan Management** - Track loans and monthly payments (Coming Soon)
-- 🔀 **Account Transfers** - Transfer money between your own accounts (Coming Soon)
+- 🔀 **Account Transfers** - Transfer money between your own accounts with currency conversion (Coming Soon)
 - 📤 **Excel Export** - Export all your financial data to Excel format
 - 🗄️ **SQLite Database** - Local data storage with browser persistence
+- ☁️ **Cloud Sync Foundation** - Ready for Google Sheets and SharePoint integration
 
-### NEW: AI-Powered Features 🤖
-- 🤖 **AI Chatbot Assistant** - Natural language interface to query your finances
+### AI-Powered Features 🤖
+- 🤖 **Multilingual AI Chatbot** - Natural language interface in English and Spanish
   - Ask about your balance, accounts, and recent transactions
   - Get contextual help about account types and transaction categories
-  - Voice-like interaction with intelligent keyword detection
+  - Guides you to create accounts and transactions
+  - Smart keyword-based intent detection
 - 📸 **OCR Image Processing** - Upload images of bank statements or receipts
   - Automatic text extraction from images
   - Smart detection of amounts and dates
@@ -181,6 +184,140 @@ All data is stored locally in your browser using SQLite (via SQL.js). The databa
 - **transfers** - Money transfers between accounts
 - **categories** - Transaction categories
 
+### Querying the Database from VSCode
+
+The application stores its SQLite database in the browser's localStorage. To inspect or query the data:
+
+#### Method 1: Using Browser DevTools (Recommended)
+
+1. Open your application in a browser (Chrome, Firefox, Edge, etc.)
+2. Open Developer Tools (`F12` or `Right-click > Inspect`)
+3. Go to the **Application** tab (Chrome) or **Storage** tab (Firefox)
+4. Navigate to **Local Storage** > `http://localhost:5173` (or your domain)
+5. Find the key `cashflow_db` - this contains your database as a base64-encoded string
+
+#### Method 2: Extracting and Querying with SQLite Tools
+
+1. **Extract the database:**
+   ```javascript
+   // Open browser console and run:
+   const dbData = localStorage.getItem('cashflow_db');
+   const blob = new Blob([Uint8Array.from(atob(dbData), c => c.charCodeAt(0))], { type: 'application/octet-stream' });
+   const url = URL.createObjectURL(blob);
+   const a = document.createElement('a');
+   a.href = url;
+   a.download = 'cashflow.db';
+   a.click();
+   ```
+
+2. **Open in VSCode with SQLite extension:**
+   - Install the [SQLite Viewer extension](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer) or [SQLite](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite) extension
+   - Right-click the downloaded `cashflow.db` file
+   - Select "Open with SQLite Viewer" or use Command Palette: `SQLite: Open Database`
+
+3. **Query using command-line tools:**
+   ```bash
+   sqlite3 cashflow.db
+   # Now you can run SQL queries:
+   SELECT * FROM accounts;
+   SELECT * FROM transactions ORDER BY date DESC LIMIT 10;
+   SELECT a.name, SUM(t.amount) as total
+   FROM accounts a
+   JOIN transactions t ON t.account_id = a.id
+   WHERE t.type = 'INCOME'
+   GROUP BY a.id;
+   ```
+
+#### Method 3: Using In-App Console (Advanced)
+
+You can query the database directly from the browser console:
+
+```javascript
+// Access the database service
+import { getDatabase } from './src/data/database';
+
+// Get database instance
+const db = getDatabase();
+
+// Run queries
+const result = db.exec('SELECT * FROM accounts');
+console.table(result[0].values);
+
+// Get all transactions
+const transactions = db.exec('SELECT * FROM transactions ORDER BY date DESC LIMIT 10');
+console.table(transactions[0].values);
+```
+
+#### Common SQL Queries
+
+```sql
+-- View all accounts with balances
+SELECT id, name, type, balance, currency FROM accounts;
+
+-- Recent transactions
+SELECT t.*, a.name as account_name 
+FROM transactions t 
+JOIN accounts a ON t.account_id = a.id 
+ORDER BY t.date DESC LIMIT 20;
+
+-- Total balance by currency
+SELECT currency, SUM(balance) as total_balance 
+FROM accounts 
+GROUP BY currency;
+
+-- Monthly expense summary
+SELECT 
+  strftime('%Y-%m', date) as month,
+  category,
+  SUM(amount) as total
+FROM transactions
+WHERE type IN ('FIXED_EXPENSE', 'VARIABLE_EXPENSE')
+GROUP BY month, category
+ORDER BY month DESC, total DESC;
+```
+
+### Database Location
+
+- **Browser**: `localStorage['cashflow_db']` (base64-encoded binary)
+- **Format**: SQLite 3.x database file
+- **Persistence**: Automatically saved after each database operation
+- **Size**: Varies based on data, typically a few KB to a few MB
+
+## Advanced Features
+
+### Currency Exchange System
+
+The application includes a sophisticated currency exchange system:
+
+- **Real-Time Rates** - Fetches live exchange rates from exchangerate-api.com
+- **Offline-First** - Caches rates locally for offline use
+- **Auto-Update** - Automatically refreshes rates when online (hourly)
+- **Cross-Currency** - Supports conversions between all supported currencies
+- **Default Currency** - Set your preferred default currency globally
+
+The currency store persists exchange rates in localStorage and automatically updates when you reconnect to the internet.
+
+### Stock Price Integration
+
+For investment tracking, the app integrates with stock price APIs:
+
+- **Live Prices** - Fetches real-time stock prices from Yahoo Finance
+- **Offline Caching** - Stores last known prices for offline access
+- **Auto-Refresh** - Updates prices when connection is restored
+- **Queue System** - Queues updates while offline and processes when online
+- **Symbol Support** - Track stocks by ticker symbol (e.g., AAPL, GOOGL)
+
+### Cloud Sync Foundation
+
+Infrastructure is in place for cloud spreadsheet synchronization:
+
+- **Offline-First Queue** - Changes are queued when offline and synced when online
+- **Google Sheets Ready** - Structure prepared for Google Sheets integration
+- **SharePoint Ready** - Structure prepared for SharePoint integration
+- **Automatic Sync** - Syncs automatically when connection is restored
+
+> **Note**: Full OAuth implementation for Google Sheets and SharePoint requires a backend service. The current implementation provides the foundation and can be extended with proper OAuth flows.
+
 ## PWA Features
 
 The application can be installed as a Progressive Web App:
@@ -188,11 +325,117 @@ The application can be installed as a Progressive Web App:
 - **Offline Support** - Core functionality works without an internet connection
 - **Install Prompt** - Install on mobile devices and desktops
 - **Service Worker** - Caches assets for faster loading
-- **Responsive Design** - Works on all screen sizes
+- **Responsive Design** - Mobile-first design optimized for all screen sizes
+- **No Horizontal Scroll** - Properly constrained viewport for mobile devices
+
+## Deployment
+
+### Deploy to Vercel
+
+The easiest way to deploy CashFlow Manager is using Vercel:
+
+#### One-Click Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Tincho-dev/CashFlowManager)
+
+#### Manual Deployment
+
+1. **Install Vercel CLI:**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Login to Vercel:**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy:**
+   ```bash
+   # For preview deployment
+   vercel
+   
+   # For production deployment
+   vercel --prod
+   ```
+
+#### Automatic Deployment with GitHub Actions
+
+The repository includes a GitHub Actions workflow that automatically deploys to Vercel on every push to `main` and creates preview deployments for pull requests.
+
+**Setup Steps:**
+
+1. **Create a Vercel account** at [vercel.com](https://vercel.com)
+
+2. **Get your Vercel tokens:**
+   - Go to [Vercel Account Settings > Tokens](https://vercel.com/account/tokens)
+   - Create a new token and copy it
+
+3. **Get your Project IDs:**
+   ```bash
+   # Install Vercel CLI
+   npm install -g vercel
+   
+   # Link your project
+   vercel link
+   
+   # Get your project ID and org ID from .vercel/project.json
+   cat .vercel/project.json
+   ```
+
+4. **Add GitHub Secrets:**
+   - Go to your GitHub repository > Settings > Secrets and variables > Actions
+   - Add the following secrets:
+     - `VERCEL_TOKEN`: Your Vercel token
+     - `VERCEL_ORG_ID`: Your Vercel organization ID
+     - `VERCEL_PROJECT_ID`: Your Vercel project ID
+
+5. **Push to GitHub:**
+   - The workflow will automatically deploy to Vercel on push to `main`
+   - Pull requests will get preview deployments
+
+### Deploy to Other Platforms
+
+#### Netlify
+
+1. Connect your GitHub repository to Netlify
+2. Configure build settings:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+3. Add redirect rules in `netlify.toml`:
+   ```toml
+   [[redirects]]
+     from = "/*"
+     to = "/index.html"
+     status = 200
+   ```
+
+#### GitHub Pages
+
+1. Update `vite.config.ts` with your repository base:
+   ```typescript
+   export default defineConfig({
+     base: '/CashFlowManager/',
+     // ... rest of config
+   })
+   ```
+
+2. Build and deploy:
+   ```bash
+   npm run build
+   npx gh-pages -d dist
+   ```
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Style Guidelines
+
+- **All styles must be SCSS modules** - Create `.module.scss` files and import them
+- Never use inline styles in `.tsx` files (except for dynamic values)
+- Use camelCase or BEM naming for CSS classes
+- Keep styles modular and reusable
 
 ## License
 
