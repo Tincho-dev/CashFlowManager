@@ -7,8 +7,10 @@ import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
+import Investments from './pages/Investments';
+import Loans from './pages/Loans';
+import Transfers from './pages/Transfers';
 import ExportData from './pages/ExportData';
-import PlaceholderPage from './components/common/PlaceholderPage';
 import { TransactionType } from './types';
 import './App.css';
 
@@ -67,15 +69,15 @@ function App() {
                 />
                 <Route
                   path="/investments"
-                  element={<PlaceholderPage messageKey="placeholder.investments" />}
+                  element={<Investments />}
                 />
                 <Route
                   path="/loans"
-                  element={<PlaceholderPage messageKey="placeholder.loans" />}
+                  element={<Loans />}
                 />
                 <Route
                   path="/transfers"
-                  element={<PlaceholderPage messageKey="placeholder.transfers" />}
+                  element={<Transfers />}
                 />
                 <Route path="/export" element={<ExportData />} />
               </Routes>
