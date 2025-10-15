@@ -28,6 +28,7 @@ const Chatbot: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { accountService, transactionService, isInitialized, settings } = useApp();
   const { language } = useLanguage();
   const { defaultCurrency } = useCurrency();
@@ -145,6 +146,8 @@ const Chatbot: React.FC = () => {
       addMessage(errorMessage);
     } finally {
       setIsProcessing(false);
+      // Focus the input field after sending a message
+      inputRef.current?.focus();
     }
   };
 
@@ -370,6 +373,7 @@ const Chatbot: React.FC = () => {
                 disabled={isProcessing || isInitializing}
                 multiline
                 maxRows={3}
+                inputRef={inputRef}
               />
               <IconButton
                 color="primary"

@@ -138,4 +138,30 @@ export class TransactionService {
   getNetIncomeForPeriod(startDate: string, endDate: string): number {
     return this.getIncomeForPeriod(startDate, endDate) - this.getExpensesForPeriod(startDate, endDate);
   }
+
+  convertExpenseToInvestment(transactionId: number): { transaction: Transaction; investmentData: { accountId: number; name: string; amount: number; currency: Currency; purchaseDate: string } } | null {
+    const transaction = this.transactionRepo.getById(transactionId);
+    if (!transaction) return null;
+    
+    // Only allow conversion of expenses
+    if (transaction.type !== TransactionType.FIXED_EXPENSE && transaction.type !== TransactionType.VARIABLE_EXPENSE) {
+      return null;
+    }
+
+    const investmentData = {
+      accountId: transaction.accountId,
+      name: transaction.description,
+      amount: transaction.amount,
+      currency: transaction.currency,
+      purchaseDate: transaction.date,
+    };
+
+    LoggingService.info(LogCategory.TRANSACTION, 'CONVERT_TO_INVESTMENT', {
+      transactionId,
+      description: transaction.description,
+      amount: transaction.amount,
+    });
+
+    return { transaction, investmentData };
+  }
 }

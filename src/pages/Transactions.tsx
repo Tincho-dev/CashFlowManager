@@ -20,11 +20,11 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from '@mui/material';
-import { Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit, TrendingUp } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Transaction } from '../types';
-import { TransactionType, Currency, PaymentType } from '../types';
+import { TransactionType, Currency, PaymentType, InvestmentType } from '../types';
 import './Transactions.css';
 
 interface TransactionsProps {
@@ -46,13 +46,16 @@ interface FormData {
 }
 
 const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
-  const { accountService, transactionService, isInitialized } = useApp();
+  const { accountService, transactionService, investmentService, isInitialized } = useApp();
   const { currency: defaultCurrency } = useLanguage();
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionType, setTransactionType] = useState<TransactionType>(type);
+  const [showConvertDialog, setShowConvertDialog] = useState(false);
+  const [convertingTransaction, setConvertingTransaction] = useState<Transaction | null>(null);
+  const [selectedInvestmentType, setSelectedInvestmentType] = useState<InvestmentType>(InvestmentType.STOCKS);
 
   const accounts = accountService?.getAllAccounts() || [];
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
@@ -156,6 +159,39 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
     }
   };
 
+  const handleConvertToInvestment = (transaction: Transaction) => {
+    setConvertingTransaction(transaction);
+    setShowConvertDialog(true);
+  };
+
+  const confirmConvertToInvestment = () => {
+    if (!transactionService || !investmentService || !convertingTransaction) return;
+    
+    const result = transactionService.convertExpenseToInvestment(convertingTransaction.id);
+    if (!result) return;
+
+    const { investmentData } = result;
+    
+    // Create the investment
+    investmentService.createInvestment(
+      investmentData.accountId,
+      selectedInvestmentType,
+      investmentData.name,
+      investmentData.amount,
+      investmentData.currency,
+      investmentData.purchaseDate,
+      investmentData.amount // currentValue starts as the purchase amount
+    );
+
+    // Delete the original transaction
+    transactionService.deleteTransaction(convertingTransaction.id);
+    
+    // Close dialog and reload
+    setShowConvertDialog(false);
+    setConvertingTransaction(null);
+    loadTransactions();
+  };
+
   const resetForm = () => {
     setFormData(getDefaultFormData());
     setTransactionType(type);
@@ -220,6 +256,17 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
               }}
               secondaryAction={
                 <Box sx={{ display: 'flex', gap: 1 }}>
+                  {(transaction.type === TransactionType.FIXED_EXPENSE || transaction.type === TransactionType.VARIABLE_EXPENSE) && (
+                    <IconButton 
+                      edge="end" 
+                      onClick={() => handleConvertToInvestment(transaction)} 
+                      size="small"
+                      color="primary"
+                      title={t('transactions.convertToInvestment')}
+                    >
+                      <TrendingUp size={18} />
+                    </IconButton>
+                  )}
                   <IconButton edge="end" onClick={() => handleEdit(transaction)} size="small">
                     <Edit size={18} />
                   </IconButton>
@@ -389,7 +436,7 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
               >
                 {Object.values(PaymentType).map((pt) => (
                   <MenuItem key={pt} value={pt}>
-                    {pt.replace('_', ' ')}
+                    {t(`transactions.paymentTypes.${pt}`)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -402,6 +449,52 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Convert to Investment Dialog */}
+      <Dialog 
+        open={showConvertDialog} 
+        onClose={() => setShowConvertDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <DialogTitle>
+          {t('transactions.convertToInvestment')}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {t('transactions.convertDescription')}
+            </Typography>
+            {convertingTransaction && (
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+                <Typography variant="subtitle2">{convertingTransaction.description}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {convertingTransaction.currency} ${convertingTransaction.amount.toFixed(2)}
+                </Typography>
+              </Box>
+            )}
+            <TextField
+              select
+              label={t('transactions.investmentType')}
+              value={selectedInvestmentType}
+              onChange={(e) => setSelectedInvestmentType(e.target.value as InvestmentType)}
+              fullWidth
+            >
+              {Object.values(InvestmentType).map((invType) => (
+                <MenuItem key={invType} value={invType}>
+                  {t(`investments.types.${invType.toLowerCase()}`)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConvertDialog(false)}>{t('transactions.cancel')}</Button>
+          <Button onClick={confirmConvertToInvestment} variant="contained" color="primary">
+            {t('transactions.convert')}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );
