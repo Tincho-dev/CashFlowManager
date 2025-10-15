@@ -31,13 +31,16 @@ const CurrencyExchange: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [exchangeService] = useState(() => new CurrencyExchangeService());
+  const [exchangeService, setExchangeService] = useState<CurrencyExchangeService | null>(null);
 
   useEffect(() => {
     if (isInitialized && accountService) {
+      if (!exchangeService) {
+        setExchangeService(new CurrencyExchangeService());
+      }
       loadAccounts();
     }
-  }, [isInitialized, accountService]);
+  }, [isInitialized, accountService, exchangeService]);
 
   useEffect(() => {
     if (fromAccountId && toAccountId && amount) {
@@ -63,7 +66,7 @@ const CurrencyExchange: React.FC = () => {
   };
 
   const calculateExchange = async () => {
-    if (!fromAccountId || !toAccountId || !amount) return;
+    if (!fromAccountId || !toAccountId || !amount || !exchangeService) return;
 
     setLoading(true);
     setError(null);
@@ -98,7 +101,7 @@ const CurrencyExchange: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fromAccountId || !toAccountId || !amount) return;
+    if (!fromAccountId || !toAccountId || !amount || !exchangeService) return;
 
     setLoading(true);
     setError(null);

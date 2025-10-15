@@ -13,16 +13,36 @@ interface QuotationCache {
  * Stores quotations in database for offline access and updates when online
  */
 export class QuotationService {
-  private db: Database;
+  private db: Database | null = null;
   private cache: QuotationCache = {};
   private readonly CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
   private updateQueue: Set<string> = new Set();
   private isUpdating = false;
+  private initialized = false;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
-    this.loadCache();
-    this.setupOnlineListener();
+    if (db) {
+      this.db = db;
+      this.initialized = true;
+      this.loadCache();
+      this.setupOnlineListener();
+    } else {
+      this.setupOnlineListener();
+    }
+  }
+
+  /**
+   * Ensure database is initialized
+   */
+  private ensureDb(): Database {
+    if (!this.db) {
+      this.db = getDatabase();
+      if (!this.initialized) {
+        this.loadCache();
+        this.initialized = true;
+      }
+    }
+    return this.db;
   }
 
   /**
@@ -30,6 +50,7 @@ export class QuotationService {
    */
   private loadCache(): void {
     try {
+      if (!this.db) return;
       const results = this.db.exec('SELECT * FROM quotations');
       if (results.length > 0) {
         results[0].values.forEach(row => {
@@ -54,12 +75,13 @@ export class QuotationService {
    */
   private saveQuotation(quotation: Quotation): void {
     try {
-      this.db.run(
+      const db = this.ensureDb();
+      db.run(
         `INSERT OR REPLACE INTO quotations (symbol, price, currency, last_updated)
          VALUES (?, ?, ?, ?)`,
         [quotation.symbol, quotation.price, quotation.currency, quotation.lastUpdated]
       );
-      saveDatabase(this.db);
+      saveDatabase(db);
       this.cache[quotation.symbol] = quotation;
     } catch (error) {
       LoggingService.error(LogCategory.SYSTEM, 'QUOTATION_SAVE_ERROR', {
@@ -297,8 +319,9 @@ export class QuotationService {
    */
   clearCache(): void {
     try {
-      this.db.run('DELETE FROM quotations');
-      saveDatabase(this.db);
+      const db = this.ensureDb();
+      db.run('DELETE FROM quotations');
+      saveDatabase(db);
       this.cache = {};
       
       LoggingService.info(LogCategory.SYSTEM, 'QUOTATION_CACHE_CLEARED', {});
