@@ -19,20 +19,42 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 
 ### UI/UX
 - [x] ~~Mejorar navegación móvil con bottom navigation bar~~ - COMPLETED
-- [ ] Reemplazar dropdowns con grids clickeables para mejor UX (Parcialmente implementado)
 - [x] ~~Optimizar responsive design en tablets~~ - IMPROVED
+- [x] ~~Corregir overflow horizontal y vertical en mobile~~ - COMPLETED
+- [x] ~~Mobile-first viewport configuration~~ - COMPLETED
+- [ ] Reemplazar dropdowns con grids clickeables para mejor UX (Parcialmente implementado)
 - [ ] Agregar animaciones de transición entre páginas
 - [ ] Implementar dark mode
 - [ ] Mejorar accesibilidad (ARIA labels, keyboard navigation)
 
 ### Funcionalidades Pendientes
-- [ ] Página de Inversiones (Investments)
+- [ ] Página de Inversiones (Investments) con integración API de cotizaciones
+  - [ ] Integrar API pública de cotizaciones de acciones (Alpha Vantage, Yahoo Finance, etc.)
+  - [ ] Campo para cantidad de nominales de cada activo
+  - [ ] Cache offline de precios (última cotización conocida)
+  - [ ] Actualización automática al conectarse a internet
 - [ ] Página de Préstamos (Loans)
-- [ ] Página de Transferencias (Transfers)
+- [ ] Página de Transferencias (Transfers) con conversión de monedas
+  - [ ] Soporte para transferencias entre cuentas de diferentes monedas
+  - [ ] Integración API de tipos de cambio
+  - [ ] Cache offline de tasas de cambio
+- [ ] Sistema de monedas multi-divisa
+  - [ ] Store global para tasas de cambio (React Context o Zustand)
+  - [ ] API pública de tipos de cambio en tiempo real
+  - [ ] Persistencia en base de datos o React store
+- [ ] Store de moneda predeterminada
+  - [ ] Configuración global de moneda preferida del usuario
+  - [ ] Usar moneda predeterminada en formularios nuevos
 - [ ] Gráficos y reportes avanzados
 - [ ] Exportación a PDF
 - [ ] Backup y restore de base de datos
-- [ ] Sincronización entre dispositivos
+- [ ] Sincronización con hojas de cálculo en la nube
+  - [ ] Integración con SharePoint
+  - [ ] Integración con Google Sheets
+  - [ ] Sincronización offline-first con cola de cambios
+- [ ] Deploy automático
+  - [ ] Configuración para Vercel
+  - [ ] GitHub Actions para CI/CD
 
 ### Refactoring Técnico
 - [x] ~~Migrar completamente de CSS a SCSS modules~~ - COMPLETED (parcialmente, falta Transactions)
@@ -48,10 +70,12 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Integración de modelo de IA offline~~ - COMPLETED (usando detección por keywords, ML modelo opcional)
 - [x] ~~Reconocimiento de texto (OCR) para extractos bancarios~~ - COMPLETED (Tesseract.js)
 - [x] ~~Procesamiento de imágenes para captura de gastos~~ - COMPLETED
+- [x] ~~Soporte multilingüe (Español e Inglés)~~ - COMPLETED
+- [x] ~~Guiar usuarios para crear cuentas/transacciones desde el chat~~ - COMPLETED
 - [ ] Comandos por voz
 - [ ] Asistente inteligente para categorización automática
 - [ ] Mejorar detección de intención con modelo ML (Transformers.js)
-- [ ] Permitir crear cuentas/transacciones desde el chat
+- [ ] Permitir crear cuentas/transacciones directamente desde el chat (sin redirigir)
 
 ### Sistema de Ayuda
 - [x] ~~Tooltips informativos en toda la aplicación~~ - COMPLETED (cuentas y formularios)
@@ -108,6 +132,14 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - ⏳ Web Workers para procesamiento pesado sin bloquear UI (pendiente)
 - ⏳ IndexedDB como alternativa a localStorage para mejor performance (pendiente)
 
+### ⚠️ IMPORTANTE: Guía de Estilos para PRs
+**TODOS LOS ESTILOS DEBEN IR COMO SCSS MODULES**
+- ✅ **Correcto**: Crear archivos `.module.scss` y importarlos como `import styles from './Component.module.scss'`
+- ❌ **Incorrecto**: Agregar estilos inline dentro de los archivos `.tsx` usando `style={{...}}`
+- ❌ **Incorrecto**: Usar CSS global en archivos `.css` (excepto para configuraciones globales en `index.css` y `App.css`)
+- Los estilos deben ser modulares, reutilizables y mantener la separación de responsabilidades
+- Usar nomenclatura BEM o camelCase para las clases en SCSS modules
+
 ### Tecnologías a Evaluar
 - [ ] Zustand como alternativa a Context API
 - [ ] TanStack Query (ya instalado pero no usado)
@@ -140,18 +172,24 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 6. **Logging**: Sistema completo de auditoría
 7. **Tooltips**: Sistema de ayuda contextual
 8. **Traducciones**: Soporte completo bilingüe
+9. **Mobile-First Styles**: Overflow y responsive design corregido
+10. **Chatbot Multilingüe**: Soporte completo en Español e Inglés
 
 ### 🚧 En Progreso / En Curso
 - Refactoring de página Transactions (pendiente)
 - Viewer de logs en UI (falta implementar)
+- Integración con APIs externas (cotizaciones y tipos de cambio)
+- Sistema de sincronización con hojas de cálculo
 
 ### 📋 Pendiente / To Do
 - Mejoras de accesibilidad
 - Dark mode
 - Tests unitarios
 - CI/CD pipeline
+- Deploy automático en Vercel
+- Store global de monedas y tasas de cambio
 
 ---
 
 *Última actualización: 2025-10-15*
-*Versión: 2.0.0 - Major refactor con AI chatbot*
+*Versión: 2.1.0 - Mobile-first fixes y chatbot multilingüe*
