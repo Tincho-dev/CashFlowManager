@@ -7,6 +7,9 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 ### Alta Prioridad
 - [x] ~~El cambio de idioma en mobile se superpone y descajeta el menu hamburguesa lateral~~ - FIXED: Migrado a MUI Drawer
 - [x] ~~Faltan traducciones en algunas etiquetas (verificar todos los mensajes)~~ - FIXED: Agregadas traducciones completas
+- [x] ~~El chatbot no reconoce el tipo de moneda~~ - FIXED: Mejorado reconocimiento de monedas
+- [x] ~~La cuenta por defecto no funciona~~ - FIXED: Implementado store de configuración en AppContext
+- [x] ~~Falta sistema de datos semilla~~ - FIXED: Implementado sistema de seedData con datos iniciales
 
 ### Media Prioridad
 - [ ] Warnings de ESLint sobre dependencias en useEffect
@@ -42,9 +45,10 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
   - [ ] Store global para tasas de cambio (React Context o Zustand)
   - [ ] API pública de tipos de cambio en tiempo real
   - [ ] Persistencia en base de datos o React store
-- [ ] Store de moneda predeterminada
-  - [ ] Configuración global de moneda preferida del usuario
-  - [ ] Usar moneda predeterminada en formularios nuevos
+- [x] ~~Store de moneda predeterminada~~ - COMPLETED
+  - [x] ~~Configuración global de moneda preferida del usuario~~ - COMPLETED
+  - [x] ~~Usar moneda predeterminada en formularios nuevos~~ - COMPLETED
+  - [x] ~~Store de cuenta predeterminada~~ - COMPLETED
 - [ ] Gráficos y reportes avanzados
 - [ ] Exportación a PDF
 - [ ] Backup y restore de base de datos
@@ -72,10 +76,13 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Procesamiento de imágenes para captura de gastos~~ - COMPLETED
 - [x] ~~Soporte multilingüe (Español e Inglés)~~ - COMPLETED
 - [x] ~~Guiar usuarios para crear cuentas/transacciones desde el chat~~ - COMPLETED
+- [x] ~~Permitir crear transacciones directamente desde el chat~~ - COMPLETED
+- [x] ~~Reconocimiento de monedas en transacciones~~ - COMPLETED
+- [x] ~~Solicitar información faltante al usuario~~ - COMPLETED
+- [x] ~~Usar configuración de moneda y cuenta predeterminada~~ - COMPLETED
 - [ ] Comandos por voz
 - [ ] Asistente inteligente para categorización automática
 - [x] ~~Mejorar detección de intención con modelo ML (Transformers.js)~~ - COMPLETED
-- [ ] Permitir crear cuentas/transacciones directamente desde el chat (sin redirigir)
 
 ### Sistema de Ayuda
 - [x] ~~Tooltips informativos en toda la aplicación~~ - COMPLETED (cuentas y formularios)
@@ -174,6 +181,10 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 8. **Traducciones**: Soporte completo bilingüe
 9. **Mobile-First Styles**: Overflow y responsive design corregido
 10. **Chatbot Multilingüe**: Soporte completo en Español e Inglés
+11. **Store de Configuración**: Cuenta y moneda predeterminadas en AppContext
+12. **Reconocimiento de Monedas**: Chatbot reconoce USD, ARS, EUR, GBP, BRL
+13. **Sistema de Seed Data**: Datos iniciales precargados en nueva instalación
+14. **Feedback de Usuario**: Chatbot informa cuando usa valores predeterminados
 
 ### 🚧 En Progreso / En Curso
 - Refactoring de página Transactions (pendiente)
@@ -192,4 +203,4 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 ---
 
 *Última actualización: 2025-10-15*
-*Versión: 2.1.0 - Mobile-first fixes y chatbot multilingüe*
+*Versión: 2.2.0 - Store de configuración y seed data*

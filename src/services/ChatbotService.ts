@@ -32,14 +32,24 @@ class ChatbotService {
   private transactionService: TransactionService | null = null;
   private currentLanguage: string = 'en';
   private useMLModel = true; // Flag to enable/disable ML model
+  private defaultCurrency: Currency = Currency.USD;
+  private defaultAccountId: number | null = null;
 
-  async initialize(accountService: AccountService, transactionService: TransactionService, language: string = 'en'): Promise<void> {
+  async initialize(
+    accountService: AccountService, 
+    transactionService: TransactionService, 
+    language: string = 'en',
+    defaultCurrency: Currency = Currency.USD,
+    defaultAccountId: number | null = null
+  ): Promise<void> {
     if (this.isInitialized) return;
 
     try {
       this.accountService = accountService;
       this.transactionService = transactionService;
       this.currentLanguage = language;
+      this.defaultCurrency = defaultCurrency;
+      this.defaultAccountId = defaultAccountId;
 
       // Try to load the ML model for better intent classification
       if (this.useMLModel) {
@@ -91,6 +101,14 @@ class ChatbotService {
 
   setLanguage(language: string): void {
     this.currentLanguage = language;
+  }
+
+  setDefaultCurrency(currency: Currency): void {
+    this.defaultCurrency = currency;
+  }
+
+  setDefaultAccount(accountId: number | null): void {
+    this.defaultAccountId = accountId;
   }
 
   async processMessage(message: string): Promise<ChatbotResponse> {
@@ -370,8 +388,10 @@ class ChatbotService {
       if (!transactionData.amount) {
         return {
           message: this.currentLanguage === 'es'
-            ? '❌ No pude detectar el monto. Por favor incluye un monto como "$50" o "100 dólares".'
-            : '❌ I couldn\'t detect the amount. Please include an amount like "$50" or "100 dollars".',
+            ? '❌ No pude detectar el monto. Por favor incluye un monto como "$50" o "100 dólares".\n\n' +
+              '💡 Ejemplo: "Gasté $50 en comida" o "Recibí $1000 de salario en pesos"'
+            : '❌ I couldn\'t detect the amount. Please include an amount like "$50" or "100 dollars".\n\n' +
+              '💡 Example: "I spent $50 on food" or "I received $1000 salary in pesos"',
         };
       }
 
@@ -385,15 +405,47 @@ class ChatbotService {
         };
       }
 
-      // Use first account or try to match account from message
+      // Use default account if set, otherwise try to match from message, or use first account
       let targetAccount = accounts[0];
-      const accountMatch = message.match(/cuenta\s+(\w+)|account\s+(\w+)|in\s+(\w+)/i);
-      if (accountMatch) {
-        const accountName = (accountMatch[1] || accountMatch[2] || accountMatch[3]).toLowerCase();
-        const matchedAccount = accounts.find(acc => acc.name.toLowerCase().includes(accountName));
-        if (matchedAccount) {
-          targetAccount = matchedAccount;
+      
+      // Try to use default account first
+      if (this.defaultAccountId) {
+        const defaultAcc = this.accountService.getAccount(this.defaultAccountId);
+        if (defaultAcc) {
+          targetAccount = defaultAcc;
         }
+      }
+      
+      // Try to match account from message
+      const accountMatch = message.match(/cuenta\s+(\w+)|account\s+(\w+)|in\s+(\w+)|from\s+(\w+)|de\s+(\w+)/i);
+      if (accountMatch) {
+        const accountName = (accountMatch[1] || accountMatch[2] || accountMatch[3] || accountMatch[4] || accountMatch[5])?.toLowerCase();
+        if (accountName) {
+          const matchedAccount = accounts.find(acc => acc.name.toLowerCase().includes(accountName));
+          if (matchedAccount) {
+            targetAccount = matchedAccount;
+          }
+        }
+      }
+
+      // Inform user if we're using defaults
+      let usedDefaultsInfo = '';
+      const isDefaultAccount = this.defaultAccountId && targetAccount.id === this.defaultAccountId;
+      const isDefaultCurrency = transactionData.currency === this.defaultCurrency && 
+                               !message.toLowerCase().match(/(usd|ars|eur|gbp|brl|peso|dollar|euro|pound|real)/);
+      
+      if (isDefaultAccount || isDefaultCurrency) {
+        const defaults: string[] = [];
+        if (isDefaultAccount) {
+          defaults.push(this.currentLanguage === 'es' ? 'cuenta predeterminada' : 'default account');
+        }
+        if (isDefaultCurrency) {
+          defaults.push(this.currentLanguage === 'es' ? 'moneda predeterminada' : 'default currency');
+        }
+        
+        usedDefaultsInfo = this.currentLanguage === 'es'
+          ? `\n\n💡 Usé tu ${defaults.join(' y ')}.`
+          : `\n\n💡 I used your ${defaults.join(' and ')}.`;
       }
 
       // Create the transaction
@@ -422,8 +474,8 @@ class ChatbotService {
         : `• Type: ${typeLabel}\n`;
       
       successMessage += this.currentLanguage === 'es'
-        ? `• Monto: $${transaction.amount.toFixed(2)}\n`
-        : `• Amount: $${transaction.amount.toFixed(2)}\n`;
+        ? `• Monto: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`
+        : `• Amount: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`;
       
       successMessage += this.currentLanguage === 'es'
         ? `• Descripción: ${transaction.description}\n`
@@ -445,8 +497,10 @@ class ChatbotService {
       
       const newBalance = this.accountService.getAccount(targetAccount.id)?.balance || 0;
       successMessage += this.currentLanguage === 'es'
-        ? `Nuevo saldo de ${targetAccount.name}: $${newBalance.toFixed(2)}`
-        : `New balance for ${targetAccount.name}: $${newBalance.toFixed(2)}`;
+        ? `Nuevo saldo de ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`
+        : `New balance for ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`;
+
+      successMessage += usedDefaultsInfo;
 
       return { message: successMessage };
     } catch (error) {
@@ -477,19 +531,45 @@ class ChatbotService {
     const isIncome = lowerMessage.match(/(ingreso|income|earned|ganado|recibí|received|cobré|cobrar|salary|salario)/i);
     const type = isIncome ? TransactionType.INCOME : TransactionType.VARIABLE_EXPENSE;
     
-    // Extract amount
+    // Extract amount with support for various formats
     let amount = 0;
-    const amountMatch = message.match(/\$?\s*(\d+(?:\.\d{2})?)/);
-    if (amountMatch) {
-      amount = parseFloat(amountMatch[1]);
+    
+    // Try to match formatted numbers with thousands separators (300.000, 300,000)
+    const formattedMatch = message.match(/\$?\s*(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?)/);
+    if (formattedMatch) {
+      // Remove thousand separators (both . and ,) and normalize decimal separator
+      let cleanNumber = formattedMatch[1].replace(/\./g, '');
+      // If there's a comma followed by exactly 2 digits, it's a decimal separator
+      cleanNumber = cleanNumber.replace(/,(\d{2})$/, '.$1');
+      // Otherwise remove remaining commas (they were thousand separators)
+      cleanNumber = cleanNumber.replace(/,/g, '');
+      amount = parseFloat(cleanNumber);
+    } else {
+      // Try to match "mil" or "k" for thousands (300mil, 300k)
+      const thousandsMatch = message.match(/\$?\s*(\d+(?:\.\d+)?)\s*(?:mil|k)\b/i);
+      if (thousandsMatch) {
+        amount = parseFloat(thousandsMatch[1]) * 1000;
+      } else {
+        // Standard number match
+        const amountMatch = message.match(/\$?\s*(\d+(?:\.\d{2})?)/);
+        if (amountMatch) {
+          amount = parseFloat(amountMatch[1]);
+        }
+      }
     }
     
-    // Detect currency
-    let currency: Currency = Currency.USD;
-    if (lowerMessage.includes('ars') || lowerMessage.includes('pesos')) {
+    // Detect currency - use default if not explicitly specified
+    let currency: Currency = this.defaultCurrency;
+    if (lowerMessage.includes('usd') || lowerMessage.includes('dollar') || lowerMessage.includes('dólar')) {
+      currency = Currency.USD;
+    } else if (lowerMessage.includes('ars') || lowerMessage.includes('peso')) {
       currency = Currency.ARS;
-    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euros')) {
+    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euro')) {
       currency = Currency.EUR;
+    } else if (lowerMessage.includes('gbp') || lowerMessage.includes('pound') || lowerMessage.includes('libra')) {
+      currency = Currency.GBP;
+    } else if (lowerMessage.includes('brl') || lowerMessage.includes('real') || lowerMessage.includes('reais')) {
+      currency = Currency.BRL;
     }
     
     // Extract description
@@ -556,7 +636,15 @@ class ChatbotService {
                  `• "Gasté $25 en transporte"\n` +
                  `• "Pagué $100 por la luz"\n` +
                  `• "Recibí $2000 de salario"\n` +
-                 `• "Compré comida por $45"`,
+                 `• "Compré comida por $45"\n\n` +
+                 `**Monedas soportadas:**\n` +
+                 `Puedes especificar la moneda en tus transacciones:\n` +
+                 `• USD (dólar) - "gasté $50 usd"\n` +
+                 `• ARS (peso argentino) - "gasté $1000 pesos"\n` +
+                 `• EUR (euro) - "gasté 50 euros"\n` +
+                 `• GBP (libra) - "gasté 50 libras"\n` +
+                 `• BRL (real) - "gasté 100 reais"\n` +
+                 `Si no especificas moneda, usaré tu moneda predeterminada: ${this.defaultCurrency}`,
       };
     }
     return {
@@ -571,7 +659,15 @@ class ChatbotService {
                `• "I spent $25 on transportation"\n` +
                `• "Paid $100 for utilities"\n` +
                `• "Received $2000 salary"\n` +
-               `• "Bought groceries for $45"`,
+               `• "Bought groceries for $45"\n\n` +
+               `**Supported currencies:**\n` +
+               `You can specify currency in your transactions:\n` +
+               `• USD (dollar) - "I spent $50 usd"\n` +
+               `• ARS (argentine peso) - "I spent $1000 pesos"\n` +
+               `• EUR (euro) - "I spent 50 euros"\n` +
+               `• GBP (pound) - "I spent 50 pounds"\n` +
+               `• BRL (real) - "I spent 100 reais"\n` +
+               `If you don't specify currency, I'll use your default currency: ${this.defaultCurrency}`,
     };
   }
 
