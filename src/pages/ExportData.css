@@ -1,0 +1,85 @@
+.export-page {
+  padding: 20px;
+}
+
+.export-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.export-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.export-icon {
+  color: #4a90e2;
+  margin-bottom: 20px;
+}
+
+.export-card h2 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.75rem;
+}
+
+.export-card p {
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.export-info {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.export-info h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.export-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.export-info li {
+  padding: 10px 0;
+  padding-left: 25px;
+  position: relative;
+  color: #666;
+}
+
+.export-info li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.info-note {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .export-container {
+    grid-template-columns: 1fr;
+  }
+}
