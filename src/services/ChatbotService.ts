@@ -531,11 +531,31 @@ class ChatbotService {
     const isIncome = lowerMessage.match(/(ingreso|income|earned|ganado|recibí|received|cobré|cobrar|salary|salario)/i);
     const type = isIncome ? TransactionType.INCOME : TransactionType.VARIABLE_EXPENSE;
     
-    // Extract amount
+    // Extract amount with support for various formats
     let amount = 0;
-    const amountMatch = message.match(/\$?\s*(\d+(?:\.\d{2})?)/);
-    if (amountMatch) {
-      amount = parseFloat(amountMatch[1]);
+    
+    // Try to match formatted numbers with thousands separators (300.000, 300,000)
+    const formattedMatch = message.match(/\$?\s*(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?)/);
+    if (formattedMatch) {
+      // Remove thousand separators (both . and ,) and normalize decimal separator
+      let cleanNumber = formattedMatch[1].replace(/\./g, '');
+      // If there's a comma followed by exactly 2 digits, it's a decimal separator
+      cleanNumber = cleanNumber.replace(/,(\d{2})$/, '.$1');
+      // Otherwise remove remaining commas (they were thousand separators)
+      cleanNumber = cleanNumber.replace(/,/g, '');
+      amount = parseFloat(cleanNumber);
+    } else {
+      // Try to match "mil" or "k" for thousands (300mil, 300k)
+      const thousandsMatch = message.match(/\$?\s*(\d+(?:\.\d+)?)\s*(?:mil|k)\b/i);
+      if (thousandsMatch) {
+        amount = parseFloat(thousandsMatch[1]) * 1000;
+      } else {
+        // Standard number match
+        const amountMatch = message.match(/\$?\s*(\d+(?:\.\d{2})?)/);
+        if (amountMatch) {
+          amount = parseFloat(amountMatch[1]);
+        }
+      }
     }
     
     // Detect currency - use default if not explicitly specified
