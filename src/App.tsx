@@ -3,12 +3,15 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AppProvider } from './contexts/AppContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
+import Investments from './pages/Investments';
+import Loans from './pages/Loans';
+import Transfers from './pages/Transfers';
 import ExportData from './pages/ExportData';
-import PlaceholderPage from './components/common/PlaceholderPage';
 import { TransactionType } from './types';
 import './App.css';
 
@@ -46,42 +49,44 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <LanguageProvider>
-        <AppProvider>
-          <Router>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/accounts" element={<Accounts />} />
-                <Route
-                  path="/income"
-                  element={<Transactions type={TransactionType.INCOME} title="Income" />}
-                />
-                <Route
-                  path="/expenses"
-                  element={
-                    <Transactions
-                      type={TransactionType.VARIABLE_EXPENSE}
-                      title="Expenses"
-                    />
-                  }
-                />
-                <Route
-                  path="/investments"
-                  element={<PlaceholderPage messageKey="placeholder.investments" />}
-                />
-                <Route
-                  path="/loans"
-                  element={<PlaceholderPage messageKey="placeholder.loans" />}
-                />
-                <Route
-                  path="/transfers"
-                  element={<PlaceholderPage messageKey="placeholder.transfers" />}
-                />
-                <Route path="/export" element={<ExportData />} />
-              </Routes>
-            </Layout>
-          </Router>
-        </AppProvider>
+        <CurrencyProvider>
+          <AppProvider>
+            <Router>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/accounts" element={<Accounts />} />
+                  <Route
+                    path="/income"
+                    element={<Transactions type={TransactionType.INCOME} title="Income" />}
+                  />
+                  <Route
+                    path="/expenses"
+                    element={
+                      <Transactions
+                        type={TransactionType.VARIABLE_EXPENSE}
+                        title="Expenses"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/investments"
+                    element={<Investments />}
+                  />
+                  <Route
+                    path="/loans"
+                    element={<Loans />}
+                  />
+                  <Route
+                    path="/transfers"
+                    element={<Transfers />}
+                  />
+                  <Route path="/export" element={<ExportData />} />
+                </Routes>
+              </Layout>
+            </Router>
+          </AppProvider>
+        </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
