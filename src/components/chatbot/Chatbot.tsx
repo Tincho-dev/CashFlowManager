@@ -17,6 +17,7 @@ import {
 import { MessageCircle, Send, X, Image as ImageIcon, Bot, User } from 'lucide-react';
 import ChatbotService, { type ChatMessage } from '../../services/ChatbotService';
 import { useApp } from '../../contexts/AppContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +28,7 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { accountService, transactionService, isInitialized } = useApp();
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (isInitialized && accountService && transactionService) {
@@ -35,30 +37,41 @@ const Chatbot: React.FC = () => {
   }, [isInitialized, accountService, transactionService]);
 
   useEffect(() => {
+    ChatbotService.setLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const initializeChatbot = async () => {
     try {
       if (accountService && transactionService) {
-        await ChatbotService.initialize(accountService, transactionService);
+        await ChatbotService.initialize(accountService, transactionService, language);
         setIsInitializing(false);
         
         // Add welcome message
+        const welcomeMessage = language === 'es' 
+          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Aprender sobre tipos de cuentas y categorías\n- Guiarte para crear cuentas y transacciones\n\n¿Cómo puedo ayudarte hoy?`
+          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Learn about account types and categories\n- Guide you to create accounts and transactions\n\nHow can I help you today?`;
+        
         addMessage({
           id: '0',
           role: 'assistant',
-          content: `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Learn about account types and categories\n\nHow can I help you today?`,
+          content: welcomeMessage,
           timestamp: new Date(),
         });
       }
     } catch (error) {
       console.error('Error initializing chatbot:', error);
       setIsInitializing(false);
+      const errorMessage = language === 'es'
+        ? 'Lo siento, tuve problemas al inicializar. Algunas funciones pueden no funcionar correctamente.'
+        : 'Sorry, I had trouble initializing. Some features may not work properly.';
       addMessage({
         id: '0',
         role: 'assistant',
-        content: 'Sorry, I had trouble initializing. Some features may not work properly.',
+        content: errorMessage,
         timestamp: new Date(),
       });
     }
@@ -98,10 +111,13 @@ const Chatbot: React.FC = () => {
 
       addMessage(assistantMessage);
     } catch (error) {
+      const errorText = language === 'es'
+        ? 'Lo siento, encontré un error procesando tu mensaje. Por favor intenta de nuevo.'
+        : 'Sorry, I encountered an error processing your message. Please try again.';
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error processing your message. Please try again.',
+        content: errorText,
         timestamp: new Date(),
       };
       addMessage(errorMessage);
@@ -137,10 +153,13 @@ const Chatbot: React.FC = () => {
 
       addMessage(assistantMessage);
     } catch (error) {
+      const errorText = language === 'es'
+        ? 'Lo siento, tuve problemas procesando la imagen. Por favor intenta de nuevo o asegúrate de que la imagen sea clara.'
+        : 'Sorry, I had trouble processing the image. Please try again or ensure the image is clear.';
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I had trouble processing the image. Please try again or ensure the image is clear.',
+        content: errorText,
         timestamp: new Date(),
       };
       addMessage(errorMessage);
@@ -162,7 +181,7 @@ const Chatbot: React.FC = () => {
   return (
     <>
       {/* Floating Action Button */}
-      <Tooltip title="Open AI Assistant" placement="left">
+      <Tooltip title={language === 'es' ? 'Abrir Asistente IA' : 'Open AI Assistant'} placement="left">
         <Fab
           color="secondary"
           aria-label="chatbot"
@@ -204,7 +223,7 @@ const Chatbot: React.FC = () => {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Bot size={24} />
-              <Typography variant="h6">AI Assistant</Typography>
+              <Typography variant="h6">{language === 'es' ? 'Asistente IA' : 'AI Assistant'}</Typography>
             </Box>
             <IconButton onClick={() => setIsOpen(false)} sx={{ color: 'white' }}>
               <X size={24} />
@@ -224,7 +243,9 @@ const Chatbot: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 <Box sx={{ textAlign: 'center' }}>
                   <CircularProgress />
-                  <Typography sx={{ mt: 2 }}>Initializing AI assistant...</Typography>
+                  <Typography sx={{ mt: 2 }}>
+                    {language === 'es' ? 'Inicializando asistente IA...' : 'Initializing AI assistant...'}
+                  </Typography>
                 </Box>
               </Box>
             ) : (
@@ -313,14 +334,14 @@ const Chatbot: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || isInitializing}
               >
-                Upload Image
+                {language === 'es' ? 'Subir Imagen' : 'Upload Image'}
               </Button>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <TextField
                 fullWidth
                 size="small"
-                placeholder="Type your message..."
+                placeholder={language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...'}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
