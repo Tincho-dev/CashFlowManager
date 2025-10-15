@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
+import Chatbot from '../chatbot/Chatbot';
 
 interface LayoutProps {
   children: ReactNode;
@@ -202,6 +203,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Bottom Navigation for Mobile */}
       {isMobile && <BottomNavigation />}
+
+      {/* AI Chatbot */}
+      <Chatbot />
     </Box>
   );
 };

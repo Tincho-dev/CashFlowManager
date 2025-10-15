@@ -2,6 +2,7 @@ import type { Transaction } from '../types';
 import { TransactionType, Currency, PaymentType } from '../types';
 import { TransactionRepository } from '../data/repositories/TransactionRepository';
 import { AccountRepository } from '../data/repositories/AccountRepository';
+import LoggingService, { LogCategory } from './LoggingService';
 
 export class TransactionService {
   private transactionRepo: TransactionRepository;
@@ -61,6 +62,15 @@ export class TransactionService {
     const multiplier = type === TransactionType.INCOME ? 1 : -1;
     this.accountRepo.updateBalance(accountId, amount * multiplier);
 
+    LoggingService.info(LogCategory.TRANSACTION, 'CREATE_TRANSACTION', {
+      transactionId: transaction.id,
+      accountId,
+      type,
+      amount,
+      currency,
+      description,
+    });
+
     return transaction;
   }
 
@@ -79,6 +89,13 @@ export class TransactionService {
     const newMultiplier = updated.type === TransactionType.INCOME ? 1 : -1;
     this.accountRepo.updateBalance(updated.accountId, updated.amount * newMultiplier);
 
+    LoggingService.info(LogCategory.TRANSACTION, 'UPDATE_TRANSACTION', {
+      transactionId: id,
+      oldAmount: oldTransaction.amount,
+      newAmount: updated.amount,
+      updates,
+    });
+
     return updated;
   }
 
@@ -90,7 +107,18 @@ export class TransactionService {
     const multiplier = transaction.type === TransactionType.INCOME ? -1 : 1;
     this.accountRepo.updateBalance(transaction.accountId, transaction.amount * multiplier);
 
-    return this.transactionRepo.delete(id);
+    const success = this.transactionRepo.delete(id);
+    
+    if (success) {
+      LoggingService.info(LogCategory.TRANSACTION, 'DELETE_TRANSACTION', {
+        transactionId: id,
+        accountId: transaction.accountId,
+        amount: transaction.amount,
+        type: transaction.type,
+      });
+    }
+
+    return success;
   }
 
   getIncomeForPeriod(startDate: string, endDate: string): number {
