@@ -79,6 +79,30 @@
     "close": "Close",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "create": "Create",
+    "update": "Update"
+  },
+  "placeholder": {
+    "investments": "Investments page coming soon...",
+    "loans": "Loans page coming soon...",
+    "transfers": "Transfers page coming soon..."
+  },
+  "tooltips": {
+    "accountTypes": {
+      "checking": "A regular checking account for daily transactions and bill payments",
+      "savings": "A savings account for storing money and earning interest",
+      "creditCard": "Credit card account to track your credit card spending and payments",
+      "cash": "Physical cash you have on hand",
+      "investment": "Investment accounts like stocks, bonds, or retirement accounts"
+    },
+    "expenseTypes": {
+      "fixed": "Regular recurring expenses that don't change much (rent, subscriptions, insurance)",
+      "variable": "Expenses that vary from month to month (groceries, entertainment, shopping)"
+    },
+    "currency": "Choose the currency for this account. All transactions will use this currency.",
+    "paymentType": "How you paid for this transaction (cash, credit card, debit card, etc.)",
+    "recurring": "Enable if this transaction repeats regularly (e.g., monthly subscription)",
+    "category": "Categorize your transaction for better organization and reporting"
   }
 }

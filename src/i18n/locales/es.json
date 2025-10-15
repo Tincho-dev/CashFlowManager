@@ -79,6 +79,30 @@
     "close": "Cerrar",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "create": "Crear",
+    "update": "Actualizar"
+  },
+  "placeholder": {
+    "investments": "Página de inversiones próximamente...",
+    "loans": "Página de préstamos próximamente...",
+    "transfers": "Página de transferencias próximamente..."
+  },
+  "tooltips": {
+    "accountTypes": {
+      "checking": "Cuenta corriente para transacciones diarias y pago de facturas",
+      "savings": "Cuenta de ahorros para guardar dinero y ganar intereses",
+      "creditCard": "Cuenta de tarjeta de crédito para rastrear gastos y pagos",
+      "cash": "Efectivo físico que tienes disponible",
+      "investment": "Cuentas de inversión como acciones, bonos o cuentas de retiro"
+    },
+    "expenseTypes": {
+      "fixed": "Gastos recurrentes regulares que no cambian mucho (alquiler, suscripciones, seguros)",
+      "variable": "Gastos que varían de mes a mes (supermercado, entretenimiento, compras)"
+    },
+    "currency": "Elige la moneda para esta cuenta. Todas las transacciones usarán esta moneda.",
+    "paymentType": "Cómo pagaste esta transacción (efectivo, tarjeta de crédito, débito, etc.)",
+    "recurring": "Habilita si esta transacción se repite regularmente (ej: suscripción mensual)",
+    "category": "Categoriza tu transacción para mejor organización y reportes"
   }
 }

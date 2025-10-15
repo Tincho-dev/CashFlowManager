@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
 import ExportData from './pages/ExportData';
+import PlaceholderPage from './components/common/PlaceholderPage';
 import { TransactionType } from './types';
 import './App.css';
 
@@ -66,15 +67,15 @@ function App() {
                 />
                 <Route
                   path="/investments"
-                  element={<div className="placeholder-page">Investments page coming soon...</div>}
+                  element={<PlaceholderPage messageKey="placeholder.investments" />}
                 />
                 <Route
                   path="/loans"
-                  element={<div className="placeholder-page">Loans page coming soon...</div>}
+                  element={<PlaceholderPage messageKey="placeholder.loans" />}
                 />
                 <Route
                   path="/transfers"
-                  element={<div className="placeholder-page">Transfers page coming soon...</div>}
+                  element={<PlaceholderPage messageKey="placeholder.transfers" />}
                 />
                 <Route path="/export" element={<ExportData />} />
               </Routes>

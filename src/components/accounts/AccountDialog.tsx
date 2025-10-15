@@ -8,10 +8,13 @@ import {
   TextField,
   MenuItem,
   Box,
+  InputLabel,
+  Tooltip,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Currency } from '../../types';
 import type { Account } from '../../types';
+import InfoTooltip from '../common/InfoTooltip';
 
 interface AccountDialogProps {
   open: boolean;
@@ -59,19 +62,41 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
               required
               fullWidth
             />
-            <TextField
-              select
-              label={t('accounts.type')}
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              fullWidth
-            >
-              {accountTypes.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                <InputLabel sx={{ fontSize: '0.75rem' }}>{t('accounts.type')}</InputLabel>
+                <Tooltip 
+                  title={
+                    <Box sx={{ p: 1 }}>
+                      <strong>Checking:</strong> {t('tooltips.accountTypes.checking')}<br/><br/>
+                      <strong>Savings:</strong> {t('tooltips.accountTypes.savings')}<br/><br/>
+                      <strong>Credit Card:</strong> {t('tooltips.accountTypes.creditCard')}<br/><br/>
+                      <strong>Cash:</strong> {t('tooltips.accountTypes.cash')}<br/><br/>
+                      <strong>Investment:</strong> {t('tooltips.accountTypes.investment')}
+                    </Box>
+                  }
+                  arrow
+                  placement="right"
+                >
+                  <Box sx={{ display: 'inline-flex', ml: 0.5 }}>
+                    <InfoTooltip title="" size={16} />
+                  </Box>
+                </Tooltip>
+              </Box>
+              <TextField
+                select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                fullWidth
+                size="small"
+              >
+                {accountTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
             <TextField
               type="number"
               label={editingAccount ? t('accounts.balance') : 'Initial Balance'}
@@ -83,21 +108,27 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
               fullWidth
               inputProps={{ step: '0.01' }}
             />
-            <TextField
-              select
-              label={t('accounts.currency')}
-              value={formData.currency}
-              onChange={(e) =>
-                setFormData({ ...formData, currency: e.target.value as Currency })
-              }
-              fullWidth
-            >
-              {Object.values(Currency).map((curr) => (
-                <MenuItem key={curr} value={curr}>
-                  {curr}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                <InputLabel sx={{ fontSize: '0.75rem' }}>{t('accounts.currency')}</InputLabel>
+                <InfoTooltip title={t('tooltips.currency')} size={16} />
+              </Box>
+              <TextField
+                select
+                value={formData.currency}
+                onChange={(e) =>
+                  setFormData({ ...formData, currency: e.target.value as Currency })
+                }
+                fullWidth
+                size="small"
+              >
+                {Object.values(Currency).map((curr) => (
+                  <MenuItem key={curr} value={curr}>
+                    {curr}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
