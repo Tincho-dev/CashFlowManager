@@ -85,23 +85,25 @@ const LoanDialog: React.FC<LoanDialogProps> = ({
               type="number"
               label="Principal Amount"
               value={formData.principal}
-              onChange={(e) =>
-                setFormData({ ...formData, principal: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, principal: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
             <TextField
               type="number"
               label="Interest Rate (%)"
               value={formData.interestRate}
-              onChange={(e) =>
-                setFormData({ ...formData, interestRate: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, interestRate: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
             <TextField
               select
@@ -140,23 +142,25 @@ const LoanDialog: React.FC<LoanDialogProps> = ({
               type="number"
               label="Monthly Payment"
               value={formData.monthlyPayment}
-              onChange={(e) =>
-                setFormData({ ...formData, monthlyPayment: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, monthlyPayment: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
             <TextField
               type="number"
               label="Current Balance"
               value={formData.balance}
-              onChange={(e) =>
-                setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, balance: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
           </Box>
         </DialogContent>

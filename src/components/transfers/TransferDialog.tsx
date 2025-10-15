@@ -88,12 +88,13 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
               type="number"
               label="Amount"
               value={formData.amount}
-              onChange={(e) =>
-                setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, amount: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
             <TextField
               select

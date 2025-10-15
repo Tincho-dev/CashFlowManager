@@ -97,12 +97,13 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               type="number"
               label="Initial Amount"
               value={formData.amount}
-              onChange={(e) =>
-                setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, amount: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
             <TextField
               select
@@ -132,12 +133,13 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               type="number"
               label="Current Value"
               value={formData.currentValue}
-              onChange={(e) =>
-                setFormData({ ...formData, currentValue: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                setFormData({ ...formData, currentValue: value });
+              }}
               required
               fullWidth
-              inputProps={{ step: '0.01' }}
+              inputProps={{ step: '0.01', min: '0' }}
             />
           </Box>
         </DialogContent>
