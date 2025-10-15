@@ -5,23 +5,26 @@ A comprehensive personal finance management application built with React, TypeSc
 ## Features
 
 ### Core Functionality
-- 📱 **PWA Support** - Install as a mobile or desktop app
+- 📱 **PWA Support** - Install as a mobile or desktop app with offline-first capability
 - 💰 **Account Management** - Track multiple accounts with different currencies
 - 📊 **Income & Expense Tracking** - Monitor your income and expenses
 - 🔄 **Recurring Transactions** - Set up automatic recurring payments
 - 💳 **Multiple Payment Types** - Support for credit cards, debit cards, cash, transfers, and checks
 - 🌍 **Multi-Currency Support** - Handle transactions in USD, EUR, GBP, ARS, and BRL
-- 📈 **Investment Tracking** - Monitor your investment portfolio (Coming Soon)
+- 💱 **Real-Time Exchange Rates** - Automatic currency conversion with offline caching
+- 📈 **Investment Tracking** - Monitor your investment portfolio with live stock prices
 - 💵 **Loan Management** - Track loans and monthly payments (Coming Soon)
-- 🔀 **Account Transfers** - Transfer money between your own accounts (Coming Soon)
+- 🔀 **Account Transfers** - Transfer money between your own accounts with currency conversion (Coming Soon)
 - 📤 **Excel Export** - Export all your financial data to Excel format
 - 🗄️ **SQLite Database** - Local data storage with browser persistence
+- ☁️ **Cloud Sync Foundation** - Ready for Google Sheets and SharePoint integration
 
-### NEW: AI-Powered Features 🤖
-- 🤖 **AI Chatbot Assistant** - Natural language interface to query your finances
+### AI-Powered Features 🤖
+- 🤖 **Multilingual AI Chatbot** - Natural language interface in English and Spanish
   - Ask about your balance, accounts, and recent transactions
   - Get contextual help about account types and transaction categories
-  - Voice-like interaction with intelligent keyword detection
+  - Guides you to create accounts and transactions
+  - Smart keyword-based intent detection
 - 📸 **OCR Image Processing** - Upload images of bank statements or receipts
   - Automatic text extraction from images
   - Smart detection of amounts and dates
@@ -280,6 +283,41 @@ ORDER BY month DESC, total DESC;
 - **Persistence**: Automatically saved after each database operation
 - **Size**: Varies based on data, typically a few KB to a few MB
 
+## Advanced Features
+
+### Currency Exchange System
+
+The application includes a sophisticated currency exchange system:
+
+- **Real-Time Rates** - Fetches live exchange rates from exchangerate-api.com
+- **Offline-First** - Caches rates locally for offline use
+- **Auto-Update** - Automatically refreshes rates when online (hourly)
+- **Cross-Currency** - Supports conversions between all supported currencies
+- **Default Currency** - Set your preferred default currency globally
+
+The currency store persists exchange rates in localStorage and automatically updates when you reconnect to the internet.
+
+### Stock Price Integration
+
+For investment tracking, the app integrates with stock price APIs:
+
+- **Live Prices** - Fetches real-time stock prices from Yahoo Finance
+- **Offline Caching** - Stores last known prices for offline access
+- **Auto-Refresh** - Updates prices when connection is restored
+- **Queue System** - Queues updates while offline and processes when online
+- **Symbol Support** - Track stocks by ticker symbol (e.g., AAPL, GOOGL)
+
+### Cloud Sync Foundation
+
+Infrastructure is in place for cloud spreadsheet synchronization:
+
+- **Offline-First Queue** - Changes are queued when offline and synced when online
+- **Google Sheets Ready** - Structure prepared for Google Sheets integration
+- **SharePoint Ready** - Structure prepared for SharePoint integration
+- **Automatic Sync** - Syncs automatically when connection is restored
+
+> **Note**: Full OAuth implementation for Google Sheets and SharePoint requires a backend service. The current implementation provides the foundation and can be extended with proper OAuth flows.
+
 ## PWA Features
 
 The application can be installed as a Progressive Web App:
@@ -287,7 +325,8 @@ The application can be installed as a Progressive Web App:
 - **Offline Support** - Core functionality works without an internet connection
 - **Install Prompt** - Install on mobile devices and desktops
 - **Service Worker** - Caches assets for faster loading
-- **Responsive Design** - Works on all screen sizes
+- **Responsive Design** - Mobile-first design optimized for all screen sizes
+- **No Horizontal Scroll** - Properly constrained viewport for mobile devices
 
 ## Deployment
 
