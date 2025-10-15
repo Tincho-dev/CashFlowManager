@@ -1,6 +1,7 @@
 import type { Account } from '../types';
 import { Currency } from '../types';
 import { AccountRepository } from '../data/repositories/AccountRepository';
+import LoggingService, { LogCategory } from './LoggingService';
 
 export class AccountService {
   private accountRepo: AccountRepository;
@@ -18,20 +19,47 @@ export class AccountService {
   }
 
   createAccount(name: string, type: string, initialBalance: number, currency: Currency): Account {
-    return this.accountRepo.create({
+    const account = this.accountRepo.create({
       name,
       type,
       balance: initialBalance,
       currency,
     });
+    
+    LoggingService.info(LogCategory.ACCOUNT, 'CREATE_ACCOUNT', {
+      accountId: account.id,
+      name,
+      type,
+      initialBalance,
+      currency,
+    });
+    
+    return account;
   }
 
   updateAccount(id: number, updates: Partial<Omit<Account, 'id' | 'createdAt' | 'updatedAt'>>): Account | null {
-    return this.accountRepo.update(id, updates);
+    const account = this.accountRepo.update(id, updates);
+    
+    if (account) {
+      LoggingService.info(LogCategory.ACCOUNT, 'UPDATE_ACCOUNT', {
+        accountId: id,
+        updates,
+      });
+    }
+    
+    return account;
   }
 
   deleteAccount(id: number): boolean {
-    return this.accountRepo.delete(id);
+    const success = this.accountRepo.delete(id);
+    
+    if (success) {
+      LoggingService.info(LogCategory.ACCOUNT, 'DELETE_ACCOUNT', {
+        accountId: id,
+      });
+    }
+    
+    return success;
   }
 
   getTotalBalance(): number {

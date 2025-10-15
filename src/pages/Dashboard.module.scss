@@ -1,0 +1,41 @@
+.circleChartContainer {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.circleChart {
+  width: 100%;
+  height: auto;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 600px;
+}
+
+.actionButtonWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+}
+
+@media (max-width: 600px) {
+  .circleChartContainer {
+    max-width: 240px;
+  }
+
+  .actionButtons {
+    gap: 15px;
+  }
+
+  .actionButtonWrapper {
+    min-width: 80px;
+  }
+}

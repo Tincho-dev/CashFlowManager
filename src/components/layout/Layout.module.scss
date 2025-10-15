@@ -1,0 +1,166 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f5f5;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.sidebar {
+  background-color: #1a1a2e;
+  color: white;
+  transition: transform 0.3s ease, width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+
+  &.open {
+    width: 250px;
+    transform: translateX(0);
+  }
+
+  &.closed {
+    width: 250px;
+    transform: translateX(-100%);
+  }
+}
+
+.sidebarHeader {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1001;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.appTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar.closed .appTitle {
+  display: none;
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.2s;
+  gap: 15px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  &.active {
+    background-color: #16213e;
+    color: #4a90e2;
+    border-left: 4px solid #4a90e2;
+  }
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.mobileMenuToggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.contentWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-top: 60px;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    position: relative;
+    transform: translateX(0) !important;
+
+    &.open {
+      width: 250px;
+    }
+
+    &.closed {
+      width: 70px;
+      transform: translateX(0);
+
+      .appTitle {
+        display: none;
+      }
+
+      .navItem {
+        justify-content: center;
+        padding: 12px 0;
+
+        span {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .mobileMenuToggle {
+    display: none;
+  }
+
+  .sidebarOverlay {
+    display: none;
+  }
+
+  .mainContent {
+    padding: 30px;
+  }
+
+  .contentWrapper {
+    padding-top: 0;
+  }
+}
