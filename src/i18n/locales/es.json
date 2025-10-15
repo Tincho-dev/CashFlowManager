@@ -51,7 +51,18 @@
     "create": "Crear",
     "update": "Actualizar",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta transacción?",
-    "empty": "aún. ¡Agrega el primero para comenzar!"
+    "empty": "aún. ¡Agrega el primero para comenzar!",
+    "convertToInvestment": "Convertir a Inversión",
+    "convertDescription": "Esto convertirá el gasto en una inversión. La transacción original será eliminada y se creará una nueva inversión.",
+    "investmentType": "Tipo de Inversión",
+    "convert": "Convertir",
+    "paymentTypes": {
+      "CREDIT_CARD": "Tarjeta de Crédito",
+      "DEBIT_CARD": "Tarjeta de Débito",
+      "CASH": "Efectivo",
+      "BANK_TRANSFER": "Transferencia Bancaria",
+      "CHECK": "Cheque"
+    }
   },
   "accounts": {
     "title": "Cuentas",
@@ -82,6 +93,15 @@
     "no": "No",
     "create": "Crear",
     "update": "Actualizar"
+  },
+  "investments": {
+    "types": {
+      "stocks": "Acciones",
+      "bonds": "Bonos",
+      "real_estate": "Bienes Raíces",
+      "crypto": "Criptomonedas",
+      "mutual_funds": "Fondos Mutuos"
+    }
   },
   "placeholder": {
     "investments": "Página de inversiones próximamente...",
