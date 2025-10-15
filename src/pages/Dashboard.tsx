@@ -5,7 +5,7 @@ import { Box, Container, Typography, Fab } from '@mui/material';
 import { Plus } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { TransactionType } from '../types';
-import './Dashboard.css';
+import styles from './Dashboard.module.scss';
 
 const Dashboard: React.FC = () => {
   const { accountService, transactionService, isInitialized } = useApp();
@@ -93,8 +93,8 @@ const Dashboard: React.FC = () => {
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-        <Box className="circle-chart-container">
-          <svg className="circle-chart" viewBox="0 0 200 200">
+        <Box className={styles.circleChartContainer}>
+          <svg className={styles.circleChart} viewBox="0 0 200 200">
             <defs>
               <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
@@ -169,8 +169,8 @@ const Dashboard: React.FC = () => {
           </svg>
         </Box>
 
-        <Box className="action-buttons">
-          <Box className="action-button-wrapper">
+        <Box className={styles.actionButtons}>
+          <Box className={styles.actionButtonWrapper}>
             <Fab
               size="large"
               onClick={() => handleAddTransaction(TransactionType.FIXED_EXPENSE)}
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
             </Typography>
           </Box>
 
-          <Box className="action-button-wrapper">
+          <Box className={styles.actionButtonWrapper}>
             <Fab
               size="large"
               onClick={() => handleAddTransaction(TransactionType.VARIABLE_EXPENSE)}
@@ -240,7 +240,7 @@ const Dashboard: React.FC = () => {
             </Typography>
           </Box>
 
-          <Box className="action-button-wrapper">
+          <Box className={styles.actionButtonWrapper}>
             <Fab
               size="large"
               onClick={() => navigate('/income')}
