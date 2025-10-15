@@ -132,7 +132,7 @@ const Chatbot: React.FC = () => {
       };
 
       addMessage(assistantMessage);
-    } catch (error) {
+    } catch {
       const errorText = language === 'es'
         ? 'Lo siento, encontré un error procesando tu mensaje. Por favor intenta de nuevo.'
         : 'Sorry, I encountered an error processing your message. Please try again.';
@@ -174,7 +174,7 @@ const Chatbot: React.FC = () => {
       };
 
       addMessage(assistantMessage);
-    } catch (error) {
+    } catch {
       const errorText = language === 'es'
         ? 'Lo siento, tuve problemas procesando la imagen. Por favor intenta de nuevo o asegúrate de que la imagen sea clara.'
         : 'Sorry, I had trouble processing the image. Please try again or ensure the image is clear.';
