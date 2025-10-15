@@ -11,6 +11,7 @@ import Transactions from './pages/Transactions';
 import Investments from './pages/Investments';
 import Loans from './pages/Loans';
 import Transfers from './pages/Transfers';
+import CurrencyExchange from './pages/CurrencyExchange';
 import ExportData from './pages/ExportData';
 import { TransactionType } from './types';
 import './App.css';
@@ -80,6 +81,10 @@ function App() {
                   <Route
                     path="/transfers"
                     element={<Transfers />}
+                  />
+                  <Route
+                    path="/currency-exchange"
+                    element={<CurrencyExchange />}
                   />
                   <Route path="/export" element={<ExportData />} />
                 </Routes>

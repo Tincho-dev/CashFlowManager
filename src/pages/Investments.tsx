@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Container, Box, Typography, Fab, Alert, IconButton, Tooltip } from '@mui/material';
+import {
+  Container,
+  Box,
+  Typography,
+  Fab,
+  Alert,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
+} from '@mui/material';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import type { Investment, Account } from '../types';
@@ -19,6 +34,8 @@ const Investments: React.FC = () => {
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [investmentService] = useState(() => new InvestmentService());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [transferringInvestment, setTransferringInvestment] = useState<Investment | null>(null);
+  const [transferToAccountId, setTransferToAccountId] = useState<number>(0);
   const [formData, setFormData] = useState<{
     accountId: number;
     type: InvestmentType;
@@ -100,6 +117,32 @@ const Investments: React.FC = () => {
       console.error('Error refreshing quotations:', error);
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const handleTransfer = (investment: Investment) => {
+    setTransferringInvestment(investment);
+    // Set default to first account that's not the current one
+    const otherAccounts = accounts.filter(a => a.id !== investment.accountId);
+    if (otherAccounts.length > 0) {
+      setTransferToAccountId(otherAccounts[0].id);
+    }
+  };
+
+  const handleTransferSubmit = () => {
+    if (!transferringInvestment || !transferToAccountId) return;
+    
+    const result = investmentService.transferInvestment(
+      transferringInvestment.id,
+      transferToAccountId
+    );
+    
+    if (result) {
+      loadInvestments();
+      setTransferringInvestment(null);
+      setTransferToAccountId(0);
+    } else {
+      alert('Failed to transfer investment');
     }
   };
 
@@ -230,6 +273,7 @@ const Investments: React.FC = () => {
                 investment={investment}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onTransfer={accounts.length > 1 ? handleTransfer : undefined}
               />
             ))}
           </Box>
@@ -245,6 +289,60 @@ const Investments: React.FC = () => {
         editingInvestment={editingInvestment}
         accounts={accounts}
       />
+
+      <Dialog
+        open={transferringInvestment !== null}
+        onClose={() => {
+          setTransferringInvestment(null);
+          setTransferToAccountId(0);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Transfer Investment</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            {transferringInvestment && (
+              <>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  Transfer <strong>{transferringInvestment.name}</strong> to another account
+                </Typography>
+                <TextField
+                  select
+                  label="Destination Account"
+                  value={transferToAccountId}
+                  onChange={(e) => setTransferToAccountId(parseInt(e.target.value))}
+                  fullWidth
+                  required
+                >
+                  {accounts
+                    .filter(a => a.id !== transferringInvestment.accountId)
+                    .map((account) => (
+                      <MenuItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTransferringInvestment(null);
+            setTransferToAccountId(0);
+          }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleTransferSubmit} 
+            variant="contained"
+            disabled={!transferToAccountId}
+          >
+            Transfer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

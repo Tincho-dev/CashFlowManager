@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, Typography, IconButton, Box, Chip } from '@mui/material';
-import { Edit, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, CardContent, Typography, IconButton, Box, Chip, Tooltip } from '@mui/material';
+import { Edit, Trash2, TrendingUp, TrendingDown, ArrowRightLeft } from 'lucide-react';
 import type { Investment } from '../../types';
 import { useTranslation } from 'react-i18next';
 
@@ -8,9 +8,10 @@ interface InvestmentCardProps {
   investment: Investment;
   onEdit: (investment: Investment) => void;
   onDelete: (id: number) => void;
+  onTransfer?: (investment: Investment) => void;
 }
 
-const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onDelete }) => {
+const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onDelete, onTransfer }) => {
   const { t } = useTranslation();
   const gain = investment.currentValue - investment.amount;
   const percentage = investment.amount > 0 ? (gain / investment.amount) * 100 : 0;
@@ -35,6 +36,22 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onD
             {investment.name}
           </Typography>
           <Box>
+            {onTransfer && (
+              <Tooltip title="Transfer to another account">
+                <IconButton 
+                  size="small" 
+                  onClick={() => onTransfer(investment)}
+                  aria-label="Transfer"
+                  sx={{ 
+                    '&:hover': { 
+                      bgcolor: 'action.hover',
+                    }
+                  }}
+                >
+                  <ArrowRightLeft size={18} />
+                </IconButton>
+              </Tooltip>
+            )}
             <IconButton 
               size="small" 
               onClick={() => onEdit(investment)}
@@ -62,13 +79,29 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onD
             </IconButton>
           </Box>
         </Box>
-        <Chip 
-          label={investment.type} 
-          size="small" 
-          sx={{ mb: 2 }}
-        />
+        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+          <Chip 
+            label={investment.type} 
+            size="small"
+          />
+          {investment.symbol && (
+            <Chip 
+              label={investment.symbol} 
+              size="small"
+              variant="outlined"
+            />
+          )}
+        </Box>
+        {investment.quantity && investment.purchasePrice && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {investment.quantity.toFixed(2)} units @ {investment.currency} ${investment.purchasePrice.toFixed(2)}
+          </Typography>
+        )}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Initial: {investment.currency} ${investment.amount.toFixed(2)}
+          {investment.commission && investment.commission > 0 && (
+            <span style={{ fontSize: '0.85em' }}> (+ {investment.commission.toFixed(2)} commission)</span>
+          )}
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
           {investment.currency} ${investment.currentValue.toFixed(2)}
