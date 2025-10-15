@@ -9,7 +9,7 @@ export const initDatabase = async (): Promise<Database> => {
   }
 
   const SQL = await initSqlJs({
-    locateFile: (file) => `https://sql.js.org/dist/${file}`,
+    locateFile: (file) => `/${file}`,
   });
 
   // Try to load existing database from localStorage
@@ -28,8 +28,8 @@ export const initDatabase = async (): Promise<Database> => {
 
 export const saveDatabase = (db: Database): void => {
   const data = db.export();
-  const buffer = Buffer.from(data);
-  localStorage.setItem('cashflow_db', buffer.toString('base64'));
+  const base64 = btoa(String.fromCharCode(...data));
+  localStorage.setItem('cashflow_db', base64);
 };
 
 export const getDatabase = (): Database => {
