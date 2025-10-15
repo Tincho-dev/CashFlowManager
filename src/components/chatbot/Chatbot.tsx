@@ -18,6 +18,7 @@ import { MessageCircle, Send, X, Image as ImageIcon, Bot, User } from 'lucide-re
 import ChatbotService, { type ChatMessage } from '../../services/ChatbotService';
 import { useApp } from '../../contexts/AppContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +28,9 @@ const Chatbot: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { accountService, transactionService, isInitialized } = useApp();
+  const { accountService, transactionService, isInitialized, settings } = useApp();
   const { language } = useLanguage();
+  const { defaultCurrency } = useCurrency();
 
   useEffect(() => {
     if (isInitialized && accountService && transactionService) {
@@ -41,13 +43,27 @@ const Chatbot: React.FC = () => {
   }, [language]);
 
   useEffect(() => {
+    ChatbotService.setDefaultCurrency(defaultCurrency);
+  }, [defaultCurrency]);
+
+  useEffect(() => {
+    ChatbotService.setDefaultAccount(settings.defaultAccountId);
+  }, [settings.defaultAccountId]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const initializeChatbot = async () => {
     try {
       if (accountService && transactionService) {
-        await ChatbotService.initialize(accountService, transactionService, language);
+        await ChatbotService.initialize(
+          accountService, 
+          transactionService, 
+          language,
+          defaultCurrency,
+          settings.defaultAccountId
+        );
         setIsInitializing(false);
         
         // Add welcome message

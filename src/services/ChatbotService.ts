@@ -32,14 +32,24 @@ class ChatbotService {
   private transactionService: TransactionService | null = null;
   private currentLanguage: string = 'en';
   private useMLModel = true; // Flag to enable/disable ML model
+  private defaultCurrency: Currency = Currency.USD;
+  private defaultAccountId: number | null = null;
 
-  async initialize(accountService: AccountService, transactionService: TransactionService, language: string = 'en'): Promise<void> {
+  async initialize(
+    accountService: AccountService, 
+    transactionService: TransactionService, 
+    language: string = 'en',
+    defaultCurrency: Currency = Currency.USD,
+    defaultAccountId: number | null = null
+  ): Promise<void> {
     if (this.isInitialized) return;
 
     try {
       this.accountService = accountService;
       this.transactionService = transactionService;
       this.currentLanguage = language;
+      this.defaultCurrency = defaultCurrency;
+      this.defaultAccountId = defaultAccountId;
 
       // Try to load the ML model for better intent classification
       if (this.useMLModel) {
@@ -91,6 +101,14 @@ class ChatbotService {
 
   setLanguage(language: string): void {
     this.currentLanguage = language;
+  }
+
+  setDefaultCurrency(currency: Currency): void {
+    this.defaultCurrency = currency;
+  }
+
+  setDefaultAccount(accountId: number | null): void {
+    this.defaultAccountId = accountId;
   }
 
   async processMessage(message: string): Promise<ChatbotResponse> {
@@ -385,14 +403,26 @@ class ChatbotService {
         };
       }
 
-      // Use first account or try to match account from message
+      // Use default account if set, otherwise try to match from message, or use first account
       let targetAccount = accounts[0];
-      const accountMatch = message.match(/cuenta\s+(\w+)|account\s+(\w+)|in\s+(\w+)/i);
+      
+      // Try to use default account first
+      if (this.defaultAccountId) {
+        const defaultAcc = this.accountService.getAccount(this.defaultAccountId);
+        if (defaultAcc) {
+          targetAccount = defaultAcc;
+        }
+      }
+      
+      // Try to match account from message
+      const accountMatch = message.match(/cuenta\s+(\w+)|account\s+(\w+)|in\s+(\w+)|from\s+(\w+)|de\s+(\w+)/i);
       if (accountMatch) {
-        const accountName = (accountMatch[1] || accountMatch[2] || accountMatch[3]).toLowerCase();
-        const matchedAccount = accounts.find(acc => acc.name.toLowerCase().includes(accountName));
-        if (matchedAccount) {
-          targetAccount = matchedAccount;
+        const accountName = (accountMatch[1] || accountMatch[2] || accountMatch[3] || accountMatch[4] || accountMatch[5])?.toLowerCase();
+        if (accountName) {
+          const matchedAccount = accounts.find(acc => acc.name.toLowerCase().includes(accountName));
+          if (matchedAccount) {
+            targetAccount = matchedAccount;
+          }
         }
       }
 
@@ -422,8 +452,8 @@ class ChatbotService {
         : `• Type: ${typeLabel}\n`;
       
       successMessage += this.currentLanguage === 'es'
-        ? `• Monto: $${transaction.amount.toFixed(2)}\n`
-        : `• Amount: $${transaction.amount.toFixed(2)}\n`;
+        ? `• Monto: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`
+        : `• Amount: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`;
       
       successMessage += this.currentLanguage === 'es'
         ? `• Descripción: ${transaction.description}\n`
@@ -445,8 +475,8 @@ class ChatbotService {
       
       const newBalance = this.accountService.getAccount(targetAccount.id)?.balance || 0;
       successMessage += this.currentLanguage === 'es'
-        ? `Nuevo saldo de ${targetAccount.name}: $${newBalance.toFixed(2)}`
-        : `New balance for ${targetAccount.name}: $${newBalance.toFixed(2)}`;
+        ? `Nuevo saldo de ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`
+        : `New balance for ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`;
 
       return { message: successMessage };
     } catch (error) {
@@ -484,12 +514,18 @@ class ChatbotService {
       amount = parseFloat(amountMatch[1]);
     }
     
-    // Detect currency
-    let currency: Currency = Currency.USD;
-    if (lowerMessage.includes('ars') || lowerMessage.includes('pesos')) {
+    // Detect currency - use default if not explicitly specified
+    let currency: Currency = this.defaultCurrency;
+    if (lowerMessage.includes('usd') || lowerMessage.includes('dollar') || lowerMessage.includes('dólar')) {
+      currency = Currency.USD;
+    } else if (lowerMessage.includes('ars') || lowerMessage.includes('peso')) {
       currency = Currency.ARS;
-    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euros')) {
+    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euro')) {
       currency = Currency.EUR;
+    } else if (lowerMessage.includes('gbp') || lowerMessage.includes('pound') || lowerMessage.includes('libra')) {
+      currency = Currency.GBP;
+    } else if (lowerMessage.includes('brl') || lowerMessage.includes('real') || lowerMessage.includes('reais')) {
+      currency = Currency.BRL;
     }
     
     // Extract description

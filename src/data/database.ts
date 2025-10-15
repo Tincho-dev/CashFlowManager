@@ -21,6 +21,10 @@ export const initDatabase = async (): Promise<Database> => {
   } else {
     dbInstance = new SQL.Database();
     await runMigrations(dbInstance);
+    
+    // Seed the database with initial data only if it's a fresh database
+    const { seedDatabase } = await import('./seedData');
+    seedDatabase(dbInstance);
   }
 
   return dbInstance;
