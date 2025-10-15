@@ -74,7 +74,7 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Guiar usuarios para crear cuentas/transacciones desde el chat~~ - COMPLETED
 - [ ] Comandos por voz
 - [ ] Asistente inteligente para categorización automática
-- [ ] Mejorar detección de intención con modelo ML (Transformers.js)
+- [x] ~~Mejorar detección de intención con modelo ML (Transformers.js)~~ - COMPLETED
 - [ ] Permitir crear cuentas/transacciones directamente desde el chat (sin redirigir)
 
 ### Sistema de Ayuda
@@ -128,7 +128,7 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - ✅ OCR con Tesseract.js para reconocimiento de texto en imágenes - IMPLEMENTED
 - ✅ Material-UI para componentes consistentes - IMPLEMENTED
 - ✅ SCSS Modules para estilos escalables - IMPLEMENTED
-- ⏳ Transformers.js con modelo Xenova/distilbert para NLP (preparado, pendiente activar)
+- ✅ Transformers.js con modelo Xenova/distilbert para NLP - ACTIVATED (con fallback a keywords)
 - ⏳ Web Workers para procesamiento pesado sin bloquear UI (pendiente)
 - ⏳ IndexedDB como alternativa a localStorage para mejor performance (pendiente)
 

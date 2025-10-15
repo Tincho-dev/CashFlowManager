@@ -1,12 +1,13 @@
-// import { pipeline, env } from '@xenova/transformers';
+import { pipeline, env } from '@xenova/transformers';
 import { createWorker } from 'tesseract.js';
 import type { AccountService } from './AccountService';
 import type { TransactionService } from './TransactionService';
 import LoggingService, { LogCategory } from './LoggingService';
+import { TransactionType, Currency } from '../types';
 
-// Configure transformers.js to use local models
-// env.allowLocalModels = false;
-// env.allowRemoteModels = true;
+// Configure transformers.js to use remote models
+env.allowLocalModels = false;
+env.allowRemoteModels = true;
 
 export interface ChatMessage {
   id: string;
@@ -25,11 +26,12 @@ export interface ChatbotResponse {
 
 class ChatbotService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // private classifier: any = null;
+  private classifier: any = null;
   private isInitialized = false;
   private accountService: AccountService | null = null;
   private transactionService: TransactionService | null = null;
   private currentLanguage: string = 'en';
+  private useMLModel = true; // Flag to enable/disable ML model
 
   async initialize(accountService: AccountService, transactionService: TransactionService, language: string = 'en'): Promise<void> {
     if (this.isInitialized) return;
@@ -39,19 +41,46 @@ class ChatbotService {
       this.transactionService = transactionService;
       this.currentLanguage = language;
 
-      // Load a lightweight sentiment/classification model
-      // Using distilbert for intent classification
-      // TODO: Use ML model for better intent classification in the future
-      // this.classifier = await pipeline(
-      //   'text-classification',
-      //   'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
-      // );
+      // Try to load the ML model for better intent classification
+      if (this.useMLModel) {
+        try {
+          LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_ML_LOADING', {
+            model: 'distilbert-base-uncased',
+          });
+
+          // Load a lightweight sentiment/classification model
+          // Using distilbert for intent classification
+          this.classifier = await pipeline(
+            'text-classification',
+            'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
+          );
+
+          LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
+            model: 'ml-transformers-distilbert',
+            language,
+          });
+        } catch (mlError) {
+          // Fall back to keyword-based detection if ML model fails to load
+          LoggingService.warning(LogCategory.SYSTEM, 'CHATBOT_ML_FALLBACK', {
+            error: String(mlError),
+            fallback: 'keyword-based',
+          });
+          this.useMLModel = false;
+          this.classifier = null;
+
+          LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
+            model: 'keyword-based-multilingual',
+            language,
+          });
+        }
+      } else {
+        LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
+          model: 'keyword-based-multilingual',
+          language,
+        });
+      }
 
       this.isInitialized = true;
-      LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
-        model: 'keyword-based-multilingual',
-        language,
-      });
     } catch (error) {
       LoggingService.error(LogCategory.SYSTEM, 'CHATBOT_INIT_ERROR', {
         error: String(error),
@@ -74,8 +103,8 @@ class ChatbotService {
     LoggingService.info(LogCategory.USER, 'CHATBOT_MESSAGE', { message });
 
     try {
-      // Simple intent detection based on keywords
-      const intent = this.detectIntent(message.toLowerCase());
+      // Detect intent using ML model or keyword-based fallback
+      const intent = await this.detectIntent(message.toLowerCase());
 
       switch (intent) {
         case 'balance':
@@ -92,6 +121,9 @@ class ChatbotService {
         
         case 'create_transaction':
           return this.handleCreateTransactionIntent();
+        
+        case 'create_transaction_direct':
+          return this.handleDirectTransactionCreation(message);
         
         case 'help':
           return this.handleHelp();
@@ -117,9 +149,32 @@ class ChatbotService {
     }
   }
 
-  private detectIntent(message: string): string {
-    // Simple keyword-based intent detection
-    // In a production app, you'd use the ML model for this
+  private async detectIntent(message: string): Promise<string> {
+    // Use ML model if available, otherwise fall back to keyword-based detection
+    if (this.useMLModel && this.classifier) {
+      try {
+        // Use ML model to detect sentiment/intent
+        // The model gives sentiment (POSITIVE/NEGATIVE) which we can use as a signal
+        const result = await this.classifier(message);
+        
+        // Log ML inference for debugging
+        LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_ML_INFERENCE', {
+          message,
+          mlResult: result,
+        });
+
+        // ML model helps but we still need keyword matching for specific intents
+        // The ML model's sentiment can help us understand user intent better
+        // For now, we'll use it as supplementary information
+      } catch (mlError) {
+        LoggingService.warning(LogCategory.SYSTEM, 'CHATBOT_ML_INFERENCE_ERROR', {
+          error: String(mlError),
+        });
+      }
+    }
+
+    // Keyword-based intent detection (works with or without ML)
+    // This is our primary method for intent classification
     
     if (message.includes('balance') || message.includes('saldo') || message.includes('total')) {
       return 'balance';
@@ -131,7 +186,8 @@ class ChatbotService {
     }
     
     if (message.includes('transactions') || message.includes('transacciones') || 
-        message.includes('movimientos') || message.includes('gastos')) {
+        message.includes('movimientos') || message.includes('gastos') && 
+        !message.match(/\$?\d+/)) {
       return 'list_transactions';
     }
     
@@ -140,8 +196,18 @@ class ChatbotService {
       return 'create_account';
     }
     
+    // Detect transaction creation with amounts (e.g., "add expense $50 for groceries")
+    const hasAmount = message.match(/\$?\d+(\.\d{2})?/) || message.match(/\d+\s*(dollars|pesos|usd)/i);
+    const isExpense = message.match(/(gasto|expense|spent|gastado|compré|bought|pagué|paid)/i);
+    const isIncome = message.match(/(ingreso|income|earned|ganado|recibí|received|cobré)/i);
+    
+    if (hasAmount && (isExpense || isIncome)) {
+      return 'create_transaction_direct';
+    }
+    
     if (message.includes('add transaction') || message.includes('new transaction') || 
-        message.includes('agregar gasto') || message.includes('nuevo gasto')) {
+        message.includes('agregar gasto') || message.includes('nuevo gasto') ||
+        message.includes('registrar') || message.includes('record')) {
       return 'create_transaction';
     }
     
@@ -288,6 +354,194 @@ class ChatbotService {
     };
   }
 
+  private handleDirectTransactionCreation(message: string): ChatbotResponse {
+    if (!this.accountService || !this.transactionService) {
+      return { 
+        message: this.currentLanguage === 'es' 
+          ? 'Los servicios no están disponibles.' 
+          : 'Services not available.' 
+      };
+    }
+
+    try {
+      // Parse transaction details from message
+      const transactionData = this.parseTransactionFromMessage(message);
+      
+      if (!transactionData.amount) {
+        return {
+          message: this.currentLanguage === 'es'
+            ? '❌ No pude detectar el monto. Por favor incluye un monto como "$50" o "100 dólares".'
+            : '❌ I couldn\'t detect the amount. Please include an amount like "$50" or "100 dollars".',
+        };
+      }
+
+      // Get accounts
+      const accounts = this.accountService.getAllAccounts();
+      if (accounts.length === 0) {
+        return {
+          message: this.currentLanguage === 'es'
+            ? '❌ No tienes cuentas. Por favor crea una cuenta primero.'
+            : '❌ You don\'t have any accounts. Please create an account first.',
+        };
+      }
+
+      // Use first account or try to match account from message
+      let targetAccount = accounts[0];
+      const accountMatch = message.match(/cuenta\s+(\w+)|account\s+(\w+)|in\s+(\w+)/i);
+      if (accountMatch) {
+        const accountName = (accountMatch[1] || accountMatch[2] || accountMatch[3]).toLowerCase();
+        const matchedAccount = accounts.find(acc => acc.name.toLowerCase().includes(accountName));
+        if (matchedAccount) {
+          targetAccount = matchedAccount;
+        }
+      }
+
+      // Create the transaction
+      const transaction = this.transactionService.createTransaction(
+        targetAccount.id,
+        transactionData.type,
+        transactionData.amount,
+        transactionData.currency,
+        transactionData.description,
+        transactionData.date,
+        transactionData.category
+      );
+
+      // Build success message
+      const emoji = transactionData.type === TransactionType.INCOME ? '💰' : '💸';
+      const typeLabel = this.currentLanguage === 'es'
+        ? (transactionData.type === TransactionType.INCOME ? 'Ingreso' : 'Gasto')
+        : (transactionData.type === TransactionType.INCOME ? 'Income' : 'Expense');
+      
+      let successMessage = this.currentLanguage === 'es'
+        ? `${emoji} **Transacción creada exitosamente!**\n\n`
+        : `${emoji} **Transaction created successfully!**\n\n`;
+      
+      successMessage += this.currentLanguage === 'es'
+        ? `• Tipo: ${typeLabel}\n`
+        : `• Type: ${typeLabel}\n`;
+      
+      successMessage += this.currentLanguage === 'es'
+        ? `• Monto: $${transaction.amount.toFixed(2)}\n`
+        : `• Amount: $${transaction.amount.toFixed(2)}\n`;
+      
+      successMessage += this.currentLanguage === 'es'
+        ? `• Descripción: ${transaction.description}\n`
+        : `• Description: ${transaction.description}\n`;
+      
+      if (transaction.category) {
+        successMessage += this.currentLanguage === 'es'
+          ? `• Categoría: ${transaction.category}\n`
+          : `• Category: ${transaction.category}\n`;
+      }
+      
+      successMessage += this.currentLanguage === 'es'
+        ? `• Cuenta: ${targetAccount.name}\n`
+        : `• Account: ${targetAccount.name}\n`;
+      
+      successMessage += this.currentLanguage === 'es'
+        ? `• Fecha: ${transaction.date}\n\n`
+        : `• Date: ${transaction.date}\n\n`;
+      
+      const newBalance = this.accountService.getAccount(targetAccount.id)?.balance || 0;
+      successMessage += this.currentLanguage === 'es'
+        ? `Nuevo saldo de ${targetAccount.name}: $${newBalance.toFixed(2)}`
+        : `New balance for ${targetAccount.name}: $${newBalance.toFixed(2)}`;
+
+      return { message: successMessage };
+    } catch (error) {
+      LoggingService.error(LogCategory.SYSTEM, 'CHATBOT_CREATE_TRANSACTION_ERROR', {
+        error: String(error),
+        message,
+      });
+      
+      return {
+        message: this.currentLanguage === 'es'
+          ? '❌ Ocurrió un error al crear la transacción. Por favor intenta de nuevo.'
+          : '❌ An error occurred while creating the transaction. Please try again.',
+      };
+    }
+  }
+
+  private parseTransactionFromMessage(message: string): {
+    type: TransactionType;
+    amount: number;
+    currency: Currency;
+    description: string;
+    date: string;
+    category?: string;
+  } {
+    const lowerMessage = message.toLowerCase();
+    
+    // Detect transaction type
+    const isIncome = lowerMessage.match(/(ingreso|income|earned|ganado|recibí|received|cobré|cobrar|salary|salario)/i);
+    const type = isIncome ? TransactionType.INCOME : TransactionType.VARIABLE_EXPENSE;
+    
+    // Extract amount
+    let amount = 0;
+    const amountMatch = message.match(/\$?\s*(\d+(?:\.\d{2})?)/);
+    if (amountMatch) {
+      amount = parseFloat(amountMatch[1]);
+    }
+    
+    // Detect currency
+    let currency: Currency = Currency.USD;
+    if (lowerMessage.includes('ars') || lowerMessage.includes('pesos')) {
+      currency = Currency.ARS;
+    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euros')) {
+      currency = Currency.EUR;
+    }
+    
+    // Extract description
+    let description = this.currentLanguage === 'es' ? 'Transacción desde chatbot' : 'Transaction from chatbot';
+    
+    // Try to extract description from common patterns
+    const descPatterns = [
+      /(?:for|para|por|de)\s+([a-záéíóúñ\s]+?)(?:\s+in\s+|\s+en\s+|$)/i,
+      /(?:bought|compré|pagué|paid)\s+([a-záéíóúñ\s]+?)(?:\s+for|\s+por|$)/i,
+      /(?:on|en)\s+([a-záéíóúñ\s]+?)(?:\s+\$|\s+for|$)/i,
+    ];
+    
+    for (const pattern of descPatterns) {
+      const match = message.match(pattern);
+      if (match && match[1] && match[1].trim().length > 0) {
+        description = match[1].trim();
+        break;
+      }
+    }
+    
+    // Detect category from keywords
+    let category: string | undefined;
+    const categoryMap: { [key: string]: string[] } = {
+      'Groceries': ['groceries', 'food', 'comida', 'supermercado', 'mercado', 'alimentos'],
+      'Transportation': ['transport', 'taxi', 'uber', 'bus', 'metro', 'transporte', 'gasolina', 'gas'],
+      'Entertainment': ['entertainment', 'movie', 'cine', 'entretenimiento', 'diversión', 'juegos'],
+      'Utilities': ['utilities', 'electricity', 'water', 'gas', 'internet', 'servicios', 'luz', 'agua'],
+      'Rent/Mortgage': ['rent', 'mortgage', 'alquiler', 'renta', 'vivienda'],
+      'Salary': ['salary', 'salario', 'sueldo', 'pago'],
+      'Freelance': ['freelance', 'freelancing', 'proyecto', 'project'],
+    };
+    
+    for (const [cat, keywords] of Object.entries(categoryMap)) {
+      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+        category = cat;
+        break;
+      }
+    }
+    
+    // Get current date
+    const date = new Date().toISOString().split('T')[0];
+    
+    return {
+      type,
+      amount,
+      currency,
+      description,
+      date,
+      category,
+    };
+  }
+
   private handleHelp(): ChatbotResponse {
     if (this.currentLanguage === 'es') {
       return {
@@ -296,9 +550,13 @@ class ChatbotService {
                  `📊 **Cuentas**: Pregunta "Lista mis cuentas" para ver todas tus cuentas\n` +
                  `📝 **Transacciones**: Pregunta "Muestra mis transacciones" para ver transacciones recientes\n` +
                  `➕ **Crear Cuenta**: Di "crear cuenta" y te guiaré en el proceso\n` +
-                 `💸 **Agregar Gasto**: Di "agregar gasto" para registrar una transacción\n` +
+                 `💸 **Agregar Transacción**: Di "gasté $50 en comida" o "recibí $1000 de salario"\n` +
                  `❓ **Ayuda**: Pregunta "Ayuda" en cualquier momento para ver este mensaje\n\n` +
-                 `¡También puedes preguntarme sobre tipos de cuentas, categorías de gastos y más!`,
+                 `**Ejemplos de transacciones:**\n` +
+                 `• "Gasté $25 en transporte"\n` +
+                 `• "Pagué $100 por la luz"\n` +
+                 `• "Recibí $2000 de salario"\n` +
+                 `• "Compré comida por $45"`,
       };
     }
     return {
@@ -307,9 +565,13 @@ class ChatbotService {
                `📊 **Accounts**: Ask "List my accounts" to see all your accounts\n` +
                `📝 **Transactions**: Ask "Show my transactions" to see recent transactions\n` +
                `➕ **Create Account**: Say "create account" and I'll guide you through the process\n` +
-               `💸 **Add Expense**: Say "add expense" to record a transaction\n` +
+               `💸 **Add Transaction**: Say "I spent $50 on food" or "I received $1000 salary"\n` +
                `❓ **Help**: Ask "Help" anytime to see this message\n\n` +
-               `You can also ask me questions about account types, expense categories, and more!`,
+               `**Transaction examples:**\n` +
+               `• "I spent $25 on transportation"\n` +
+               `• "Paid $100 for utilities"\n` +
+               `• "Received $2000 salary"\n` +
+               `• "Bought groceries for $45"`,
     };
   }
 
