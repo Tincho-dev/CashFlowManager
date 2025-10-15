@@ -67,9 +67,15 @@ const Chatbot: React.FC = () => {
         setIsInitializing(false);
         
         // Add welcome message
+        const defaultAccMsg = settings.defaultAccountId 
+          ? (language === 'es' 
+            ? `\n\n💡 Tu cuenta predeterminada está configurada y usaré ${defaultCurrency} como moneda por defecto.`
+            : `\n\n💡 Your default account is set and I'll use ${defaultCurrency} as default currency.`)
+          : '';
+        
         const welcomeMessage = language === 'es' 
-          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Aprender sobre tipos de cuentas y categorías\n- Guiarte para crear cuentas y transacciones\n\n¿Cómo puedo ayudarte hoy?`
-          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Learn about account types and categories\n- Guide you to create accounts and transactions\n\nHow can I help you today?`;
+          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Aprender sobre tipos de cuentas y categorías\n- Guiarte para crear cuentas y transacciones${defaultAccMsg}\n\n¿Cómo puedo ayudarte hoy?`
+          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Learn about account types and categories\n- Guide you to create accounts and transactions${defaultAccMsg}\n\nHow can I help you today?`;
         
         addMessage({
           id: '0',

@@ -388,8 +388,10 @@ class ChatbotService {
       if (!transactionData.amount) {
         return {
           message: this.currentLanguage === 'es'
-            ? '❌ No pude detectar el monto. Por favor incluye un monto como "$50" o "100 dólares".'
-            : '❌ I couldn\'t detect the amount. Please include an amount like "$50" or "100 dollars".',
+            ? '❌ No pude detectar el monto. Por favor incluye un monto como "$50" o "100 dólares".\n\n' +
+              '💡 Ejemplo: "Gasté $50 en comida" o "Recibí $1000 de salario en pesos"'
+            : '❌ I couldn\'t detect the amount. Please include an amount like "$50" or "100 dollars".\n\n' +
+              '💡 Example: "I spent $50 on food" or "I received $1000 salary in pesos"',
         };
       }
 
@@ -424,6 +426,26 @@ class ChatbotService {
             targetAccount = matchedAccount;
           }
         }
+      }
+
+      // Inform user if we're using defaults
+      let usedDefaultsInfo = '';
+      const isDefaultAccount = this.defaultAccountId && targetAccount.id === this.defaultAccountId;
+      const isDefaultCurrency = transactionData.currency === this.defaultCurrency && 
+                               !message.toLowerCase().match(/(usd|ars|eur|gbp|brl|peso|dollar|euro|pound|real)/);
+      
+      if (isDefaultAccount || isDefaultCurrency) {
+        const defaults: string[] = [];
+        if (isDefaultAccount) {
+          defaults.push(this.currentLanguage === 'es' ? 'cuenta predeterminada' : 'default account');
+        }
+        if (isDefaultCurrency) {
+          defaults.push(this.currentLanguage === 'es' ? 'moneda predeterminada' : 'default currency');
+        }
+        
+        usedDefaultsInfo = this.currentLanguage === 'es'
+          ? `\n\n💡 Usé tu ${defaults.join(' y ')}.`
+          : `\n\n💡 I used your ${defaults.join(' and ')}.`;
       }
 
       // Create the transaction
@@ -477,6 +499,8 @@ class ChatbotService {
       successMessage += this.currentLanguage === 'es'
         ? `Nuevo saldo de ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`
         : `New balance for ${targetAccount.name}: ${targetAccount.currency} $${newBalance.toFixed(2)}`;
+
+      successMessage += usedDefaultsInfo;
 
       return { message: successMessage };
     } catch (error) {
@@ -592,7 +616,15 @@ class ChatbotService {
                  `• "Gasté $25 en transporte"\n` +
                  `• "Pagué $100 por la luz"\n` +
                  `• "Recibí $2000 de salario"\n` +
-                 `• "Compré comida por $45"`,
+                 `• "Compré comida por $45"\n\n` +
+                 `**Monedas soportadas:**\n` +
+                 `Puedes especificar la moneda en tus transacciones:\n` +
+                 `• USD (dólar) - "gasté $50 usd"\n` +
+                 `• ARS (peso argentino) - "gasté $1000 pesos"\n` +
+                 `• EUR (euro) - "gasté 50 euros"\n` +
+                 `• GBP (libra) - "gasté 50 libras"\n` +
+                 `• BRL (real) - "gasté 100 reais"\n` +
+                 `Si no especificas moneda, usaré tu moneda predeterminada: ${this.defaultCurrency}`,
       };
     }
     return {
@@ -607,7 +639,15 @@ class ChatbotService {
                `• "I spent $25 on transportation"\n` +
                `• "Paid $100 for utilities"\n` +
                `• "Received $2000 salary"\n` +
-               `• "Bought groceries for $45"`,
+               `• "Bought groceries for $45"\n\n` +
+               `**Supported currencies:**\n` +
+               `You can specify currency in your transactions:\n` +
+               `• USD (dollar) - "I spent $50 usd"\n` +
+               `• ARS (argentine peso) - "I spent $1000 pesos"\n` +
+               `• EUR (euro) - "I spent 50 euros"\n` +
+               `• GBP (pound) - "I spent 50 pounds"\n` +
+               `• BRL (real) - "I spent 100 reais"\n` +
+               `If you don't specify currency, I'll use your default currency: ${this.defaultCurrency}`,
     };
   }
 
