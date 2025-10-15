@@ -83,7 +83,9 @@ export interface Investment {
   accountId: number;
   type: InvestmentType;
   name: string;
-  amount: number;
+  symbol?: string; // Stock ticker symbol (e.g., AAPL, GOOGL)
+  quantity?: number; // Number of shares/units
+  amount: number; // Total investment amount
   currency: Currency;
   purchaseDate: string;
   currentValue: number;
