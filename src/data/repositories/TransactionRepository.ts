@@ -1,13 +1,22 @@
 import type { Database } from 'sql.js';
 import type { Transaction } from '../../types';
 import { TransactionType, Currency, PaymentType } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+/**
+ * TransactionRepository - Data access for transactions
+ * BACKEND MIGRATION NOTES: See DataAccessLayer.ts for migration guide
+ */
 export class TransactionRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Transaction[] {

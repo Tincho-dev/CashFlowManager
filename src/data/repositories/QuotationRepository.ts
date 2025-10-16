@@ -1,13 +1,22 @@
 import type { Database } from 'sql.js';
 import type { Quotation } from '../../types';
 import { Currency } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+/**
+ * QuotationRepository - Data access for quotations
+ * BACKEND MIGRATION NOTES: See DataAccessLayer.ts for migration guide
+ */
 export class QuotationRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Quotation[] {

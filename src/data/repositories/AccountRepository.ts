@@ -1,13 +1,26 @@
 import type { Database } from 'sql.js';
 import type { Account } from '../../types';
 import { Currency } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+/**
+ * AccountRepository - Data access for accounts
+ * 
+ * BACKEND MIGRATION NOTES:
+ * - Replace direct DB calls with API calls to backend
+ * - Keep SQLite as local cache for offline support
+ * - See DataAccessLayer.ts for detailed migration guide
+ */
 export class AccountRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Account[] {

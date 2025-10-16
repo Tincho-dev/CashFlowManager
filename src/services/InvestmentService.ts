@@ -2,28 +2,55 @@ import type { Investment } from '../types';
 import { InvestmentType, Currency } from '../types';
 import { InvestmentRepository } from '../data/repositories/InvestmentRepository';
 import LoggingService, { LogCategory } from './LoggingService';
+import DataAccessLayer from '../data/DataAccessLayer';
 
+/**
+ * InvestmentService - Business logic for investment operations
+ * 
+ * BACKEND MIGRATION NOTES:
+ * - This service layer can orchestrate backend API calls
+ * - Add validation and business rules here
+ * - Implement retry logic and error handling
+ * - See DataAccessLayer.ts for migration guide
+ */
 export class InvestmentService {
-  private investmentRepo: InvestmentRepository;
+  private investmentRepo: InvestmentRepository | null = null;
+  private isInitialized = false;
 
   constructor() {
-    this.investmentRepo = new InvestmentRepository();
+    // Don't initialize repository in constructor to prevent database access
+    // Repository will be created on first use after DataAccessLayer is ready
+  }
+
+  /**
+   * Lazy initialization of repository
+   * Ensures DataAccessLayer is ready before creating repository
+   */
+  private getRepository(): InvestmentRepository {
+    if (!this.investmentRepo) {
+      if (!DataAccessLayer.isReady()) {
+        throw new Error('InvestmentService: DataAccessLayer not ready. Ensure app is initialized.');
+      }
+      this.investmentRepo = new InvestmentRepository();
+      this.isInitialized = true;
+    }
+    return this.investmentRepo;
   }
 
   getAllInvestments(): Investment[] {
-    return this.investmentRepo.getAll();
+    return this.getRepository().getAll();
   }
 
   getInvestment(id: number): Investment | null {
-    return this.investmentRepo.getById(id);
+    return this.getRepository().getById(id);
   }
 
   getInvestmentsByAccount(accountId: number): Investment[] {
-    return this.investmentRepo.getByAccount(accountId);
+    return this.getRepository().getByAccount(accountId);
   }
 
   getInvestmentsByType(type: InvestmentType): Investment[] {
-    return this.investmentRepo.getByType(type);
+    return this.getRepository().getByType(type);
   }
 
   createInvestment(params: {
@@ -39,7 +66,7 @@ export class InvestmentService {
     purchaseDate: string;
     currentValue: number;
   }): Investment {
-    const investment = this.investmentRepo.create(params);
+    const investment = this.getRepository().create(params);
 
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_INVESTMENT', {
       investmentId: investment.id,
@@ -50,7 +77,7 @@ export class InvestmentService {
   }
 
   updateInvestment(id: number, updates: Partial<Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>>): Investment | null {
-    const investment = this.investmentRepo.update(id, updates);
+    const investment = this.getRepository().update(id, updates);
 
     if (investment) {
       LoggingService.info(LogCategory.ACCOUNT, 'UPDATE_INVESTMENT', {
@@ -63,7 +90,7 @@ export class InvestmentService {
   }
 
   deleteInvestment(id: number): boolean {
-    const success = this.investmentRepo.delete(id);
+    const success = this.getRepository().delete(id);
 
     if (success) {
       LoggingService.info(LogCategory.ACCOUNT, 'DELETE_INVESTMENT', {
@@ -75,17 +102,17 @@ export class InvestmentService {
   }
 
   getTotalInvestmentValue(): number {
-    const investments = this.investmentRepo.getAll();
+    const investments = this.getRepository().getAll();
     return investments.reduce((sum, investment) => sum + investment.currentValue, 0);
   }
 
   getTotalGainLoss(): number {
-    const investments = this.investmentRepo.getAll();
+    const investments = this.getRepository().getAll();
     return investments.reduce((sum, investment) => sum + (investment.currentValue - investment.amount), 0);
   }
 
   getInvestmentPerformance(): { investment: Investment; gain: number; percentage: number }[] {
-    const investments = this.investmentRepo.getAll();
+    const investments = this.getRepository().getAll();
     return investments.map(investment => {
       const gain = investment.currentValue - investment.amount;
       const percentage = investment.amount > 0 ? (gain / investment.amount) * 100 : 0;
@@ -98,7 +125,7 @@ export class InvestmentService {
    * This is useful for moving assets between comitente accounts
    */
   transferInvestment(investmentId: number, toAccountId: number): Investment | null {
-    const investment = this.investmentRepo.getById(investmentId);
+    const investment = this.getRepository().getById(investmentId);
     if (!investment) {
       console.error('Investment not found');
       return null;
@@ -109,7 +136,7 @@ export class InvestmentService {
       return null;
     }
 
-    const updated = this.investmentRepo.update(investmentId, { accountId: toAccountId });
+    const updated = this.getRepository().update(investmentId, { accountId: toAccountId });
 
     if (updated) {
       LoggingService.info(LogCategory.ACCOUNT, 'TRANSFER_INVESTMENT', {
@@ -126,7 +153,7 @@ export class InvestmentService {
    * Update investment current value based on latest quotation
    */
   async updateInvestmentValue(investmentId: number): Promise<Investment | null> {
-    const investment = this.investmentRepo.getById(investmentId);
+    const investment = this.getRepository().getById(investmentId);
     if (!investment || !investment.symbol || !investment.quantity) {
       return null;
     }
@@ -141,14 +168,14 @@ export class InvestmentService {
     }
 
     const currentValue = investment.quantity * quotation.price;
-    return this.investmentRepo.update(investmentId, { currentValue });
+    return this.getRepository().update(investmentId, { currentValue });
   }
 
   /**
    * Update all investment values based on latest quotations
    */
   async updateAllInvestmentValues(): Promise<void> {
-    const investments = this.investmentRepo.getAll();
+    const investments = this.getRepository().getAll();
     const updates = investments
       .filter(inv => inv.symbol && inv.quantity)
       .map(inv => this.updateInvestmentValue(inv.id));
