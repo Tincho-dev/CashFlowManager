@@ -58,6 +58,7 @@ export interface Account {
   type: string;
   balance: number;
   currency: Currency;
+  commissionRate?: number; // Commission percentage for operations (e.g., 0.25 for 0.25%)
   createdAt: string;
   updatedAt: string;
 }
@@ -83,9 +84,11 @@ export interface Investment {
   accountId: number;
   type: InvestmentType;
   name: string;
-  symbol?: string; // Stock ticker symbol (e.g., AAPL, GOOGL)
-  quantity?: number; // Number of shares/units
-  amount: number; // Total investment amount
+  symbol?: string; // Stock ticker symbol (e.g., AAPL, GOOGL, GGAL, etc.)
+  quantity?: number; // Number of shares/units/nominales
+  purchasePrice?: number; // Price per unit at purchase
+  amount: number; // Total investment amount (quantity * purchasePrice + commission)
+  commission?: number; // Commission paid for the transaction
   currency: Currency;
   purchaseDate: string;
   currentValue: number;
@@ -126,6 +129,28 @@ export interface Category {
   type: TransactionType;
   color?: string;
   icon?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Quotation {
+  symbol: string; // Asset symbol (e.g., AAPL, GGAL) or currency pair (e.g., USD/ARS)
+  price: number;
+  currency: Currency;
+  lastUpdated: string;
+}
+
+export interface CurrencyExchange {
+  id: number;
+  fromAccountId: number;
+  toAccountId: number;
+  fromAmount: number;
+  toAmount: number;
+  fromCurrency: Currency;
+  toCurrency: Currency;
+  exchangeRate: number;
+  commission: number;
+  date: string;
   createdAt: string;
   updatedAt: string;
 }

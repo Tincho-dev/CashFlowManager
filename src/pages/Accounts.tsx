@@ -21,11 +21,13 @@ const Accounts: React.FC = () => {
     type: string;
     balance: number;
     currency: Currency;
+    commissionRate?: number;
   }>({
     name: '',
     type: 'Checking',
     balance: 0,
     currency: defaultCurrency,
+    commissionRate: 0,
   });
 
   useEffect(() => {
@@ -50,7 +52,8 @@ const Accounts: React.FC = () => {
         formData.name,
         formData.type,
         formData.balance,
-        formData.currency
+        formData.currency,
+        formData.commissionRate
       );
     }
 
@@ -65,6 +68,7 @@ const Accounts: React.FC = () => {
       type: account.type,
       balance: account.balance,
       currency: account.currency,
+      commissionRate: account.commissionRate,
     });
     setShowModal(true);
   };
@@ -83,6 +87,7 @@ const Accounts: React.FC = () => {
       type: 'Checking',
       balance: 0,
       currency: Currency.USD,
+      commissionRate: 0,
     });
     setEditingAccount(null);
     setShowModal(false);

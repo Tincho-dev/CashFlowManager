@@ -136,8 +136,48 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - ✅ Material-UI para componentes consistentes - IMPLEMENTED
 - ✅ SCSS Modules para estilos escalables - IMPLEMENTED
 - ✅ Transformers.js con modelo Xenova/distilbert para NLP - ACTIVATED (con fallback a keywords)
+- ✅ DataAccessLayer para abstracción de base de datos y preparación para backend - IMPLEMENTED
 - ⏳ Web Workers para procesamiento pesado sin bloquear UI (pendiente)
 - ⏳ IndexedDB como alternativa a localStorage para mejor performance (pendiente)
+
+### 🏗️ Arquitectura de Base de Datos (Database Architecture)
+
+**ESTADO ACTUAL: Offline-first con SQLite en el navegador**
+
+La aplicación ahora implementa una capa de abstracción de datos (DataAccessLayer) que prepara el código para una futura migración a backend con SQL Server, manteniendo compatibilidad con el modelo actual offline-first.
+
+**Estructura de capas:**
+```
+UI Components (React)
+    ↓
+Services (Lógica de negocio)
+    ↓
+DataAccessLayer (Abstracción de acceso a datos) ← NUEVO
+    ↓
+Repositories (CRUD operations)
+    ↓
+SQLite Database (localStorage)
+```
+
+**Ventajas de esta arquitectura:**
+- ✅ Separación de responsabilidades clara
+- ✅ Fácil migración a backend sin cambiar UI
+- ✅ Soporte para modelo híbrido (offline + online)
+- ✅ Inicialización controlada y segura
+- ✅ Evita errores de acceso a BD no inicializada
+
+**Para migrar a backend SQL Server:**
+1. Ver documentación detallada en `src/data/DataAccessLayer.ts`
+2. Implementar endpoints REST API en el backend
+3. Modificar DataAccessLayer para detectar online/offline
+4. Agregar cola de sincronización para operaciones offline
+5. Mantener SQLite como caché local
+
+**Archivos clave:**
+- `src/data/DataAccessLayer.ts` - Capa de abstracción (CON GUÍA COMPLETA DE MIGRACIÓN)
+- `src/data/repositories/*` - Acceso directo a datos
+- `src/services/*` - Lógica de negocio
+- `src/contexts/AppContext.tsx` - Inicialización de la app
 
 ### ⚠️ IMPORTANTE: Guía de Estilos para PRs
 **TODOS LOS ESTILOS DEBEN IR COMO SCSS MODULES**

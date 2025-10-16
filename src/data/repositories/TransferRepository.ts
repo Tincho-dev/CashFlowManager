@@ -1,13 +1,22 @@
 import type { Database } from 'sql.js';
 import type { Transfer } from '../../types';
 import { Currency } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+/**
+ * TransferRepository - Data access for transfers
+ * BACKEND MIGRATION NOTES: See DataAccessLayer.ts for migration guide
+ */
 export class TransferRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Transfer[] {

@@ -52,6 +52,7 @@ const runMigrations = async (db: Database): Promise<void> => {
       type TEXT NOT NULL,
       balance REAL NOT NULL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'USD',
+      commission_rate REAL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -84,7 +85,11 @@ const runMigrations = async (db: Database): Promise<void> => {
       account_id INTEGER NOT NULL,
       type TEXT NOT NULL,
       name TEXT NOT NULL,
+      symbol TEXT,
+      quantity REAL,
+      purchase_price REAL,
       amount REAL NOT NULL,
+      commission REAL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'USD',
       purchase_date TEXT NOT NULL,
       current_value REAL NOT NULL,
@@ -139,6 +144,36 @@ const runMigrations = async (db: Database): Promise<void> => {
       icon TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  // Create quotations table for offline-first price caching
+  db.run(`
+    CREATE TABLE IF NOT EXISTS quotations (
+      symbol TEXT PRIMARY KEY,
+      price REAL NOT NULL,
+      currency TEXT NOT NULL,
+      last_updated TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  // Create currency exchanges table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS currency_exchanges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_account_id INTEGER NOT NULL,
+      to_account_id INTEGER NOT NULL,
+      from_amount REAL NOT NULL,
+      to_amount REAL NOT NULL,
+      from_currency TEXT NOT NULL,
+      to_currency TEXT NOT NULL,
+      exchange_rate REAL NOT NULL,
+      commission REAL DEFAULT 0,
+      date TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (from_account_id) REFERENCES accounts (id),
+      FOREIGN KEY (to_account_id) REFERENCES accounts (id)
     );
   `);
 

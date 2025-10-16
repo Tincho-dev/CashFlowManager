@@ -173,15 +173,15 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
     const { investmentData } = result;
     
     // Create the investment
-    investmentService.createInvestment(
-      investmentData.accountId,
-      selectedInvestmentType,
-      investmentData.name,
-      investmentData.amount,
-      investmentData.currency,
-      investmentData.purchaseDate,
-      investmentData.amount // currentValue starts as the purchase amount
-    );
+    investmentService.createInvestment({
+      accountId: investmentData.accountId,
+      type: selectedInvestmentType,
+      name: investmentData.name,
+      amount: investmentData.amount,
+      currency: investmentData.currency,
+      purchaseDate: investmentData.purchaseDate,
+      currentValue: investmentData.amount, // currentValue starts as the purchase amount
+    });
 
     // Delete the original transaction
     transactionService.deleteTransaction(convertingTransaction.id);

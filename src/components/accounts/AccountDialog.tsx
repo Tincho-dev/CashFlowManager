@@ -25,12 +25,14 @@ interface AccountDialogProps {
     type: string;
     balance: number;
     currency: Currency;
+    commissionRate?: number;
   };
   setFormData: React.Dispatch<React.SetStateAction<{
     name: string;
     type: string;
     balance: number;
     currency: Currency;
+    commissionRate?: number;
   }>>;
   editingAccount: Account | null;
 }
@@ -129,6 +131,17 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
                 ))}
               </TextField>
             </Box>
+            <TextField
+              type="number"
+              label="Commission Rate (%)"
+              value={formData.commissionRate || 0}
+              onChange={(e) =>
+                setFormData({ ...formData, commissionRate: parseFloat(e.target.value) || 0 })
+              }
+              fullWidth
+              inputProps={{ step: '0.01', min: '0' }}
+              helperText="Commission percentage for operations (e.g., 0.25 for 0.25%)"
+            />
           </Box>
         </DialogContent>
         <DialogActions>
