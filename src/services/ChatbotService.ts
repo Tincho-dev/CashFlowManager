@@ -2,6 +2,8 @@ import { createWorker } from 'tesseract.js';
 import type { AccountService } from './AccountService';
 import type { TransactionService } from './TransactionService';
 import LoggingService, { LogCategory } from './LoggingService';
+import ToonParserService from './ToonParserService';
+import type { ToonTransaction } from '../types/toon';
 
 export interface ChatMessage {
   id: string;
@@ -13,7 +15,7 @@ export interface ChatMessage {
 export interface ChatbotResponse {
   message: string;
   action?: {
-    type: 'create_account' | 'create_transaction' | 'query_balance' | 'list_accounts' | 'list_transactions';
+    type: 'create_account' | 'create_transaction' | 'query_balance' | 'list_accounts' | 'list_transactions' | 'parse_log';
     data?: unknown;
   };
 }
@@ -83,6 +85,9 @@ class ChatbotService {
         case 'create_transaction':
           return this.handleCreateTransactionIntent();
         
+        case 'parse_log':
+          return this.handleParseLog(message);
+        
         case 'help':
           return this.handleHelp();
         
@@ -109,6 +114,11 @@ class ChatbotService {
 
   private detectIntent(message: string): string {
     // Keyword-based intent detection
+    
+    // Check for log parsing intent first (priority for financial text patterns)
+    if (this.looksLikeFinancialLog(message)) {
+      return 'parse_log';
+    }
     
     if (message.includes('balance') || message.includes('saldo') || message.includes('total')) {
       return 'balance';
@@ -140,6 +150,27 @@ class ChatbotService {
     }
     
     return 'unknown';
+  }
+
+  /**
+   * Checks if the message looks like a financial log entry
+   * (contains amounts with patterns like "1000", "50k", "$100", etc.)
+   */
+  private looksLikeFinancialLog(message: string): boolean {
+    // Check for amount patterns
+    const hasAmount = /\d+(?:[.,]\d+)?k?\b/.test(message);
+    
+    // Check for financial keywords
+    const financialKeywords = [
+      'gasto', 'pago', 'compra', 'transferencia', 'ingreso', 'sueldo',
+      'efectivo', 'bbva', 'galicia', 'uala', 'lemon',
+      'pan', 'leche', 'taxi', 'nafta', 'alquiler', 'expensas'
+    ];
+    
+    const lowerMessage = message.toLowerCase();
+    const hasFinancialKeyword = financialKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    return hasAmount && hasFinancialKeyword;
   }
 
   private handleBalanceQuery(): ChatbotResponse {
@@ -289,6 +320,7 @@ class ChatbotService {
                  `📝 **Transacciones**: Pregunta "Muestra mis transacciones" para ver transacciones recientes\n` +
                  `➕ **Crear Cuenta**: Di "crear cuenta" para ver instrucciones\n` +
                  `💸 **Agregar Transacción**: Di "agregar transacción" para ver instrucciones\n` +
+                 `📒 **Parsear Log**: Escribe un gasto informal como "1000 pan bbva" y lo procesaré\n` +
                  `❓ **Ayuda**: Pregunta "Ayuda" en cualquier momento para ver este mensaje`,
       };
     }
@@ -299,8 +331,92 @@ class ChatbotService {
                `📝 **Transactions**: Ask "Show my transactions" to see recent transactions\n` +
                `➕ **Create Account**: Say "create account" for instructions\n` +
                `💸 **Add Transaction**: Say "add transaction" for instructions\n` +
+               `📒 **Parse Log**: Write an informal expense like "1000 bread bbva" and I'll process it\n` +
                `❓ **Help**: Ask "Help" anytime to see this message`,
     };
+  }
+
+  /**
+   * Handles parsing of informal financial log text using TOON format
+   */
+  private handleParseLog(message: string): ChatbotResponse {
+    try {
+      // Parse the message using ToonParserService
+      const result = ToonParserService.parseToToon(message);
+
+      if (result.transactions.length === 0) {
+        if (this.currentLanguage === 'es') {
+          return {
+            message: 'No pude detectar transacciones en tu mensaje. Intenta con un formato como:\n' +
+                     '"1000 pan bbva" o "50k transferencia a Juan galicia"',
+          };
+        }
+        return {
+          message: 'I couldn\'t detect any transactions in your message. Try a format like:\n' +
+                   '"1000 bread bbva" or "50k transfer to John from bank"',
+        };
+      }
+
+      // Format the response
+      let response = this.currentLanguage === 'es'
+        ? `📊 **Transacción(es) detectada(s): ${result.count}**\n\n`
+        : `📊 **Transaction(s) detected: ${result.count}**\n\n`;
+
+      response += '```\n' + result.raw + '\n```\n\n';
+
+      // Add details for each transaction
+      result.transactions.forEach((tx: ToonTransaction, index: number) => {
+        response += this.currentLanguage === 'es'
+          ? `**${index + 1}.** ${tx.nota}\n`
+          : `**${index + 1}.** ${tx.nota}\n`;
+        
+        const montoStr = tx.moneda === 'USD' ? `US$ ${tx.monto.toFixed(2)}` : `$ ${tx.monto.toFixed(2)}`;
+        
+        response += this.currentLanguage === 'es'
+          ? `   💵 Monto: ${montoStr}\n`
+          : `   💵 Amount: ${montoStr}\n`;
+        
+        response += this.currentLanguage === 'es'
+          ? `   📅 Fecha: ${tx.fecha}\n`
+          : `   📅 Date: ${tx.fecha}\n`;
+        
+        response += this.currentLanguage === 'es'
+          ? `   🏦 Origen: ${tx.origen} → Destino: ${tx.destino}\n`
+          : `   🏦 From: ${tx.origen} → To: ${tx.destino}\n`;
+        
+        response += this.currentLanguage === 'es'
+          ? `   🏷️ Categoría: ${tx.categoria}\n\n`
+          : `   🏷️ Category: ${tx.categoria}\n\n`;
+      });
+
+      LoggingService.info(LogCategory.USER, 'TOON_PARSE_SUCCESS', {
+        input: message,
+        transactionCount: result.count,
+        transactions: result.transactions,
+      });
+
+      return {
+        message: response,
+        action: {
+          type: 'parse_log',
+          data: result,
+        },
+      };
+    } catch (error) {
+      LoggingService.error(LogCategory.SYSTEM, 'TOON_PARSE_ERROR', {
+        error: String(error),
+        message,
+      });
+
+      if (this.currentLanguage === 'es') {
+        return {
+          message: 'Ocurrió un error al procesar tu mensaje. Por favor intenta de nuevo.',
+        };
+      }
+      return {
+        message: 'An error occurred while processing your message. Please try again.',
+      };
+    }
   }
 
   async processImage(imageFile: File): Promise<string> {
