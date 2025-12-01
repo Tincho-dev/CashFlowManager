@@ -185,12 +185,14 @@ class ToonParserService {
     if (kMatch) {
       const sign = kMatch[1] ? -1 : 1;
       const num = parseFloat(kMatch[2].replace(',', '.'));
-      return sign * num * 1000;
+      if (!isNaN(num) && num > 0) {
+        return sign * num * 1000;
+      }
     }
 
-    // Pattern for plain integers at the start of text or after spaces (like "1000 pan")
-    // This handles the most common case of simple amounts
-    const simpleIntPattern = /(?:^|\s)(-)?(\d{3,})(?:\s|$)/;
+    // Pattern for plain integers at the start of text or after spaces (like "1000 pan" or "50 taxi")
+    // Matches numbers with 1 or more digits
+    const simpleIntPattern = /(?:^|\s)(-)?(\d+)(?:\s|$)/;
     const simpleIntMatch = text.match(simpleIntPattern);
     if (simpleIntMatch) {
       const sign = simpleIntMatch[1] ? -1 : 1;
@@ -442,7 +444,8 @@ class ToonParserService {
     // Remove account keywords
     for (const keywords of Object.values(ACCOUNT_KEYWORDS)) {
       for (const keyword of keywords) {
-        cleaned = cleaned.replace(new RegExp(`\\b${keyword}\\b`, 'gi'), '');
+        const escapedKeyword = this.escapeRegExp(keyword);
+        cleaned = cleaned.replace(new RegExp(`\\b${escapedKeyword}\\b`, 'gi'), '');
       }
     }
     
@@ -480,17 +483,43 @@ class ToonParserService {
   }
 
   /**
+   * Escapes special regex characters in a string
+   */
+  private escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Escapes SQL string values to prevent SQL injection
+   */
+  private escapeSqlString(str: string): string {
+    // Escape single quotes by doubling them
+    // Also remove or escape other potentially dangerous characters
+    return str
+      .replace(/'/g, "''")
+      .replace(/;/g, '')
+      .replace(/--/g, '')
+      .replace(/\/\*/g, '')
+      .replace(/\*\//g, '');
+  }
+
+  /**
    * Generates SQL INSERT statements from transactions
+   * Note: These are for display/reference purposes. Use parameterized queries in production.
    */
   generateSQL(transactions: ToonTransaction[]): string[] {
     return transactions.map(tx => {
+      const escapedNota = this.escapeSqlString(tx.nota);
+      const escapedOrigen = this.escapeSqlString(tx.origen);
+      const escapedDestino = this.escapeSqlString(tx.destino);
+      
       return `INSERT INTO [Transaction] (Amount, Date, Description, FromAccountId, ToAccountId)
 VALUES (
     ${tx.monto},
     '${tx.fecha}',
-    '${tx.nota.replace(/'/g, "''")}',
-    (SELECT Id FROM Account WHERE Name LIKE '%${tx.origen}%' LIMIT 1),
-    (SELECT Id FROM Account WHERE Name LIKE '%${tx.destino}%' LIMIT 1)
+    '${escapedNota}',
+    (SELECT Id FROM Account WHERE Name LIKE '%${escapedOrigen}%' LIMIT 1),
+    (SELECT Id FROM Account WHERE Name LIKE '%${escapedDestino}%' LIMIT 1)
 );`;
     });
   }
