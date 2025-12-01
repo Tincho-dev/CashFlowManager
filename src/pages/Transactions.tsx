@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -44,7 +44,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  const accounts = accountService?.getAllAccounts() || [];
+  const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
 
   const getDefaultFormData = (): FormData => ({
@@ -80,8 +80,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         toAccountId: accounts.length > 1 ? accounts[1].id : accounts[0].id,
       }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accounts]);
+  }, [accounts, formData.fromAccountId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
