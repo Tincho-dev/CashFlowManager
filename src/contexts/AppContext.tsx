@@ -3,23 +3,19 @@ import type { ReactNode } from 'react';
 import { initDatabase } from '../data/database';
 import { AccountService } from '../services/AccountService';
 import { TransactionService } from '../services/TransactionService';
-import { InvestmentService } from '../services/InvestmentService';
-import { LoanService } from '../services/LoanService';
-import { TransferService } from '../services/TransferService';
-import { Currency } from '../types';
+import { OwnerService } from '../services/OwnerService';
+import { AssetService } from '../services/AssetService';
 import type { Account } from '../types';
 
 interface AppSettings {
-  defaultCurrency: Currency;
   defaultAccountId: number | null;
 }
 
 interface AppContextType {
   accountService: AccountService | null;
   transactionService: TransactionService | null;
-  investmentService: InvestmentService | null;
-  loanService: LoanService | null;
-  transferService: TransferService | null;
+  ownerService: OwnerService | null;
+  assetService: AssetService | null;
   isInitialized: boolean;
   settings: AppSettings;
   updateSettings: (settings: Partial<AppSettings>) => void;
@@ -29,16 +25,14 @@ interface AppContextType {
 const SETTINGS_STORAGE_KEY = 'cashflow_app_settings';
 
 const defaultSettings: AppSettings = {
-  defaultCurrency: Currency.USD,
   defaultAccountId: null,
 };
 
 const AppContext = createContext<AppContextType>({
   accountService: null,
   transactionService: null,
-  investmentService: null,
-  loanService: null,
-  transferService: null,
+  ownerService: null,
+  assetService: null,
   isInitialized: false,
   settings: defaultSettings,
   updateSettings: () => {},
@@ -54,9 +48,8 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [accountService, setAccountService] = useState<AccountService | null>(null);
   const [transactionService, setTransactionService] = useState<TransactionService | null>(null);
-  const [investmentService, setInvestmentService] = useState<InvestmentService | null>(null);
-  const [loanService, setLoanService] = useState<LoanService | null>(null);
-  const [transferService, setTransferService] = useState<TransferService | null>(null);
+  const [ownerService, setOwnerService] = useState<OwnerService | null>(null);
+  const [assetService, setAssetService] = useState<AssetService | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -91,15 +84,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         await initDatabase();
         const accService = new AccountService();
         const txService = new TransactionService();
-        const invService = new InvestmentService();
-        const loanSvc = new LoanService();
-        const transferSvc = new TransferService();
+        const ownerSvc = new OwnerService();
+        const assetSvc = new AssetService();
         
         setAccountService(accService);
         setTransactionService(txService);
-        setInvestmentService(invService);
-        setLoanService(loanSvc);
-        setTransferService(transferSvc);
+        setOwnerService(ownerSvc);
+        setAssetService(assetSvc);
         setIsInitialized(true);
 
         // If no default account is set but accounts exist, set the first one as default
@@ -120,9 +111,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       value={{
         accountService,
         transactionService,
-        investmentService,
-        loanService,
-        transferService,
+        ownerService,
+        assetService,
         isInitialized,
         settings,
         updateSettings,

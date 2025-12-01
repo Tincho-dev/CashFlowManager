@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Currency } from '../types';
+import { AccountCurrency } from '../types';
+
+// Re-export AccountCurrency as Currency for backwards compatibility
+export const Currency = AccountCurrency;
+export type Currency = AccountCurrency;
 
 interface ExchangeRate {
   from: Currency;
@@ -51,10 +55,11 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       try {
         const parsed = JSON.parse(saved);
         const map = new Map<string, ExchangeRate>();
-        Object.entries(parsed).forEach(([key, value]: [string, any]) => {
+        Object.entries(parsed).forEach(([key, value]: [string, unknown]) => {
+          const v = value as { from: Currency; to: Currency; rate: number; lastUpdated: string };
           map.set(key, {
-            ...value,
-            lastUpdated: new Date(value.lastUpdated),
+            ...v,
+            lastUpdated: new Date(v.lastUpdated),
           });
         });
         return map;
@@ -73,7 +78,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   };
 
   const saveExchangeRates = (rates: Map<string, ExchangeRate>) => {
-    const obj: Record<string, any> = {};
+    const obj: Record<string, unknown> = {};
     rates.forEach((value, key) => {
       obj[key] = {
         ...value,
@@ -129,7 +134,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       const rates = data.rates as Record<string, number>;
       const newRates = new Map<string, ExchangeRate>();
       
-      // Convert all rates to pairs from USD
+      // Convert all rates to pairs from USD (only USD and ARS supported)
       Object.entries(rates).forEach(([currencyCode, rate]) => {
         if (Object.values(Currency).includes(currencyCode as Currency)) {
           const key = `USD-${currencyCode}`;
@@ -142,7 +147,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
         }
       });
       
-      // Calculate cross rates for supported currencies
+      // Calculate cross rates for supported currencies (USD, ARS)
       const supportedCurrencies = Object.values(Currency);
       supportedCurrencies.forEach(fromCurrency => {
         supportedCurrencies.forEach(toCurrency => {

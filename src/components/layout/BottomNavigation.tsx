@@ -4,8 +4,7 @@ import { BottomNavigation as MuiBottomNavigation, BottomNavigationAction, Paper 
 import { 
   Home, 
   Wallet, 
-  TrendingUp, 
-  TrendingDown
+  ArrowLeftRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -17,8 +16,7 @@ const BottomNavigation: React.FC = () => {
   const navigationItems = [
     { path: '/', icon: Home, label: t('nav.dashboard') },
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
-    { path: '/income', icon: TrendingUp, label: t('nav.income') },
-    { path: '/expenses', icon: TrendingDown, label: t('nav.expenses') },
+    { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
   ];
 
   const currentIndex = navigationItems.findIndex(item => item.path === location.pathname);

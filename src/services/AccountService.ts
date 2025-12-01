@@ -1,5 +1,5 @@
 import type { Account } from '../types';
-import { Currency } from '../types';
+import { AccountCurrency } from '../types';
 import { AccountRepository } from '../data/repositories/AccountRepository';
 import LoggingService, { LogCategory } from './LoggingService';
 
@@ -18,26 +18,45 @@ export class AccountService {
     return this.accountRepo.getById(id);
   }
 
-  createAccount(name: string, type: string, initialBalance: number, currency: Currency): Account {
+  getAccountsByOwner(ownerId: number): Account[] {
+    return this.accountRepo.getByOwnerId(ownerId);
+  }
+
+  createAccount(
+    name: string,
+    ownerId: number,
+    description?: string | null,
+    cbu?: string | null,
+    accountNumber?: string | null,
+    alias?: string | null,
+    bank?: string | null,
+    balance?: string | null,
+    currency?: AccountCurrency
+  ): Account {
     const account = this.accountRepo.create({
       name,
-      type,
-      balance: initialBalance,
-      currency,
+      description: description ?? null,
+      cbu: cbu ?? null,
+      accountNumber: accountNumber ?? null,
+      alias: alias ?? null,
+      bank: bank ?? null,
+      ownerId,
+      balance: balance ?? null,
+      currency: currency ?? AccountCurrency.USD,
     });
     
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_ACCOUNT', {
       accountId: account.id,
       name,
-      type,
-      initialBalance,
-      currency,
+      ownerId,
+      balance,
+      currency: account.currency,
     });
     
     return account;
   }
 
-  updateAccount(id: number, updates: Partial<Omit<Account, 'id' | 'createdAt' | 'updatedAt'>>): Account | null {
+  updateAccount(id: number, updates: Partial<Omit<Account, 'id'>>): Account | null {
     const account = this.accountRepo.update(id, updates);
     
     if (account) {
@@ -64,10 +83,17 @@ export class AccountService {
 
   getTotalBalance(): number {
     const accounts = this.accountRepo.getAll();
-    return accounts.reduce((sum, account) => sum + account.balance, 0);
+    return accounts.reduce((sum, account) => {
+      const balance = account.balance ? parseFloat(account.balance) : 0;
+      return sum + balance;
+    }, 0);
   }
 
-  getAccountsByType(type: string): Account[] {
-    return this.accountRepo.getAll().filter(account => account.type === type);
+  getAccountsByBank(bank: string): Account[] {
+    return this.accountRepo.getAll().filter(account => account.bank === bank);
+  }
+
+  getAccountsByCurrency(currency: AccountCurrency): Account[] {
+    return this.accountRepo.getAll().filter(account => account.currency === currency);
   }
 }
