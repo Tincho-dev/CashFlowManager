@@ -180,9 +180,17 @@ export class CrudExecutor {
       };
     }
 
-    // Get first owner for default
+    // Get first owner for default or return error if no owners exist
     const owners = this.ownerService?.getAllOwners() || [];
-    const ownerId = owners.length > 0 ? owners[0].id : 1;
+    if (owners.length === 0) {
+      return {
+        success: false,
+        message: this.currentLanguage === 'es'
+          ? 'No hay propietarios. Cree un propietario primero.'
+          : 'No owners found. Please create an owner first.',
+      };
+    }
+    const ownerId = owners[0].id;
 
     const account = this.accountService!.createAccount(
       data.name as string,

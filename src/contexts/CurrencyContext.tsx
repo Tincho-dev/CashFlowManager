@@ -1,16 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { AccountCurrency } from '../types';
 
-// Define Currency locally since the types were simplified
-export const Currency = {
-  USD: 'USD',
-  EUR: 'EUR',
-  GBP: 'GBP',
-  ARS: 'ARS',
-  BRL: 'BRL',
-} as const;
-
-export type Currency = (typeof Currency)[keyof typeof Currency];
+// Re-export AccountCurrency as Currency for backwards compatibility
+export const Currency = AccountCurrency;
+export type Currency = AccountCurrency;
 
 interface ExchangeRate {
   from: Currency;
@@ -140,7 +134,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       const rates = data.rates as Record<string, number>;
       const newRates = new Map<string, ExchangeRate>();
       
-      // Convert all rates to pairs from USD
+      // Convert all rates to pairs from USD (only USD and ARS supported)
       Object.entries(rates).forEach(([currencyCode, rate]) => {
         if (Object.values(Currency).includes(currencyCode as Currency)) {
           const key = `USD-${currencyCode}`;
@@ -153,7 +147,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
         }
       });
       
-      // Calculate cross rates for supported currencies
+      // Calculate cross rates for supported currencies (USD, ARS)
       const supportedCurrencies = Object.values(Currency);
       supportedCurrencies.forEach(fromCurrency => {
         supportedCurrencies.forEach(toCurrency => {

@@ -1,4 +1,4 @@
-import { Currency } from '../../contexts/CurrencyContext';
+import { AccountCurrency } from '../../types';
 
 export type EntityType = 'account' | 'transaction' | 'owner' | 'asset';
 export type CrudAction = 'create' | 'read' | 'update' | 'delete' | 'list';
@@ -221,21 +221,13 @@ export class CrudCommandParser {
     return data;
   }
 
-  extractCurrency(message: string): Currency {
+  extractCurrency(message: string): AccountCurrency {
     const lowerMessage = message.toLowerCase();
 
-    if (lowerMessage.includes('usd') || lowerMessage.includes('dollar')) {
-      return Currency.USD;
-    } else if (lowerMessage.includes('ars') || lowerMessage.includes('peso')) {
-      return Currency.ARS;
-    } else if (lowerMessage.includes('eur') || lowerMessage.includes('euro')) {
-      return Currency.EUR;
-    } else if (lowerMessage.includes('gbp') || lowerMessage.includes('pound')) {
-      return Currency.GBP;
-    } else if (lowerMessage.includes('brl') || lowerMessage.includes('real')) {
-      return Currency.BRL;
+    if (lowerMessage.includes('ars') || lowerMessage.includes('peso')) {
+      return AccountCurrency.ARS;
     }
 
-    return Currency.USD;
+    return AccountCurrency.USD;
   }
 }
