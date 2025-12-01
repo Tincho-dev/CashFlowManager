@@ -169,7 +169,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     } finally {
       setIsUpdatingRates(false);
     }
-  }, [isUpdatingRates]);
+  }, [isUpdatingRates, setExchangeRates]);
 
   // Update rates on mount and when online
   useEffect(() => {
