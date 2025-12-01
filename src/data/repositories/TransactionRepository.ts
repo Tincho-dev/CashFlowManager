@@ -1,6 +1,5 @@
-import type { Database } from 'sql.js';
+import type { Database, SqlValue } from 'sql.js';
 import type { Transaction } from '../../types';
-import { TransactionType, Currency, PaymentType } from '../../types';
 import { getDatabase, saveDatabase } from '../database';
 
 export class TransactionRepository {
@@ -11,22 +10,22 @@ export class TransactionRepository {
   }
 
   getAll(): Transaction[] {
-    const results = this.db.exec('SELECT * FROM transactions ORDER BY date DESC, created_at DESC');
+    const results = this.db.exec('SELECT * FROM [Transaction] ORDER BY Date DESC, Id DESC');
     if (results.length === 0) return [];
 
     return results[0].values.map(row => this.mapRowToTransaction(row));
   }
 
   getById(id: number): Transaction | null {
-    const results = this.db.exec('SELECT * FROM transactions WHERE id = ?', [id]);
+    const results = this.db.exec('SELECT * FROM [Transaction] WHERE Id = ?', [id]);
     if (results.length === 0 || results[0].values.length === 0) return null;
 
     return this.mapRowToTransaction(results[0].values[0]);
   }
 
-  getByAccount(accountId: number): Transaction[] {
+  getByFromAccount(accountId: number): Transaction[] {
     const results = this.db.exec(
-      'SELECT * FROM transactions WHERE account_id = ? ORDER BY date DESC, created_at DESC',
+      'SELECT * FROM [Transaction] WHERE FromAccountId = ? ORDER BY Date DESC, Id DESC',
       [accountId]
     );
     if (results.length === 0) return [];
@@ -34,10 +33,20 @@ export class TransactionRepository {
     return results[0].values.map(row => this.mapRowToTransaction(row));
   }
 
-  getByType(type: TransactionType): Transaction[] {
+  getByToAccount(accountId: number): Transaction[] {
     const results = this.db.exec(
-      'SELECT * FROM transactions WHERE type = ? ORDER BY date DESC, created_at DESC',
-      [type]
+      'SELECT * FROM [Transaction] WHERE ToAccountId = ? ORDER BY Date DESC, Id DESC',
+      [accountId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToTransaction(row));
+  }
+
+  getByAccount(accountId: number): Transaction[] {
+    const results = this.db.exec(
+      'SELECT * FROM [Transaction] WHERE FromAccountId = ? OR ToAccountId = ? ORDER BY Date DESC, Id DESC',
+      [accountId, accountId]
     );
     if (results.length === 0) return [];
 
@@ -46,7 +55,7 @@ export class TransactionRepository {
 
   getByDateRange(startDate: string, endDate: string): Transaction[] {
     const results = this.db.exec(
-      'SELECT * FROM transactions WHERE date BETWEEN ? AND ? ORDER BY date DESC, created_at DESC',
+      'SELECT * FROM [Transaction] WHERE Date BETWEEN ? AND ? ORDER BY Date DESC, Id DESC',
       [startDate, endDate]
     );
     if (results.length === 0) return [];
@@ -54,22 +63,28 @@ export class TransactionRepository {
     return results[0].values.map(row => this.mapRowToTransaction(row));
   }
 
-  create(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Transaction {
+  getByAsset(assetId: number): Transaction[] {
+    const results = this.db.exec(
+      'SELECT * FROM [Transaction] WHERE AssetId = ? ORDER BY Date DESC, Id DESC',
+      [assetId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToTransaction(row));
+  }
+
+  create(transaction: Omit<Transaction, 'id'>): Transaction {
     this.db.run(
-      `INSERT INTO transactions 
-       (account_id, type, amount, currency, description, category, date, payment_type, recurring, recurring_interval) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO [Transaction] 
+       (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        transaction.accountId,
-        transaction.type,
+        transaction.fromAccountId,
         transaction.amount,
-        transaction.currency,
-        transaction.description || null,
-        transaction.category || null,
+        transaction.toAccountId,
         transaction.date,
-        transaction.paymentType || null,
-        transaction.recurring ? 1 : 0,
-        transaction.recurringInterval || null,
+        transaction.auditDate,
+        transaction.assetId,
       ]
     );
 
@@ -80,60 +95,43 @@ export class TransactionRepository {
     return this.getById(id)!;
   }
 
-  update(id: number, transaction: Partial<Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>>): Transaction | null {
+  update(id: number, transaction: Partial<Omit<Transaction, 'id'>>): Transaction | null {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
-    if (transaction.accountId !== undefined) {
-      updates.push('account_id = ?');
-      values.push(transaction.accountId);
-    }
-    if (transaction.type !== undefined) {
-      updates.push('type = ?');
-      values.push(transaction.type);
+    if (transaction.fromAccountId !== undefined) {
+      updates.push('FromAccountId = ?');
+      values.push(transaction.fromAccountId);
     }
     if (transaction.amount !== undefined) {
-      updates.push('amount = ?');
+      updates.push('Amount = ?');
       values.push(transaction.amount);
     }
-    if (transaction.currency !== undefined) {
-      updates.push('currency = ?');
-      values.push(transaction.currency);
-    }
-    if (transaction.description !== undefined) {
-      updates.push('description = ?');
-      values.push(transaction.description);
-    }
-    if (transaction.category !== undefined) {
-      updates.push('category = ?');
-      values.push(transaction.category);
+    if (transaction.toAccountId !== undefined) {
+      updates.push('ToAccountId = ?');
+      values.push(transaction.toAccountId);
     }
     if (transaction.date !== undefined) {
-      updates.push('date = ?');
+      updates.push('Date = ?');
       values.push(transaction.date);
     }
-    if (transaction.paymentType !== undefined) {
-      updates.push('payment_type = ?');
-      values.push(transaction.paymentType);
+    if (transaction.auditDate !== undefined) {
+      updates.push('AuditDate = ?');
+      values.push(transaction.auditDate);
     }
-    if (transaction.recurring !== undefined) {
-      updates.push('recurring = ?');
-      values.push(transaction.recurring ? 1 : 0);
-    }
-    if (transaction.recurringInterval !== undefined) {
-      updates.push('recurring_interval = ?');
-      values.push(transaction.recurringInterval);
+    if (transaction.assetId !== undefined) {
+      updates.push('AssetId = ?');
+      values.push(transaction.assetId);
     }
 
     if (updates.length === 0) {
       return this.getById(id);
     }
 
-    updates.push('updated_at = datetime("now")');
     values.push(id);
 
     this.db.run(
-      `UPDATE transactions SET ${updates.join(', ')} WHERE id = ?`,
+      `UPDATE [Transaction] SET ${updates.join(', ')} WHERE Id = ?`,
       values
     );
 
@@ -142,26 +140,20 @@ export class TransactionRepository {
   }
 
   delete(id: number): boolean {
-    this.db.run('DELETE FROM transactions WHERE id = ?', [id]);
+    this.db.run('DELETE FROM [Transaction] WHERE Id = ?', [id]);
     saveDatabase(this.db);
     return true;
   }
 
-  private mapRowToTransaction(row: any[]): Transaction {
+  private mapRowToTransaction(row: SqlValue[]): Transaction {
     return {
       id: row[0] as number,
-      accountId: row[1] as number,
-      type: row[2] as TransactionType,
-      amount: row[3] as number,
-      currency: row[4] as Currency,
-      description: row[5] as string,
-      category: row[6] as string,
-      date: row[7] as string,
-      paymentType: row[8] as PaymentType,
-      recurring: row[9] === 1,
-      recurringInterval: row[10] as number,
-      createdAt: row[11] as string,
-      updatedAt: row[12] as string,
+      fromAccountId: row[1] as number,
+      amount: row[2] as number,
+      toAccountId: row[3] as number,
+      date: row[4] as string,
+      auditDate: row[5] as string | null,
+      assetId: row[6] as number | null,
     };
   }
 }

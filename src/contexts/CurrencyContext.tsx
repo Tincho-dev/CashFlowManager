@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Currency } from '../types';
+
+// Define Currency locally since the types were simplified
+export const Currency = {
+  USD: 'USD',
+  EUR: 'EUR',
+  GBP: 'GBP',
+  ARS: 'ARS',
+  BRL: 'BRL',
+} as const;
+
+export type Currency = (typeof Currency)[keyof typeof Currency];
 
 interface ExchangeRate {
   from: Currency;
@@ -51,10 +61,11 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       try {
         const parsed = JSON.parse(saved);
         const map = new Map<string, ExchangeRate>();
-        Object.entries(parsed).forEach(([key, value]: [string, any]) => {
+        Object.entries(parsed).forEach(([key, value]: [string, unknown]) => {
+          const v = value as { from: Currency; to: Currency; rate: number; lastUpdated: string };
           map.set(key, {
-            ...value,
-            lastUpdated: new Date(value.lastUpdated),
+            ...v,
+            lastUpdated: new Date(v.lastUpdated),
           });
         });
         return map;
@@ -73,7 +84,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   };
 
   const saveExchangeRates = (rates: Map<string, ExchangeRate>) => {
-    const obj: Record<string, any> = {};
+    const obj: Record<string, unknown> = {};
     rates.forEach((value, key) => {
       obj[key] = {
         ...value,

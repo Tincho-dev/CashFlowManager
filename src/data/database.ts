@@ -44,120 +44,56 @@ export const getDatabase = (): Database => {
 };
 
 const runMigrations = async (db: Database): Promise<void> => {
-  // Create accounts table
+  // Create Owner table
   db.run(`
-    CREATE TABLE IF NOT EXISTS accounts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      type TEXT NOT NULL,
-      balance REAL NOT NULL DEFAULT 0,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    CREATE TABLE IF NOT EXISTS Owner (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL
     );
   `);
 
-  // Create transactions table
+  // Create Assets table
   db.run(`
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      account_id INTEGER NOT NULL,
-      type TEXT NOT NULL,
-      amount REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      description TEXT,
-      category TEXT,
-      date TEXT NOT NULL,
-      payment_type TEXT,
-      recurring INTEGER DEFAULT 0,
-      recurring_interval INTEGER,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (account_id) REFERENCES accounts (id)
+    CREATE TABLE IF NOT EXISTS Assets (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Ticket TEXT NULL,
+      Price REAL NULL
     );
   `);
 
-  // Create investments table
+  // Create Account table
   db.run(`
-    CREATE TABLE IF NOT EXISTS investments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      account_id INTEGER NOT NULL,
-      type TEXT NOT NULL,
-      name TEXT NOT NULL,
-      amount REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      purchase_date TEXT NOT NULL,
-      current_value REAL NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (account_id) REFERENCES accounts (id)
+    CREATE TABLE IF NOT EXISTS Account (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL,
+      Cbu TEXT NULL,
+      AccountNumber TEXT NULL,
+      Alias TEXT NULL,
+      Bank TEXT NULL,
+      OwnerId INTEGER NOT NULL,
+      Balance TEXT NULL,
+      Currency TEXT NOT NULL DEFAULT 'USD',
+      FOREIGN KEY (OwnerId) REFERENCES Owner (Id)
     );
   `);
 
-  // Create loans table
+  // Create Transaction table
   db.run(`
-    CREATE TABLE IF NOT EXISTS loans (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      lender TEXT NOT NULL,
-      principal REAL NOT NULL,
-      interest_rate REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      start_date TEXT NOT NULL,
-      end_date TEXT NOT NULL,
-      monthly_payment REAL NOT NULL,
-      balance REAL NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    CREATE TABLE IF NOT EXISTS [Transaction] (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      FromAccountId INTEGER NOT NULL,
+      Amount REAL NOT NULL,
+      ToAccountId INTEGER NOT NULL,
+      Date TEXT NOT NULL,
+      AuditDate TEXT NULL,
+      AssetId INTEGER NULL,
+      FOREIGN KEY (FromAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (ToAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (AssetId) REFERENCES Assets (Id)
     );
   `);
-
-  // Create transfers table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS transfers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      from_account_id INTEGER NOT NULL,
-      to_account_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      description TEXT,
-      date TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (from_account_id) REFERENCES accounts (id),
-      FOREIGN KEY (to_account_id) REFERENCES accounts (id)
-    );
-  `);
-
-  // Create categories table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
-      type TEXT NOT NULL,
-      color TEXT,
-      icon TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
-
-  // Insert default categories
-  const defaultCategories = [
-    { name: 'Groceries', type: 'VARIABLE_EXPENSE', color: '#4CAF50' },
-    { name: 'Transportation', type: 'VARIABLE_EXPENSE', color: '#2196F3' },
-    { name: 'Entertainment', type: 'VARIABLE_EXPENSE', color: '#FF9800' },
-    { name: 'Utilities', type: 'FIXED_EXPENSE', color: '#9C27B0' },
-    { name: 'Rent/Mortgage', type: 'FIXED_EXPENSE', color: '#F44336' },
-    { name: 'Salary', type: 'INCOME', color: '#8BC34A' },
-    { name: 'Freelance', type: 'INCOME', color: '#00BCD4' },
-  ];
-
-  const stmt = db.prepare('INSERT INTO categories (name, type, color) VALUES (?, ?, ?)');
-  defaultCategories.forEach(cat => {
-    stmt.run([cat.name, cat.type, cat.color]);
-  });
-  stmt.free();
 
   saveDatabase(db);
 };

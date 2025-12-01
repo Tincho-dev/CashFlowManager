@@ -8,11 +8,7 @@ import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
-import Investments from './pages/Investments';
-import Loans from './pages/Loans';
-import Transfers from './pages/Transfers';
 import ExportData from './pages/ExportData';
-import { TransactionType } from './types';
 import './App.css';
 
 const theme = createTheme({
@@ -57,29 +53,8 @@ function App() {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/accounts" element={<Accounts />} />
                   <Route
-                    path="/income"
-                    element={<Transactions type={TransactionType.INCOME} title="Income" />}
-                  />
-                  <Route
-                    path="/expenses"
-                    element={
-                      <Transactions
-                        type={TransactionType.VARIABLE_EXPENSE}
-                        title="Expenses"
-                      />
-                    }
-                  />
-                  <Route
-                    path="/investments"
-                    element={<Investments />}
-                  />
-                  <Route
-                    path="/loans"
-                    element={<Loans />}
-                  />
-                  <Route
-                    path="/transfers"
-                    element={<Transfers />}
+                    path="/transactions"
+                    element={<Transactions title="Transactions" />}
                   />
                   <Route path="/export" element={<ExportData />} />
                 </Routes>

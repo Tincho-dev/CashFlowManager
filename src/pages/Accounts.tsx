@@ -3,36 +3,51 @@ import { useTranslation } from 'react-i18next';
 import { Container, Box, Typography, Fab, Alert } from '@mui/material';
 import { Plus } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { useCurrency } from '../contexts/CurrencyContext';
 import type { Account } from '../types';
-import { Currency } from '../types';
+import { AccountCurrency } from '../types';
 import AccountCard from '../components/accounts/AccountCard';
 import AccountDialog from '../components/accounts/AccountDialog';
 
 const Accounts: React.FC = () => {
-  const { accountService, isInitialized } = useApp();
-  const { defaultCurrency } = useCurrency();
+  const { accountService, ownerService, isInitialized } = useApp();
   const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [formData, setFormData] = useState<{
     name: string;
-    type: string;
-    balance: number;
-    currency: Currency;
+    description: string;
+    cbu: string;
+    accountNumber: string;
+    alias: string;
+    bank: string;
+    ownerId: number;
+    balance: string;
+    currency: AccountCurrency;
   }>({
     name: '',
-    type: 'Checking',
-    balance: 0,
-    currency: defaultCurrency,
+    description: '',
+    cbu: '',
+    accountNumber: '',
+    alias: '',
+    bank: '',
+    ownerId: 0,
+    balance: '0',
+    currency: AccountCurrency.USD,
   });
 
   useEffect(() => {
     if (isInitialized && accountService) {
       loadAccounts();
+      // Set default owner if available
+      if (ownerService) {
+        const owners = ownerService.getAllOwners();
+        if (owners.length > 0 && formData.ownerId === 0) {
+          setFormData(prev => ({ ...prev, ownerId: owners[0].id }));
+        }
+      }
     }
-  }, [isInitialized, accountService]);
+  }, [isInitialized, accountService, ownerService]);
 
   const loadAccounts = () => {
     if (!accountService) return;
@@ -44,12 +59,27 @@ const Accounts: React.FC = () => {
     if (!accountService) return;
 
     if (editingAccount) {
-      accountService.updateAccount(editingAccount.id, formData);
+      accountService.updateAccount(editingAccount.id, {
+        name: formData.name,
+        description: formData.description || null,
+        cbu: formData.cbu || null,
+        accountNumber: formData.accountNumber || null,
+        alias: formData.alias || null,
+        bank: formData.bank || null,
+        ownerId: formData.ownerId,
+        balance: formData.balance || null,
+        currency: formData.currency,
+      });
     } else {
       accountService.createAccount(
         formData.name,
-        formData.type,
-        formData.balance,
+        formData.ownerId,
+        formData.description || null,
+        formData.cbu || null,
+        formData.accountNumber || null,
+        formData.alias || null,
+        formData.bank || null,
+        formData.balance || null,
         formData.currency
       );
     }
@@ -62,8 +92,13 @@ const Accounts: React.FC = () => {
     setEditingAccount(account);
     setFormData({
       name: account.name,
-      type: account.type,
-      balance: account.balance,
+      description: account.description || '',
+      cbu: account.cbu || '',
+      accountNumber: account.accountNumber || '',
+      alias: account.alias || '',
+      bank: account.bank || '',
+      ownerId: account.ownerId,
+      balance: account.balance || '0',
       currency: account.currency,
     });
     setShowModal(true);
@@ -78,11 +113,17 @@ const Accounts: React.FC = () => {
   };
 
   const resetForm = () => {
+    const owners = ownerService?.getAllOwners() || [];
     setFormData({
       name: '',
-      type: 'Checking',
-      balance: 0,
-      currency: Currency.USD,
+      description: '',
+      cbu: '',
+      accountNumber: '',
+      alias: '',
+      bank: '',
+      ownerId: owners.length > 0 ? owners[0].id : 0,
+      balance: '0',
+      currency: AccountCurrency.USD,
     });
     setEditingAccount(null);
     setShowModal(false);
