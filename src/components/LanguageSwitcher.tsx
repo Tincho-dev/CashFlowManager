@@ -1,7 +1,7 @@
 import React from 'react';
 import { IconButton, Menu, MenuItem, Box } from '@mui/material';
 import { Languages } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks';
 
 const LanguageSwitcher: React.FC = () => {
   const { language, setLanguage } = useLanguage();

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Box, Typography, Fab, Alert } from '@mui/material';
 import { Plus } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import type { Account } from '../types';
 import { AccountCurrency } from '../types';
 import AccountCard from '../components/accounts/AccountCard';
@@ -36,23 +36,28 @@ const Accounts: React.FC = () => {
     currency: AccountCurrency.USD,
   });
 
+  const loadAccounts = useCallback(() => {
+    if (!accountService) return;
+    setAccounts(accountService.getAllAccounts());
+  }, [accountService]);
+
   useEffect(() => {
     if (isInitialized && accountService) {
       loadAccounts();
       // Set default owner if available
       if (ownerService) {
         const owners = ownerService.getAllOwners();
-        if (owners.length > 0 && formData.ownerId === 0) {
-          setFormData(prev => ({ ...prev, ownerId: owners[0].id }));
+        if (owners.length > 0) {
+          setFormData(prev => {
+            if (prev.ownerId === 0) {
+              return { ...prev, ownerId: owners[0].id };
+            }
+            return prev;
+          });
         }
       }
     }
-  }, [isInitialized, accountService, ownerService]);
-
-  const loadAccounts = () => {
-    if (!accountService) return;
-    setAccounts(accountService.getAllAccounts());
-  };
+  }, [isInitialized, accountService, ownerService, loadAccounts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -19,5 +19,12 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Allow context exports in files with Context in their name
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowExportNames: ['.*Context'] }
+      ],
+    },
   },
 ])

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, Container, Typography, Fab } from '@mui/material';
 import { Plus } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import styles from './Dashboard.module.scss';
 
 const Dashboard: React.FC = () => {
@@ -16,13 +16,7 @@ const Dashboard: React.FC = () => {
     totalAmount: 0,
   });
 
-  useEffect(() => {
-    if (isInitialized && accountService && transactionService) {
-      loadData();
-    }
-  }, [isInitialized, accountService, transactionService]);
-
-  const loadData = () => {
+  const loadData = useCallback(() => {
     if (!accountService || !transactionService) return;
 
     const allTransactions = transactionService.getAllTransactions();
@@ -33,7 +27,13 @@ const Dashboard: React.FC = () => {
       totalTransactions: allTransactions.length,
       totalAmount,
     });
-  };
+  }, [accountService, transactionService]);
+
+  useEffect(() => {
+    if (isInitialized && accountService && transactionService) {
+      loadData();
+    }
+  }, [isInitialized, accountService, transactionService, loadData]);
 
   if (!isInitialized) {
     return (

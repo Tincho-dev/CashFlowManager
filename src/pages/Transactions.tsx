@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -19,7 +19,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Plus, Trash2, Edit } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import type { Transaction, Asset } from '../types';
 import './Transactions.css';
 
@@ -58,6 +58,11 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
 
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
 
+  const loadTransactions = useCallback(() => {
+    if (!transactionService) return;
+    setTransactions(transactionService.getAllTransactions());
+  }, [transactionService]);
+
   useEffect(() => {
     if (isInitialized && transactionService) {
       loadTransactions();
@@ -65,7 +70,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         setAssets(assetService.getAllAssets());
       }
     }
-  }, [isInitialized, transactionService, assetService]);
+  }, [isInitialized, transactionService, assetService, loadTransactions]);
 
   useEffect(() => {
     if (accounts.length > 0 && formData.fromAccountId === 0) {
@@ -75,12 +80,8 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         toAccountId: accounts.length > 1 ? accounts[1].id : accounts[0].id,
       }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accounts]);
-
-  const loadTransactions = () => {
-    if (!transactionService) return;
-    setTransactions(transactionService.getAllTransactions());
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
