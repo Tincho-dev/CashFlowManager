@@ -10,6 +10,7 @@ import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
 import ExportData from './pages/ExportData';
 import CreditCards from './pages/CreditCards';
+import Loans from './pages/Loans';
 import './App.css';
 
 const theme = createTheme({
@@ -58,6 +59,7 @@ function App() {
                     element={<Transactions />}
                   />
                   <Route path="/credit-cards" element={<CreditCards />} />
+                  <Route path="/loans" element={<Loans />} />
                   <Route path="/export" element={<ExportData />} />
                 </Routes>
               </Layout>

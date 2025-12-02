@@ -22,7 +22,8 @@ import {
   FileSpreadsheet,
   CreditCard,
   Menu,
-  X
+  X,
+  Landmark
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
@@ -45,6 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
     { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
     { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
+    { path: '/loans', icon: Landmark, label: t('nav.loans') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];
 

@@ -111,6 +111,47 @@ const runMigrations = async (db: Database): Promise<void> => {
     );
   `);
 
+  // Create Loan table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS Loan (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      BorrowerAccountId INTEGER NOT NULL,
+      LenderAccountId INTEGER NULL,
+      Principal REAL NOT NULL,
+      Currency TEXT NOT NULL DEFAULT 'ARS',
+      InterestRate REAL NOT NULL DEFAULT 0.0,
+      StartDate TEXT NOT NULL,
+      EndDate TEXT NULL,
+      TermMonths INTEGER NULL,
+      InstallmentCount INTEGER NULL,
+      PaymentFrequency TEXT NULL DEFAULT 'Monthly',
+      Status TEXT NOT NULL DEFAULT 'Active',
+      CreatedAt TEXT NOT NULL,
+      Notes TEXT NULL,
+      FOREIGN KEY (BorrowerAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (LenderAccountId) REFERENCES Account (Id)
+    );
+  `);
+
+  // Create LoanInstallment table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS LoanInstallment (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      LoanId INTEGER NOT NULL,
+      Sequence INTEGER NOT NULL,
+      DueDate TEXT NOT NULL,
+      PrincipalAmount REAL NOT NULL DEFAULT 0.00,
+      InterestAmount REAL NOT NULL DEFAULT 0.00,
+      FeesAmount REAL NOT NULL DEFAULT 0.00,
+      TotalAmount REAL NOT NULL DEFAULT 0.00,
+      Paid INTEGER NOT NULL DEFAULT 0,
+      PaidDate TEXT NULL,
+      PaymentAccountId INTEGER NULL,
+      FOREIGN KEY (LoanId) REFERENCES Loan (Id),
+      FOREIGN KEY (PaymentAccountId) REFERENCES Account (Id)
+    );
+  `);
+
   saveDatabase(db);
 };
 
