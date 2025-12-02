@@ -176,7 +176,6 @@ Los registros se almacenan en el localStorage del navegador y pueden ser:
 - Exportados como CSV vía `LoggingService.exportLogsAsCSV()`
 - Filtrados por categoría, nivel o rango de fechas
 - Usados para auditorías y depuración
-5. Haz clic en "Crear" (Create)
 
 ### Exportando Datos (Exporting Data)
 1. Navega a "Exportar Datos" (Export Data)
