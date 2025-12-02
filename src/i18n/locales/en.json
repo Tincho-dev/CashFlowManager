@@ -11,7 +11,8 @@
     "investments": "Investments",
     "loans": "Loans",
     "transfers": "Transfers",
-    "export": "Export Data"
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -131,5 +132,40 @@
     "paymentType": "How you paid for this transaction (cash, credit card, debit card, etc.)",
     "recurring": "Enable if this transaction repeats regularly (e.g., monthly subscription)",
     "category": "Categorize your transaction for better organization and reporting"
+  },
+  "import": {
+    "title": "Import Data",
+    "uploadStatement": "Upload Bank Statement",
+    "infoMessage": "Upload your credit card or bank statement to automatically import transactions. Select the account/credit card this statement belongs to.",
+    "selectAccount": "Target Account / Credit Card",
+    "selectAccountPlaceholder": "Select an account...",
+    "accountType": "Account Type",
+    "creditCard": "Credit Card",
+    "bankAccount": "Bank Account",
+    "dropFileHere": "Drag and drop your file here, or click to browse",
+    "supportedFormats": "Supported formats: Excel (.xlsx, .xls), CSV",
+    "processing": "Processing file...",
+    "preview": "Preview Transactions",
+    "totalTransactions": "Total Transactions",
+    "totalARS": "Total (ARS)",
+    "totalUSD": "Total (USD)",
+    "dateRange": "Date Range",
+    "importToDatabase": "Import to Database",
+    "importing": "Importing...",
+    "success": "Successfully imported {{count}} transactions!",
+    "partialSuccess": "Imported {{count}} transactions. {{errors}} errors occurred.",
+    "howItWorks": "How It Works",
+    "step1": "Select the account or credit card that this statement belongs to",
+    "step2": "Upload your statement file (Excel or CSV format)",
+    "step3": "Review the parsed transactions in the preview",
+    "step4": "Click 'Import to Database' to save the transactions",
+    "aiNote": "This feature is designed to work with AI processing. In future versions, a dedicated server will handle complex statement parsing with machine learning for better accuracy.",
+    "showingFirstN": "Showing first {{n}} of {{total}} transactions",
+    "errors": {
+      "invalidFileType": "Invalid file type. Please upload an Excel or CSV file.",
+      "parseError": "Error parsing file",
+      "accountNotFound": "Selected account not found",
+      "importError": "Error importing transactions"
+    }
   }
 }

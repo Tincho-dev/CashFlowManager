@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
 import ExportData from './pages/ExportData';
+import ImportData from './pages/ImportData';
 import './App.css';
 
 const theme = createTheme({
@@ -57,6 +58,7 @@ function App() {
                     element={<Transactions title="Transactions" />}
                   />
                   <Route path="/export" element={<ExportData />} />
+                  <Route path="/import" element={<ImportData />} />
                 </Routes>
               </Layout>
             </Router>

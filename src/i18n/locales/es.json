@@ -11,7 +11,8 @@
     "investments": "Inversiones",
     "loans": "Préstamos",
     "transfers": "Transferencias",
-    "export": "Exportar Datos"
+    "export": "Exportar Datos",
+    "import": "Importar Datos"
   },
   "dashboard": {
     "title": "Inicio",
@@ -131,5 +132,40 @@
     "paymentType": "Cómo pagaste esta transacción (efectivo, tarjeta de crédito, débito, etc.)",
     "recurring": "Habilita si esta transacción se repite regularmente (ej: suscripción mensual)",
     "category": "Categoriza tu transacción para mejor organización y reportes"
+  },
+  "import": {
+    "title": "Importar Datos",
+    "uploadStatement": "Subir Resumen de Cuenta",
+    "infoMessage": "Sube tu resumen de tarjeta de crédito o cuenta bancaria para importar transacciones automáticamente. Selecciona la cuenta o tarjeta a la que pertenece este resumen.",
+    "selectAccount": "Cuenta / Tarjeta Destino",
+    "selectAccountPlaceholder": "Selecciona una cuenta...",
+    "accountType": "Tipo de Cuenta",
+    "creditCard": "Tarjeta de Crédito",
+    "bankAccount": "Cuenta Bancaria",
+    "dropFileHere": "Arrastra y suelta tu archivo aquí, o haz clic para explorar",
+    "supportedFormats": "Formatos soportados: Excel (.xlsx, .xls), CSV",
+    "processing": "Procesando archivo...",
+    "preview": "Vista Previa de Transacciones",
+    "totalTransactions": "Total de Transacciones",
+    "totalARS": "Total (ARS)",
+    "totalUSD": "Total (USD)",
+    "dateRange": "Rango de Fechas",
+    "importToDatabase": "Importar a Base de Datos",
+    "importing": "Importando...",
+    "success": "¡Se importaron {{count}} transacciones exitosamente!",
+    "partialSuccess": "Se importaron {{count}} transacciones. Ocurrieron {{errors}} errores.",
+    "howItWorks": "Cómo Funciona",
+    "step1": "Selecciona la cuenta o tarjeta de crédito a la que pertenece este resumen",
+    "step2": "Sube tu archivo de resumen (formato Excel o CSV)",
+    "step3": "Revisa las transacciones parseadas en la vista previa",
+    "step4": "Haz clic en 'Importar a Base de Datos' para guardar las transacciones",
+    "aiNote": "Esta funcionalidad está diseñada para trabajar con procesamiento de IA. En futuras versiones, un servidor dedicado manejará el parseo de resúmenes complejos con aprendizaje automático para mayor precisión.",
+    "showingFirstN": "Mostrando primeras {{n}} de {{total}} transacciones",
+    "errors": {
+      "invalidFileType": "Tipo de archivo inválido. Por favor sube un archivo Excel o CSV.",
+      "parseError": "Error al parsear el archivo",
+      "accountNotFound": "Cuenta seleccionada no encontrada",
+      "importError": "Error al importar transacciones"
+    }
   }
 }

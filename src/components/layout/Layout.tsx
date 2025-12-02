@@ -20,6 +20,7 @@ import {
   Wallet, 
   ArrowLeftRight,
   FileSpreadsheet,
+  Upload,
   Menu,
   X
 } from 'lucide-react';
@@ -43,6 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/', icon: Home, label: t('nav.dashboard') },
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
     { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
+    { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];
 
