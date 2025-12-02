@@ -95,6 +95,22 @@ const runMigrations = async (db: Database): Promise<void> => {
     );
   `);
 
+  // Create CreditCard table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS CreditCard (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      AccountId INTEGER NOT NULL,
+      Name TEXT NULL,
+      Last4 TEXT NULL,
+      ClosingDay INTEGER NULL,
+      DueDay INTEGER NULL,
+      TaxPercent REAL NOT NULL DEFAULT 0.00,
+      FixedFees REAL NOT NULL DEFAULT 0.00,
+      Bank TEXT NULL,
+      FOREIGN KEY (AccountId) REFERENCES Account (Id)
+    );
+  `);
+
   saveDatabase(db);
 };
 

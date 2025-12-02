@@ -11,7 +11,8 @@
     "investments": "Investments",
     "loans": "Loans",
     "transfers": "Transfers",
-    "export": "Export Data"
+    "export": "Export Data",
+    "creditCards": "Credit Cards"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -33,6 +34,7 @@
     "loading": "Loading..."
   },
   "transactions": {
+    "title": "Transactions",
     "date": "Date",
     "description": "Description",
     "category": "Category",
@@ -87,6 +89,53 @@
     "update": "Update",
     "deleteConfirm": "Are you sure you want to delete this account?",
     "empty": "No accounts yet. Create your first account!"
+  },
+  "creditCards": {
+    "title": "Credit Cards",
+    "name": "Card Name",
+    "last4": "Last 4 Digits",
+    "closingDay": "Closing Day",
+    "dueDay": "Due Day",
+    "taxPercent": "Tax Percentage",
+    "fixedFees": "Fixed Fees",
+    "bank": "Bank",
+    "account": "Linked Account",
+    "actions": "Actions",
+    "add": "Add Credit Card",
+    "new": "New Credit Card",
+    "edit": "Edit Credit Card",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "deleteConfirm": "Are you sure you want to delete this credit card?",
+    "empty": "No credit cards yet. Add your first credit card!",
+    "selectAccount": "Select an account",
+    "noAccount": "No linked account"
+  },
+  "exportData": {
+    "title": "Export Data",
+    "exportToExcel": "Export to Excel",
+    "exportDescription": "Export all your financial data including accounts, transactions, investments, loans, and transfers to an Excel spreadsheet.",
+    "exportButton": "Download Excel File",
+    "whatsIncluded": "What's included in the export?",
+    "includeAccounts": "All accounts with balances and currencies",
+    "includeTransactions": "Complete transaction history",
+    "includeInvestments": "Investment portfolio details",
+    "includeLoans": "Loan information",
+    "includeTransfers": "Transfer records",
+    "exportNote": "The exported file will be downloaded to your device and can be opened with Microsoft Excel, Google Sheets, or any compatible spreadsheet application.",
+    "importData": "Import Data",
+    "importDescription": "Import transactions from a bank statement PDF. The system will analyze the document and extract transaction data.",
+    "selectFile": "Select PDF File",
+    "previewTitle": "Preview Transactions",
+    "previewDescription": "Review the extracted transactions before importing them to the database.",
+    "importButton": "Import Selected",
+    "noFileSelected": "No file selected",
+    "analyzing": "Analyzing document...",
+    "noTransactionsFound": "No transactions found in the document",
+    "importSuccess": "Transactions imported successfully!",
+    "importError": "Error importing transactions"
   },
   "common": {
     "save": "Save",

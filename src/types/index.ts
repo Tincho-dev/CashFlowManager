@@ -41,3 +41,15 @@ export interface Transaction {
   auditDate: string | null;
   assetId: number | null;
 }
+
+export interface CreditCard {
+  id: number;
+  accountId: number;
+  name: string | null;
+  last4: string | null;
+  closingDay: number | null;
+  dueDay: number | null;
+  taxPercent: number;
+  fixedFees: number;
+  bank: string | null;
+}
