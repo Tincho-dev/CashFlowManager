@@ -12,6 +12,7 @@
     "loans": "Préstamos",
     "transfers": "Transferencias",
     "export": "Exportar Datos",
+    "import": "Importar Registros",
     "creditCards": "Tarjetas de Crédito"
   },
   "dashboard": {
@@ -194,6 +195,43 @@
     "noTransactionsFound": "No se encontraron transacciones en el documento",
     "importSuccess": "¡Transacciones importadas exitosamente!",
     "importError": "Error al importar transacciones"
+  },
+  "importRecords": {
+    "title": "Importar Registros",
+    "uploadFile": "Subir Archivo",
+    "uploadDescription": "Sube un archivo con datos de transacciones. La IA analizará y extraerá la información relevante.",
+    "selectFile": "Seleccionar Archivo",
+    "analyzing": "Analizando...",
+    "supportedFormats": "Formatos Soportados",
+    "aiDescription": "Nuestro sistema de IA analizará el contenido del archivo y extraerá datos de transacciones incluyendo fechas, montos y descripciones.",
+    "previewTitle": "Vista Previa de Datos",
+    "previewDescription": "Revisa y edita las transacciones extraídas antes de importar. Haz clic en cualquier celda para editar su valor.",
+    "clickToEdit": "Clic para editar",
+    "type": "Tipo",
+    "types": {
+      "income": "Ingreso",
+      "expense": "Gasto",
+      "transfer": "Transferencia"
+    },
+    "fromAccount": "Cuenta Origen",
+    "toAccount": "Cuenta Destino",
+    "clearAll": "Limpiar Todo",
+    "selected": "Seleccionados",
+    "totalIncome": "Total Ingresos",
+    "totalExpense": "Total Gastos",
+    "importButton": "Importar Seleccionadas",
+    "noFileSelected": "Ningún archivo seleccionado",
+    "selectFileHint": "Selecciona un archivo para importar transacciones desde CSV, PDF, TXT o imágenes.",
+    "noTransactionsFound": "No se pudieron extraer transacciones del archivo",
+    "analyzeError": "Error al analizar el archivo",
+    "importSuccess": "¡Transacciones importadas exitosamente!",
+    "importError": "Error al importar transacciones",
+    "importFailed": "Error al importar las transacciones",
+    "selectAccounts": "Por favor selecciona las cuentas de origen y destino",
+    "sameAccountError": "Las cuentas de origen y destino deben ser diferentes",
+    "noTransactionsSelected": "No hay transacciones seleccionadas para importar",
+    "servicesNotAvailable": "Servicios no disponibles",
+    "showRawText": "Mostrar texto extraído"
   },
   "common": {
     "save": "Guardar",

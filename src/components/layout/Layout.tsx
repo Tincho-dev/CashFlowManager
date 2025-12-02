@@ -23,7 +23,8 @@ import {
   CreditCard,
   Menu,
   X,
-  Landmark
+  Landmark,
+  Upload
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
@@ -47,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
     { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
     { path: '/loans', icon: Landmark, label: t('nav.loans') },
+    { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];
 
