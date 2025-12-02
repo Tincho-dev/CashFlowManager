@@ -22,6 +22,8 @@ import {
   LinearProgress,
   Card,
   CardContent,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Plus, Trash2, Edit, Landmark, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { useApp } from '../hooks';
@@ -46,12 +48,16 @@ interface FormData {
 const Loans: React.FC = () => {
   const { accountService, isInitialized } = useApp();
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loanService, setLoanService] = useState<LoanService | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingLoan, setEditingLoan] = useState<Loan | null>(null);
   const [expandedLoan, setExpandedLoan] = useState<number | null>(null);
   const [installments, setInstallments] = useState<{ [loanId: number]: LoanInstallment[] }>({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [loanToDelete, setLoanToDelete] = useState<number | null>(null);
 
   const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
@@ -160,12 +166,22 @@ const Loans: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (!loanService) return;
-    if (confirm(t('loans.deleteConfirm'))) {
-      loanService.deleteLoan(id);
-      loadLoans();
-    }
+  const handleDeleteClick = (id: number) => {
+    setLoanToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!loanService || loanToDelete === null) return;
+    loanService.deleteLoan(loanToDelete);
+    loadLoans();
+    setDeleteConfirmOpen(false);
+    setLoanToDelete(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setLoanToDelete(null);
   };
 
   const handleMarkAsPaid = (installmentId: number, loanId: number) => {
@@ -367,7 +383,7 @@ const Loans: React.FC = () => {
                     <IconButton edge="end" onClick={() => handleEdit(loan)} size="small">
                       <Edit size={18} />
                     </IconButton>
-                    <IconButton edge="end" onClick={() => handleDelete(loan.id)} color="error" size="small">
+                    <IconButton edge="end" onClick={() => handleDeleteClick(loan.id)} color="error" size="small">
                       <Trash2 size={18} />
                     </IconButton>
                   </Box>
@@ -438,7 +454,7 @@ const Loans: React.FC = () => {
         onClose={resetForm}
         maxWidth="sm"
         fullWidth
-        fullScreen={window.innerWidth < 600}
+        fullScreen={isMobile}
       >
         <DialogTitle>
           {editingLoan ? t('loans.edit') : t('loans.new')}
@@ -578,6 +594,25 @@ const Loans: React.FC = () => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>{t('common.confirm')}</DialogTitle>
+        <DialogContent>
+          <Typography>{t('loans.deleteConfirm')}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>{t('common.cancel')}</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            {t('common.delete')}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );
