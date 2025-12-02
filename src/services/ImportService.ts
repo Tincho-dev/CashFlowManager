@@ -1,7 +1,12 @@
 // Import Service - Analyzes files and extracts transaction data using AI/LLM
 import { createWorker } from 'tesseract.js';
+import type { Worker } from 'tesseract.js';
 import { llmService, isLLMEnabled } from './LLMService';
 import LoggingService, { LogCategory } from './LoggingService';
+
+// Configuration constants
+const LLM_MAX_TEXT_LENGTH = 4000;
+const TWO_DIGIT_YEAR_PIVOT = 50; // Years < 50 become 20xx, >= 50 become 19xx
 
 export interface ImportedTransaction {
   id: string;
@@ -24,6 +29,7 @@ export interface ImportResult {
 }
 
 class ImportService {
+  private ocrWorker: Worker | null = null;
   
   /**
    * Main entry point - analyzes a file and extracts transactions
@@ -236,8 +242,8 @@ class ImportService {
    * Check if a string looks like an amount
    */
   private looksLikeAmount(value: string): boolean {
-    // Remove currency symbols and spaces
-    const cleaned = value.replace(/[$€£¥₿AR\s]/gi, '').trim();
+    // Remove currency symbols and spaces (ARS$ for Argentine Peso, not arbitrary AR)
+    const cleaned = value.replace(/[$€£¥₿\s]|ARS?\$/gi, '').trim();
     // Check if it's a number with optional decimals
     return /^-?[\d,.]+$/.test(cleaned) && cleaned.length > 0;
   }
@@ -266,11 +272,14 @@ class ImportService {
             month = match[2].padStart(2, '0');
             year = match[3];
             break;
-          case 'DMY2':
+          case 'DMY2': {
             day = match[1].padStart(2, '0');
             month = match[2].padStart(2, '0');
-            year = `20${match[3]}`;
+            // Use pivot year to determine century (< 50 = 20xx, >= 50 = 19xx)
+            const twoDigitYear = parseInt(match[3], 10);
+            year = twoDigitYear < TWO_DIGIT_YEAR_PIVOT ? `20${match[3]}` : `19${match[3]}`;
             break;
+          }
           case 'YMD':
             year = match[1];
             month = match[2].padStart(2, '0');
@@ -297,8 +306,8 @@ class ImportService {
    * Parse an amount string into a number
    */
   private parseAmount(value: string): number {
-    // Remove currency symbols and spaces
-    let cleaned = value.replace(/[$€£¥₿AR\s]/gi, '').trim();
+    // Remove currency symbols and spaces (ARS$ for Argentine Peso, not arbitrary AR)
+    let cleaned = value.replace(/[$€£¥₿\s]|ARS?\$/gi, '').trim();
     
     // Handle negative amounts in parentheses
     const isNegative = cleaned.startsWith('(') && cleaned.endsWith(')') || 
@@ -375,15 +384,28 @@ class ImportService {
       fileName: file.name,
     });
 
-    const worker = await createWorker('eng+spa');
-    const { data: { text } } = await worker.recognize(file);
-    await worker.terminate();
+    // Reuse OCR worker for better performance
+    if (!this.ocrWorker) {
+      this.ocrWorker = await createWorker('eng+spa');
+    }
+    
+    const { data: { text } } = await this.ocrWorker.recognize(file);
 
     LoggingService.info(LogCategory.USER, 'IMPORT_OCR_COMPLETE', {
       textLength: text.length,
     });
 
     return text;
+  }
+
+  /**
+   * Cleanup OCR worker when done
+   */
+  async cleanup(): Promise<void> {
+    if (this.ocrWorker) {
+      await this.ocrWorker.terminate();
+      this.ocrWorker = null;
+    }
   }
 
   /**
@@ -486,7 +508,7 @@ Respond ONLY with a JSON array of transactions. Example format:
 [{"date": "2024-01-15", "description": "Grocery store purchase", "amount": 50.00, "type": "expense"}]
 
 Document content:
-${text.slice(0, 4000)}`;
+${text.slice(0, LLM_MAX_TEXT_LENGTH)}`;
 
     const response = await llmService.complete(prompt);
     
