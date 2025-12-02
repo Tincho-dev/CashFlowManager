@@ -11,7 +11,8 @@
     "investments": "Inversiones",
     "loans": "Préstamos",
     "transfers": "Transferencias",
-    "export": "Exportar Datos"
+    "export": "Exportar Datos",
+    "creditCards": "Tarjetas de Crédito"
   },
   "dashboard": {
     "title": "Inicio",
@@ -33,6 +34,7 @@
     "loading": "Cargando..."
   },
   "transactions": {
+    "title": "Transacciones",
     "date": "Fecha",
     "description": "Descripción",
     "category": "Categoría",
@@ -87,6 +89,53 @@
     "update": "Actualizar",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta cuenta?",
     "empty": "No hay cuentas aún. ¡Crea tu primera cuenta!"
+  },
+  "creditCards": {
+    "title": "Tarjetas de Crédito",
+    "name": "Nombre de la Tarjeta",
+    "last4": "Últimos 4 Dígitos",
+    "closingDay": "Día de Cierre",
+    "dueDay": "Día de Vencimiento",
+    "taxPercent": "Porcentaje de Impuestos",
+    "fixedFees": "Gastos Fijos",
+    "bank": "Banco",
+    "account": "Cuenta Asociada",
+    "actions": "Acciones",
+    "add": "Agregar Tarjeta",
+    "new": "Nueva Tarjeta de Crédito",
+    "edit": "Editar Tarjeta de Crédito",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta tarjeta de crédito?",
+    "empty": "No hay tarjetas de crédito aún. ¡Agrega tu primera tarjeta!",
+    "selectAccount": "Selecciona una cuenta",
+    "noAccount": "Sin cuenta asociada"
+  },
+  "exportData": {
+    "title": "Exportar Datos",
+    "exportToExcel": "Exportar a Excel",
+    "exportDescription": "Exporta todos tus datos financieros incluyendo cuentas, transacciones, inversiones, préstamos y transferencias a una hoja de cálculo Excel.",
+    "exportButton": "Descargar Archivo Excel",
+    "whatsIncluded": "¿Qué se incluye en la exportación?",
+    "includeAccounts": "Todas las cuentas con saldos y monedas",
+    "includeTransactions": "Historial completo de transacciones",
+    "includeInvestments": "Detalles del portafolio de inversiones",
+    "includeLoans": "Información de préstamos",
+    "includeTransfers": "Registros de transferencias",
+    "exportNote": "El archivo exportado se descargará a tu dispositivo y puede abrirse con Microsoft Excel, Google Sheets o cualquier aplicación de hojas de cálculo compatible.",
+    "importData": "Importar Datos",
+    "importDescription": "Importa transacciones desde un resumen de cuenta en PDF. El sistema analizará el documento y extraerá los datos de las transacciones.",
+    "selectFile": "Seleccionar Archivo PDF",
+    "previewTitle": "Vista Previa de Transacciones",
+    "previewDescription": "Revisa las transacciones extraídas antes de importarlas a la base de datos.",
+    "importButton": "Importar Seleccionadas",
+    "noFileSelected": "Ningún archivo seleccionado",
+    "analyzing": "Analizando documento...",
+    "noTransactionsFound": "No se encontraron transacciones en el documento",
+    "importSuccess": "¡Transacciones importadas exitosamente!",
+    "importError": "Error al importar transacciones"
   },
   "common": {
     "save": "Guardar",

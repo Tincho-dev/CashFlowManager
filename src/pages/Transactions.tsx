@@ -36,13 +36,15 @@ interface FormData {
   assetId: number | null;
 }
 
-const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) => {
+const Transactions: React.FC<TransactionsProps> = ({ title }) => {
   const { accountService, transactionService, assetService, isInitialized } = useApp();
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  const displayTitle = title || t('transactions.title');
 
   const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
@@ -165,7 +167,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-          {title}
+          {displayTitle}
         </Typography>
         <Fab
           color="primary"

@@ -16,6 +16,14 @@ CREATE TABLE Assets (
     Price   FLOAT NULL
 );
 
+-- Tabla Currency: lista de monedas soportadas (normalizada)
+CREATE TABLE Currency (
+    Code        NVARCHAR(3) PRIMARY KEY,      -- p.ej. 'ARS','USD'
+    Name        NVARCHAR(64) NOT NULL,
+    Symbol      NVARCHAR(8) NULL,
+    IsDefault   BIT NOT NULL DEFAULT 0
+);
+
 -- Tabla Account
 CREATE TABLE Account (
     Id              INT PRIMARY KEY IDENTITY(1,1),
@@ -91,14 +99,6 @@ CREATE TABLE LoanInstallment (
     CONSTRAINT CK_Installment_Amounts CHECK (PrincipalAmount >= 0 AND InterestAmount >= 0 AND FeesAmount >= 0)
 );
 
--- Tabla Currency: lista de monedas soportadas (normalizada)
-CREATE TABLE Currency (
-    Code        NVARCHAR(3) PRIMARY KEY,      -- p.ej. 'ARS','USD'
-    Name        NVARCHAR(64) NOT NULL,
-    Symbol      NVARCHAR(8) NULL,
-    IsDefault   BIT NOT NULL DEFAULT 0
-);
-
 -- Tabla ExchangeRate: tipo de cambio histórico (From -> To)
 CREATE TABLE ExchangeRate (
     Id              INT PRIMARY KEY IDENTITY(1,1),
@@ -119,6 +119,9 @@ ALTER TABLE Account
 ADD CONSTRAINT FK_Account_Owner FOREIGN KEY (OwnerId)
 REFERENCES Owner (Id);
 
+-- FK: Account.Currency -> Currency(Code)
+ALTER TABLE Account
+ADD CONSTRAINT FK_Account_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
 
 -- FK 2 & 3: [Transaction] -> Account (Usando el nombre de la tabla entre corchetes)
 ALTER TABLE [Transaction]
@@ -129,12 +132,10 @@ ALTER TABLE [Transaction]
 ADD CONSTRAINT FK_Transaction_ToAccount FOREIGN KEY (ToAccountId)
 REFERENCES Account (Id);
 
-
 -- FK 4: [Transaction] -> Assets (Usando el nombre de la tabla entre corchetes)
 ALTER TABLE [Transaction]
 ADD CONSTRAINT FK_Transaction_Asset FOREIGN KEY (AssetId)
 REFERENCES Assets (Id);
-
 
 -- FK 5: CreditCard -> Account
 ALTER TABLE CreditCard
@@ -149,6 +150,10 @@ REFERENCES Account (Id);
 ALTER TABLE Loan
 ADD CONSTRAINT FK_Loan_LenderAccount FOREIGN KEY (LenderAccountId)
 REFERENCES Account (Id);
+
+-- FK: Loan.Currency -> Currency(Code)
+ALTER TABLE Loan
+ADD CONSTRAINT FK_Loan_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
 
 -- Agregar FK: LoanInstallment -> Loan
 ALTER TABLE LoanInstallment
@@ -167,10 +172,10 @@ ADD CONSTRAINT FK_ExchangeRate_FromCurrency FOREIGN KEY (FromCurrency) REFERENCE
 ALTER TABLE ExchangeRate
 ADD CONSTRAINT FK_ExchangeRate_ToCurrency FOREIGN KEY (ToCurrency) REFERENCES Currency (Code);
 
--- FK: Account.Currency -> Currency(Code)
-ALTER TABLE Account
-ADD CONSTRAINT FK_Account_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
+-------------------------------------------------------
+-- 3. SEED DATA (Datos iniciales)
+-------------------------------------------------------
 
--- FK: Loan.Currency -> Currency(Code)
-ALTER TABLE Loan
-ADD CONSTRAINT FK_Loan_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
+-- Insertar monedas por defecto
+INSERT INTO Currency (Code, Name, Symbol, IsDefault) VALUES ('ARS', 'Peso Argentino', '$', 1);
+INSERT INTO Currency (Code, Name, Symbol, IsDefault) VALUES ('USD', 'Dólar Estadounidense', 'US$', 0);
