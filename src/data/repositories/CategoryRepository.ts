@@ -85,9 +85,28 @@ export class CategoryRepository {
   }
 
   delete(id: number): boolean {
+    // Check if any transactions reference this category
+    const results = this.db.exec(
+      'SELECT COUNT(*) FROM [Transaction] WHERE CategoryId = ?',
+      [id]
+    );
+    const count = results[0]?.values[0]?.[0] as number ?? 0;
+    if (count > 0) {
+      return false;
+    }
+
     this.db.run('DELETE FROM Category WHERE Id = ?', [id]);
     saveDatabase(this.db);
     return true;
+  }
+
+  hasTransactionReferences(id: number): boolean {
+    const results = this.db.exec(
+      'SELECT COUNT(*) FROM [Transaction] WHERE CategoryId = ?',
+      [id]
+    );
+    const count = results[0]?.values[0]?.[0] as number ?? 0;
+    return count > 0;
   }
 
   private mapRowToCategory(row: SqlValue[]): Category {

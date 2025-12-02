@@ -92,6 +92,12 @@ export class CategoryService {
     const category = this.categoryRepo.getById(id);
     if (!category) return false;
 
+    // Check if any transactions are using this category
+    if (this.categoryRepo.hasTransactionReferences(id)) {
+      console.error('Cannot delete category: transactions are using this category');
+      return false;
+    }
+
     const success = this.categoryRepo.delete(id);
     
     if (success) {
@@ -102,5 +108,9 @@ export class CategoryService {
     }
 
     return success;
+  }
+
+  hasTransactionReferences(id: number): boolean {
+    return this.categoryRepo.hasTransactionReferences(id);
   }
 }
