@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Drawer,
   Box,
@@ -16,8 +16,7 @@ import {
 } from '@mui/material';
 import { MessageCircle, Send, X, Image as ImageIcon, Bot, User } from 'lucide-react';
 import ChatbotService, { type ChatMessage } from '../../services/ChatbotService';
-import { useApp } from '../../contexts/AppContext';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useApp, useLanguage } from '../../hooks';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,21 +30,11 @@ const Chatbot: React.FC = () => {
   const { accountService, transactionService, isInitialized } = useApp();
   const { language } = useLanguage();
 
-  useEffect(() => {
-    if (isInitialized && accountService && transactionService) {
-      initializeChatbot();
-    }
-  }, [isInitialized, accountService, transactionService]);
+  const addMessage = useCallback((message: ChatMessage) => {
+    setMessages(prev => [...prev, message]);
+  }, []);
 
-  useEffect(() => {
-    ChatbotService.setLanguage(language);
-  }, [language]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const initializeChatbot = async () => {
+  const initializeChatbot = useCallback(async () => {
     try {
       if (accountService && transactionService) {
         await ChatbotService.initialize(
@@ -79,14 +68,24 @@ const Chatbot: React.FC = () => {
         timestamp: new Date(),
       });
     }
-  };
+  }, [accountService, transactionService, language, addMessage]);
+
+  useEffect(() => {
+    if (isInitialized && accountService && transactionService) {
+      initializeChatbot();
+    }
+  }, [isInitialized, accountService, transactionService, initializeChatbot]);
+
+  useEffect(() => {
+    ChatbotService.setLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const addMessage = (message: ChatMessage) => {
-    setMessages(prev => [...prev, message]);
   };
 
   const handleSendMessage = async () => {

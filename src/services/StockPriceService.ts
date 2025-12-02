@@ -27,8 +27,8 @@ class StockPriceService {
     try {
       const cached = localStorage.getItem(this.CACHE_KEY);
       if (cached) {
-        const parsed = JSON.parse(cached);
-        this.cache = Object.entries(parsed).reduce((acc, [key, value]: [string, any]) => {
+        const parsed = JSON.parse(cached) as Record<string, StockPrice & { lastUpdated: string }>;
+        this.cache = Object.entries(parsed).reduce((acc, [key, value]) => {
           acc[key] = {
             ...value,
             lastUpdated: new Date(value.lastUpdated),
@@ -51,7 +51,7 @@ class StockPriceService {
           lastUpdated: value.lastUpdated.toISOString(),
         };
         return acc;
-      }, {} as any);
+      }, {} as Record<string, Omit<StockPrice, 'lastUpdated'> & { lastUpdated: string }>);
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(toSave));
     } catch (error) {
       LoggingService.error(LogCategory.SYSTEM, 'STOCK_PRICE_CACHE_SAVE_ERROR', {

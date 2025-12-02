@@ -1,5 +1,5 @@
 import React from 'react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import { exportToExcel } from '../utils/excelExport';
 import { FileSpreadsheet, Download } from 'lucide-react';
 import './ExportData.css';

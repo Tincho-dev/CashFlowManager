@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { initDatabase } from '../data/database';
 import { AccountService } from '../services/AccountService';
@@ -11,7 +11,7 @@ interface AppSettings {
   defaultAccountId: number | null;
 }
 
-interface AppContextType {
+export interface AppContextType {
   accountService: AccountService | null;
   transactionService: TransactionService | null;
   ownerService: OwnerService | null;
@@ -28,7 +28,7 @@ const defaultSettings: AppSettings = {
   defaultAccountId: null,
 };
 
-const AppContext = createContext<AppContextType>({
+export const AppContext = createContext<AppContextType>({
   accountService: null,
   transactionService: null,
   ownerService: null,
@@ -38,8 +38,6 @@ const AppContext = createContext<AppContextType>({
   updateSettings: () => {},
   getDefaultAccount: () => null,
 });
-
-export const useApp = () => useContext(AppContext);
 
 interface AppProviderProps {
   children: ReactNode;
@@ -63,20 +61,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return defaultSettings;
   });
 
-  const updateSettings = (newSettings: Partial<AppSettings>) => {
+  const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
     setSettings(prev => {
       const updated = { ...prev, ...newSettings };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const getDefaultAccount = (): Account | null => {
+  const getDefaultAccount = useCallback((): Account | null => {
     if (!accountService || !settings.defaultAccountId) {
       return null;
     }
     return accountService.getAccount(settings.defaultAccountId);
-  };
+  }, [accountService, settings.defaultAccountId]);
 
   useEffect(() => {
     const initialize = async () => {
@@ -95,8 +93,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
         // If no default account is set but accounts exist, set the first one as default
         const accounts = accService.getAllAccounts();
-        if (accounts.length > 0 && !settings.defaultAccountId) {
-          updateSettings({ defaultAccountId: accounts[0].id });
+        if (accounts.length > 0) {
+          // Check settings after state update
+          const currentSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+          const parsed = currentSettings ? JSON.parse(currentSettings) : {};
+          if (!parsed.defaultAccountId) {
+            updateSettings({ defaultAccountId: accounts[0].id });
+          }
         }
       } catch (error) {
         console.error('Failed to initialize database:', error);
@@ -104,7 +107,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     initialize();
-  }, []);
+  }, [updateSettings]);
 
   return (
     <AppContext.Provider
