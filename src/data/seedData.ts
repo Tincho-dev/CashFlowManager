@@ -24,6 +24,13 @@ interface SeedAsset {
   price: number | null;
 }
 
+interface SeedCategory {
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+}
+
 interface SeedTransaction {
   fromAccountIndex: number;
   amount: number;
@@ -31,6 +38,7 @@ interface SeedTransaction {
   date: string;
   auditDate: string | null;
   assetIndex: number | null;
+  categoryIndex: number | null;
 }
 
 // Seed owners
@@ -54,6 +62,82 @@ const seedAssets: SeedAsset[] = [
   {
     ticket: 'ARS',
     price: 0.001,
+  },
+];
+
+// Seed categories
+const seedCategories: SeedCategory[] = [
+  {
+    name: 'Alimentación',
+    description: 'Gastos en comida, supermercado y restaurantes',
+    color: '#4CAF50',
+    icon: 'utensils',
+  },
+  {
+    name: 'Transporte',
+    description: 'Gastos en transporte público, combustible y vehículos',
+    color: '#2196F3',
+    icon: 'car',
+  },
+  {
+    name: 'Vivienda',
+    description: 'Alquiler, hipoteca y servicios del hogar',
+    color: '#9C27B0',
+    icon: 'home',
+  },
+  {
+    name: 'Servicios',
+    description: 'Agua, luz, gas, internet y teléfono',
+    color: '#FF9800',
+    icon: 'zap',
+  },
+  {
+    name: 'Salud',
+    description: 'Gastos médicos, medicamentos y seguros de salud',
+    color: '#F44336',
+    icon: 'heart',
+  },
+  {
+    name: 'Entretenimiento',
+    description: 'Ocio, suscripciones y actividades recreativas',
+    color: '#E91E63',
+    icon: 'music',
+  },
+  {
+    name: 'Educación',
+    description: 'Cursos, libros y materiales educativos',
+    color: '#3F51B5',
+    icon: 'book',
+  },
+  {
+    name: 'Compras',
+    description: 'Ropa, electrodomésticos y artículos personales',
+    color: '#00BCD4',
+    icon: 'shopping-bag',
+  },
+  {
+    name: 'Transferencia',
+    description: 'Transferencias entre cuentas propias',
+    color: '#607D8B',
+    icon: 'repeat',
+  },
+  {
+    name: 'Ingresos',
+    description: 'Salarios, bonos y otros ingresos',
+    color: '#8BC34A',
+    icon: 'dollar-sign',
+  },
+  {
+    name: 'Inversiones',
+    description: 'Compra y venta de activos financieros',
+    color: '#FFC107',
+    icon: 'trending-up',
+  },
+  {
+    name: 'Otros',
+    description: 'Gastos no categorizados',
+    color: '#9E9E9E',
+    icon: 'more-horizontal',
   },
 ];
 
@@ -103,6 +187,7 @@ const seedTransactions: SeedTransaction[] = [
     date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     auditDate: null,
     assetIndex: 0,
+    categoryIndex: 8, // Transferencia
   },
   {
     fromAccountIndex: 1,
@@ -111,6 +196,7 @@ const seedTransactions: SeedTransaction[] = [
     date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     auditDate: null,
     assetIndex: 0,
+    categoryIndex: 8, // Transferencia
   },
 ];
 
@@ -169,6 +255,24 @@ export const seedDatabase = (db: Database): boolean => {
     });
     assetStmt.free();
 
+    // Insert seed categories and track their IDs
+    const categoryIds: number[] = [];
+    const categoryStmt = db.prepare(
+      'INSERT INTO Category (Name, Description, Color, Icon) VALUES (?, ?, ?, ?)'
+    );
+
+    seedCategories.forEach(category => {
+      categoryStmt.run([category.name, category.description, category.color, category.icon]);
+      
+      const result = db.exec('SELECT last_insert_rowid()');
+      if (result.length > 0 && result[0].values.length > 0) {
+        const id = result[0].values[0][0] as number;
+        categoryIds.push(id);
+        console.log(`Created category: ${category.name} (ID: ${id})`);
+      }
+    });
+    categoryStmt.free();
+
     // Insert seed accounts and track their IDs
     const accountIds: number[] = [];
     const accountStmt = db.prepare(
@@ -202,13 +306,14 @@ export const seedDatabase = (db: Database): boolean => {
 
     // Insert seed transactions
     const txStmt = db.prepare(
-      'INSERT INTO [Transaction] (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId) VALUES (?, ?, ?, ?, ?, ?)'
+      'INSERT INTO [Transaction] (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
 
     seedTransactions.forEach(tx => {
       const fromAccountId = accountIds[tx.fromAccountIndex];
       const toAccountId = accountIds[tx.toAccountIndex];
       const assetId = tx.assetIndex !== null ? assetIds[tx.assetIndex] : null;
+      const categoryId = tx.categoryIndex !== null ? categoryIds[tx.categoryIndex] : null;
       
       if (fromAccountId && toAccountId) {
         txStmt.run([
@@ -218,6 +323,7 @@ export const seedDatabase = (db: Database): boolean => {
           tx.date,
           tx.auditDate,
           assetId,
+          categoryId,
         ]);
         console.log(`Created transaction: ${tx.amount} from account ${fromAccountId} to ${toAccountId}`);
       }

@@ -46,10 +46,10 @@ describe('TransactionRepository', () => {
 
     it('should return all transactions when transactions exist', () => {
       const mockResult: QueryExecResult[] = [{
-        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId'],
+        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId', 'CategoryId'],
         values: [
-          [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null],
-          [2, 2, 50.00, 1, '2024-01-02T00:00:00Z', '2024-01-03T00:00:00Z', 1],
+          [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null, null],
+          [2, 2, 50.00, 1, '2024-01-02T00:00:00Z', '2024-01-03T00:00:00Z', 1, 2],
         ],
       }];
       vi.mocked(mockDb.exec).mockReturnValue(mockResult);
@@ -65,6 +65,7 @@ describe('TransactionRepository', () => {
         date: '2024-01-01T00:00:00Z',
         auditDate: null,
         assetId: null,
+        categoryId: null,
       });
     });
   });
@@ -80,9 +81,9 @@ describe('TransactionRepository', () => {
 
     it('should return transaction when found', () => {
       const mockResult: QueryExecResult[] = [{
-        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId'],
+        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId', 'CategoryId'],
         values: [
-          [1, 1, 250.00, 2, '2024-01-15T00:00:00Z', null, null],
+          [1, 1, 250.00, 2, '2024-01-15T00:00:00Z', null, null, null],
         ],
       }];
       vi.mocked(mockDb.exec).mockReturnValue(mockResult);
@@ -100,10 +101,10 @@ describe('TransactionRepository', () => {
   describe('getByAccount', () => {
     it('should return transactions for given account', () => {
       const mockResult: QueryExecResult[] = [{
-        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId'],
+        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId', 'CategoryId'],
         values: [
-          [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null],
-          [2, 2, 50.00, 1, '2024-01-02T00:00:00Z', null, null],
+          [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null, null],
+          [2, 2, 50.00, 1, '2024-01-02T00:00:00Z', null, null, null],
         ],
       }];
       vi.mocked(mockDb.exec).mockReturnValue(mockResult);
@@ -121,9 +122,9 @@ describe('TransactionRepository', () => {
   describe('getByDateRange', () => {
     it('should return transactions in date range', () => {
       const mockResult: QueryExecResult[] = [{
-        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId'],
+        columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId', 'CategoryId'],
         values: [
-          [1, 1, 100.00, 2, '2024-01-15T00:00:00Z', null, null],
+          [1, 1, 100.00, 2, '2024-01-15T00:00:00Z', null, null, null],
         ],
       }];
       vi.mocked(mockDb.exec).mockReturnValue(mockResult);
@@ -147,9 +148,9 @@ describe('TransactionRepository', () => {
           return [{ columns: ['id'], values: [[1]] }];
         }
         return [{
-          columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId'],
+          columns: ['Id', 'FromAccountId', 'Amount', 'ToAccountId', 'Date', 'AuditDate', 'AssetId', 'CategoryId'],
           values: [
-            [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null],
+            [1, 1, 100.00, 2, '2024-01-01T00:00:00Z', null, null, 1],
           ],
         }];
       });
@@ -161,12 +162,14 @@ describe('TransactionRepository', () => {
         date: '2024-01-01T00:00:00Z',
         auditDate: null,
         assetId: null,
+        categoryId: 1,
       };
       
       const result = repository.create(newTransaction);
       
       expect(result.id).toBe(1);
       expect(result.amount).toBe(100.00);
+      expect(result.categoryId).toBe(1);
       expect(saveDatabase).toHaveBeenCalledWith(mockDb);
     });
   });

@@ -19,6 +19,14 @@ export interface Asset {
   price: number | null;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+}
+
 export interface Account {
   id: number;
   name: string;
@@ -40,6 +48,7 @@ export interface Transaction {
   date: string;
   auditDate: string | null;
   assetId: number | null;
+  categoryId: number | null;
 }
 
 export interface CreditCard {

@@ -6,6 +6,7 @@ import { TransactionService } from '../services/TransactionService';
 import { OwnerService } from '../services/OwnerService';
 import { AssetService } from '../services/AssetService';
 import { CreditCardService } from '../services/CreditCardService';
+import { CategoryService } from '../services/CategoryService';
 import type { Account } from '../types';
 
 interface AppSettings {
@@ -18,6 +19,7 @@ export interface AppContextType {
   ownerService: OwnerService | null;
   assetService: AssetService | null;
   creditCardService: CreditCardService | null;
+  categoryService: CategoryService | null;
   isInitialized: boolean;
   settings: AppSettings;
   updateSettings: (settings: Partial<AppSettings>) => void;
@@ -36,6 +38,7 @@ export const AppContext = createContext<AppContextType>({
   ownerService: null,
   assetService: null,
   creditCardService: null,
+  categoryService: null,
   isInitialized: false,
   settings: defaultSettings,
   updateSettings: () => {},
@@ -52,6 +55,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [ownerService, setOwnerService] = useState<OwnerService | null>(null);
   const [assetService, setAssetService] = useState<AssetService | null>(null);
   const [creditCardService, setCreditCardService] = useState<CreditCardService | null>(null);
+  const [categoryService, setCategoryService] = useState<CategoryService | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -89,12 +93,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const ownerSvc = new OwnerService();
         const assetSvc = new AssetService();
         const creditCardSvc = new CreditCardService();
+        const categorySvc = new CategoryService();
         
         setAccountService(accService);
         setTransactionService(txService);
         setOwnerService(ownerSvc);
         setAssetService(assetSvc);
         setCreditCardService(creditCardSvc);
+        setCategoryService(categorySvc);
         setIsInitialized(true);
 
         // If no default account is set but accounts exist, set the first one as default
@@ -123,6 +129,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         ownerService,
         assetService,
         creditCardService,
+        categoryService,
         isInitialized,
         settings,
         updateSettings,

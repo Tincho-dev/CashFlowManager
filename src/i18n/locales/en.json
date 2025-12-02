@@ -38,6 +38,8 @@
     "date": "Date",
     "description": "Description",
     "category": "Category",
+    "selectCategory": "Select a category",
+    "noCategory": "No Category",
     "amount": "Amount",
     "paymentType": "Payment Type",
     "actions": "Actions",
@@ -72,6 +74,20 @@
       "BANK_TRANSFER": "Bank Transfer",
       "CHECK": "Check"
     }
+  },
+  "categories": {
+    "food": "Food",
+    "transport": "Transportation",
+    "housing": "Housing",
+    "utilities": "Utilities",
+    "health": "Health",
+    "entertainment": "Entertainment",
+    "education": "Education",
+    "shopping": "Shopping",
+    "transfer": "Transfer",
+    "income": "Income",
+    "investments": "Investments",
+    "other": "Other"
   },
   "accounts": {
     "title": "Accounts",

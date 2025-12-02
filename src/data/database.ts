@@ -62,6 +62,17 @@ const runMigrations = async (db: Database): Promise<void> => {
     );
   `);
 
+  // Create Category table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS Category (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL,
+      Color TEXT NULL,
+      Icon TEXT NULL
+    );
+  `);
+
   // Create Account table
   db.run(`
     CREATE TABLE IF NOT EXISTS Account (
@@ -89,9 +100,11 @@ const runMigrations = async (db: Database): Promise<void> => {
       Date TEXT NOT NULL,
       AuditDate TEXT NULL,
       AssetId INTEGER NULL,
+      CategoryId INTEGER NULL,
       FOREIGN KEY (FromAccountId) REFERENCES Account (Id),
       FOREIGN KEY (ToAccountId) REFERENCES Account (Id),
-      FOREIGN KEY (AssetId) REFERENCES Assets (Id)
+      FOREIGN KEY (AssetId) REFERENCES Assets (Id),
+      FOREIGN KEY (CategoryId) REFERENCES Category (Id)
     );
   `);
 
