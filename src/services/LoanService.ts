@@ -2,6 +2,7 @@ import type { Loan, LoanInstallment } from '../types';
 import { LoanStatus, PaymentFrequency, AccountCurrency } from '../types';
 import { LoanRepository, LoanInstallmentRepository } from '../data/repositories/LoanRepository';
 import LoggingService, { LogCategory } from './LoggingService';
+import { roundCurrency } from '../utils/financial';
 
 export class LoanService {
   private loanRepo: LoanRepository;
@@ -159,10 +160,10 @@ export class LoanService {
         loanId,
         sequence: i,
         dueDate: currentDate.toISOString().split('T')[0],
-        principalAmount: Math.round(principalPerInstallment * 100) / 100,
-        interestAmount: Math.round(interestPerInstallment * 100) / 100,
+        principalAmount: roundCurrency(principalPerInstallment),
+        interestAmount: roundCurrency(interestPerInstallment),
         feesAmount: 0,
-        totalAmount: Math.round(installmentAmount * 100) / 100,
+        totalAmount: roundCurrency(installmentAmount),
         paid: false,
         paidDate: null,
         paymentAccountId: null,

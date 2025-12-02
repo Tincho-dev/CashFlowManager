@@ -30,6 +30,7 @@ import { useApp } from '../hooks';
 import type { Loan, LoanInstallment, Account } from '../types';
 import { AccountCurrency, LoanStatus, PaymentFrequency } from '../types';
 import { LoanService } from '../services/LoanService';
+import { percentToDecimal, decimalToPercent } from '../utils/financial';
 
 interface FormData {
   borrowerAccountId: number;
@@ -117,7 +118,7 @@ const Loans: React.FC = () => {
         borrowerAccountId: formData.borrowerAccountId,
         lenderAccountId: formData.lenderAccountId || null,
         principal: formData.principal,
-        interestRate: formData.interestRate / 100,
+        interestRate: percentToDecimal(formData.interestRate),
         startDate: formData.startDate,
         endDate: formData.endDate || null,
         termMonths: formData.termMonths || null,
@@ -130,7 +131,7 @@ const Loans: React.FC = () => {
       loanService.createLoan(
         formData.borrowerAccountId,
         formData.principal,
-        formData.interestRate / 100,
+        percentToDecimal(formData.interestRate),
         formData.startDate,
         {
           lenderAccountId: formData.lenderAccountId || null,
@@ -154,7 +155,7 @@ const Loans: React.FC = () => {
       borrowerAccountId: loan.borrowerAccountId,
       lenderAccountId: loan.lenderAccountId || '',
       principal: loan.principal,
-      interestRate: loan.interestRate * 100,
+      interestRate: decimalToPercent(loan.interestRate),
       startDate: loan.startDate,
       endDate: loan.endDate || '',
       termMonths: loan.termMonths || '',
@@ -349,7 +350,7 @@ const Loans: React.FC = () => {
                             />
                           )}
                           <Chip
-                            label={`${(loan.interestRate * 100).toFixed(2)}%`}
+                            label={`${decimalToPercent(loan.interestRate).toFixed(2)}%`}
                             size="small"
                             color="primary"
                             variant="outlined"
