@@ -1,206 +1,217 @@
 # CashFlow Manager
 
-A comprehensive personal finance management application built with React, TypeScript, and SQLite.
+Una aplicación integral de gestión de finanzas personales construida con React, TypeScript y SQLite.
 
-## Features
+## Documentación Adicional
 
-### Core Functionality
-- 📱 **PWA Support** - Install as a mobile or desktop app with offline-first capability
-- 💰 **Account Management** - Track multiple accounts with different currencies
-- 📊 **Income & Expense Tracking** - Monitor your income and expenses
-- 🔄 **Recurring Transactions** - Set up automatic recurring payments
-- 💳 **Multiple Payment Types** - Support for credit cards, debit cards, cash, transfers, and checks
-- 🌍 **Multi-Currency Support** - Handle transactions in USD, EUR, GBP, ARS, and BRL
-- 💱 **Real-Time Exchange Rates** - Automatic currency conversion with offline caching
-- 📈 **Investment Tracking** - Monitor your investment portfolio with live stock prices
-- 💵 **Loan Management** - Track loans and monthly payments (Coming Soon)
-- 🔀 **Account Transfers** - Transfer money between your own accounts with currency conversion (Coming Soon)
-- 📤 **Excel Export** - Export all your financial data to Excel format
-- 🗄️ **SQLite Database** - Local data storage with browser persistence
-- ☁️ **Cloud Sync Foundation** - Ready for Google Sheets and SharePoint integration
+Para más información sobre el proyecto, consulta los siguientes documentos:
 
-### AI-Powered Features 🤖
-- 🤖 **Multilingual AI Chatbot** - Natural language interface in English and Spanish
-  - Ask about your balance, accounts, and recent transactions
-  - Get contextual help about account types and transaction categories
-  - Guides you to create accounts and transactions
-  - Smart keyword-based intent detection
-- 📸 **OCR Image Processing** - Upload images of bank statements or receipts
-  - Automatic text extraction from images
-  - Smart detection of amounts and dates
-  - Extract multiple transactions from a single image
-- 📝 **Application Logging** - Complete audit trail of all operations
-  - Track all account and transaction operations
-  - Export logs in JSON or CSV format
-  - Filter by category, level, or date range
-- 💡 **Contextual Tooltips** - Inline help throughout the application
-  - Learn about different account types
-  - Understand transaction categories
-  - Get guidance on form fields
+- [📋 CashFlow Manager - Proyecto de Innovación](docs/CashFlow_Manager_Proyecto_Innovacion.md)
+- [📖 Estado del Arte - App Financiera Coloquial](docs/Estado%20del%20arte-%20App%20financiera%20coloquial.docx.md)
+- [💰 Inversión Fintech - Expansión y Escalabilidad Global](docs/Inversión%20Fintech-%20Expansión%20y%20Escalabilidad%20Globa....docx.md)
+- [📝 Proyecto con Formato Innovación](docs/Proyecto%20con%20formato%20Innovacion.docx.md)
+- [🎓 TFi GTEC 2](docs/TFi%20GTEC%202.docx.md)
 
-### UI/UX Enhancements 🎨
-- 🎨 **Material-UI Design** - Modern, consistent design system
-- 📱 **Mobile Bottom Navigation** - Easy navigation on mobile devices
-- 🌐 **Bilingual Support** - Full support for English and Spanish
-- ♿ **Accessibility** - ARIA labels and keyboard navigation support
+---
 
-## Tech Stack
+## Características (Features)
 
-- **Frontend**: React 19 with TypeScript
-- **UI Framework**: Material-UI (MUI) v7
-- **Routing**: React Router v7
-- **Database**: SQL.js (SQLite in the browser)
-- **Build Tool**: Vite 7
-- **PWA**: Vite PWA Plugin with Workbox
-- **AI/ML**: 
-  - Tesseract.js for OCR (Optical Character Recognition)
-  - @xenova/transformers (prepared for NLP features)
-- **Excel Export**: XLSX library
-- **Icons**: Lucide React
-- **Styling**: SCSS Modules + MUI theming
+### Funcionalidad Principal (Core Functionality)
+- 📱 **Soporte PWA** - Instala como aplicación móvil o de escritorio con capacidad offline-first
+- 💰 **Gestión de Cuentas (Account Management)** - Rastrea múltiples cuentas con diferentes monedas
+- 📊 **Seguimiento de Ingresos y Gastos (Income & Expense Tracking)** - Monitorea tus ingresos y gastos
+- 🔄 **Transacciones Recurrentes (Recurring Transactions)** - Configura pagos recurrentes automáticos
+- 💳 **Múltiples Tipos de Pago (Multiple Payment Types)** - Soporte para tarjetas de crédito, débito, efectivo, transferencias y cheques
+- 🌍 **Soporte Multi-Moneda (Multi-Currency Support)** - Maneja transacciones en USD, EUR, GBP, ARS y BRL
+- 💱 **Tasas de Cambio en Tiempo Real (Real-Time Exchange Rates)** - Conversión automática de moneda con caché offline
+- 📈 **Seguimiento de Inversiones (Investment Tracking)** - Monitorea tu portafolio de inversiones con precios de acciones en vivo
+- 💵 **Gestión de Préstamos (Loan Management)** - Rastrea préstamos y pagos mensuales (Próximamente)
+- 🔀 **Transferencias entre Cuentas (Account Transfers)** - Transfiere dinero entre tus propias cuentas con conversión de moneda (Próximamente)
+- 📤 **Exportación a Excel (Excel Export)** - Exporta todos tus datos financieros a formato Excel
+- 🗄️ **Base de Datos SQLite** - Almacenamiento local de datos con persistencia en el navegador
+- ☁️ **Base para Sincronización en la Nube (Cloud Sync Foundation)** - Listo para integración con Google Sheets y SharePoint
+
+### Características Impulsadas por IA 🤖 (AI-Powered Features)
+- 🤖 **Chatbot IA Multilingüe (Multilingual AI Chatbot)** - Interfaz de lenguaje natural en inglés y español
+  - Pregunta sobre tu saldo, cuentas y transacciones recientes
+  - Obtén ayuda contextual sobre tipos de cuenta y categorías de transacciones
+  - Te guía para crear cuentas y transacciones
+  - Detección inteligente de intención basada en palabras clave
+- 📸 **Procesamiento de Imágenes OCR (OCR Image Processing)** - Sube imágenes de extractos bancarios o recibos
+  - Extracción automática de texto de imágenes
+  - Detección inteligente de montos y fechas
+  - Extrae múltiples transacciones de una sola imagen
+- 📝 **Registro de Aplicación (Application Logging)** - Registro completo de auditoría de todas las operaciones
+  - Rastrea todas las operaciones de cuentas y transacciones
+  - Exporta registros en formato JSON o CSV
+  - Filtra por categoría, nivel o rango de fechas
+- 💡 **Tooltips Contextuales (Contextual Tooltips)** - Ayuda en línea en toda la aplicación
+  - Aprende sobre diferentes tipos de cuenta
+  - Comprende las categorías de transacciones
+  - Obtén orientación sobre los campos de formularios
+
+### Mejoras de UI/UX 🎨 (UI/UX Enhancements)
+- 🎨 **Diseño Material-UI** - Sistema de diseño moderno y consistente
+- 📱 **Navegación Inferior Móvil (Mobile Bottom Navigation)** - Navegación fácil en dispositivos móviles
+- 🌐 **Soporte Bilingüe (Bilingual Support)** - Soporte completo para inglés y español
+- ♿ **Accesibilidad (Accessibility)** - Etiquetas ARIA y soporte de navegación por teclado
+
+## Stack Tecnológico (Tech Stack)
+
+- **Frontend**: React 19 con TypeScript
+- **Framework de UI**: Material-UI (MUI) v7
+- **Enrutamiento (Routing)**: React Router v7
+- **Base de Datos (Database)**: SQL.js (SQLite en el navegador)
+- **Herramienta de Construcción (Build Tool)**: Vite 7
+- **PWA**: Vite PWA Plugin con Workbox
+- **IA/ML (AI/ML)**: 
+  - Tesseract.js para OCR (Reconocimiento Óptico de Caracteres)
+  - @xenova/transformers (preparado para características NLP)
+- **Exportación a Excel (Excel Export)**: Biblioteca XLSX
+- **Iconos (Icons)**: Lucide React
+- **Estilos (Styling)**: Módulos SCSS + temas MUI
 - **i18n**: react-i18next
 
-## Architecture
+## Arquitectura (Architecture)
 
-The application follows a layered architecture pattern:
+La aplicación sigue un patrón de arquitectura en capas:
 
-### Data Layer
-- **Database** (`src/data/database.ts`) - SQLite initialization and migration management
-- **Repositories** (`src/data/repositories/`) - Data access layer with CRUD operations
-  - `AccountRepository.ts` - Account data operations
-  - `TransactionRepository.ts` - Transaction data operations
+### Capa de Datos (Data Layer)
+- **Base de Datos (Database)** (`src/data/database.ts`) - Inicialización de SQLite y gestión de migraciones
+- **Repositorios (Repositories)** (`src/data/repositories/`) - Capa de acceso a datos con operaciones CRUD
+  - `AccountRepository.ts` - Operaciones de datos de cuentas (accounts)
+  - `TransactionRepository.ts` - Operaciones de datos de transacciones (transactions)
 
-### Service Layer
-- **Services** (`src/services/`) - Business logic layer
-  - `AccountService.ts` - Account management logic with logging
-  - `TransactionService.ts` - Transaction management with automatic balance updates and logging
-  - `ChatbotService.ts` - AI chatbot with natural language processing and OCR
-  - `LoggingService.ts` - Application logging and audit trail
+### Capa de Servicios (Service Layer)
+- **Servicios (Services)** (`src/services/`) - Capa de lógica de negocio
+  - `AccountService.ts` - Lógica de gestión de cuentas con registro
+  - `TransactionService.ts` - Gestión de transacciones con actualización automática de saldo y registro
+  - `ChatbotService.ts` - Chatbot IA con procesamiento de lenguaje natural y OCR
+  - `LoggingService.ts` - Registro de aplicación y auditoría
 
-### Presentation Layer
-- **Components** (`src/components/`) - Reusable UI components
-  - `layout/` - Layout components (Header, Sidebar, BottomNavigation)
-  - `accounts/` - Account-specific components (AccountCard, AccountDialog)
-  - `chatbot/` - AI chatbot interface
-  - `common/` - Shared components (InfoTooltip, PlaceholderPage)
-- **Pages** (`src/pages/`) - Route-level components
-- **Contexts** (`src/contexts/`) - React context for state management
+### Capa de Presentación (Presentation Layer)
+- **Componentes (Components)** (`src/components/`) - Componentes UI reutilizables
+  - `layout/` - Componentes de diseño (Header, Sidebar, BottomNavigation)
+  - `accounts/` - Componentes específicos de cuentas (AccountCard, AccountDialog)
+  - `chatbot/` - Interfaz del chatbot IA
+  - `common/` - Componentes compartidos (InfoTooltip, PlaceholderPage)
+- **Páginas (Pages)** (`src/pages/`) - Componentes a nivel de ruta
+- **Contextos (Contexts)** (`src/contexts/`) - Contexto React para gestión de estado
 
-### Utilities
-- **Excel Export** (`src/utils/excelExport.ts`) - Data export functionality
-- **Types** (`src/types/index.ts`) - TypeScript type definitions
+### Utilidades (Utilities)
+- **Exportación Excel (Excel Export)** (`src/utils/excelExport.ts`) - Funcionalidad de exportación de datos
+- **Tipos (Types)** (`src/types/index.ts`) - Definiciones de tipos TypeScript
 
-## Getting Started
+## Comenzando (Getting Started)
 
-### Prerequisites
-- Node.js 18+ and npm
+### Prerequisitos (Prerequisites)
+- Node.js 18+ y npm
 
-### Installation
+### Instalación (Installation)
 
-1. Clone the repository:
+1. Clona el repositorio:
 ```bash
 git clone https://github.com/Tincho-dev/CashFlowManager.git
 cd CashFlowManager
 ```
 
-2. Install dependencies:
+2. Instala las dependencias:
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. Inicia el servidor de desarrollo:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+4. Abre tu navegador y navega a `http://localhost:5173`
 
-### Build for Production
+### Construcción para Producción (Build for Production)
 
 ```bash
 npm run build
 ```
 
-The production-ready files will be in the `dist` directory.
+Los archivos listos para producción estarán en el directorio `dist`.
 
-### Preview Production Build
+### Vista Previa de Construcción de Producción (Preview Production Build)
 
 ```bash
 npm run preview
 ```
 
-## Usage
+## Uso (Usage)
 
-### Creating an Account
-1. Navigate to the "Accounts" page
-2. Click "Add Account"
-3. Fill in the account details (name, type, initial balance, currency)
-4. Click "Create"
+### Creando una Cuenta (Creating an Account)
+1. Navega a la página "Cuentas" (Accounts)
+2. Haz clic en "Agregar Cuenta" (Add Account)
+3. Completa los detalles de la cuenta (nombre, tipo, saldo inicial, moneda)
+4. Haz clic en "Crear" (Create)
 
-### Adding Transactions
-1. Navigate to "Income" or "Expenses"
-2. Click the "Add" button
-3. Select an account, enter the amount, description, and other details
-4. Mark as recurring if it's a regular transaction
+### Agregando Transacciones (Adding Transactions)
+1. Navega a "Ingresos" (Income) o "Gastos" (Expenses)
+2. Haz clic en el botón "Agregar" (Add)
+3. Selecciona una cuenta, ingresa el monto, descripción y otros detalles
+4. Marca como recurrente si es una transacción regular
 
-### Using the AI Chatbot 🤖
-1. Click the floating chat button (bottom right of the screen)
-2. Ask questions in natural language:
-   - "What's my balance?"
-   - "Show my accounts"
-   - "List recent transactions"
-   - "Help"
-3. Upload images of bank statements or receipts:
-   - Click "Upload Image" in the chat
-   - Select an image with transaction data
-   - The chatbot will extract and analyze the text
-4. Get contextual help:
-   - Ask about account types: "What's a checking account?"
-   - Learn about categories: "Help me categorize my expenses"
+### Usando el Chatbot IA 🤖 (Using the AI Chatbot)
+1. Haz clic en el botón de chat flotante (esquina inferior derecha de la pantalla)
+2. Haz preguntas en lenguaje natural:
+   - "¿Cuál es mi saldo?" / "What's my balance?"
+   - "Mostrar mis cuentas" / "Show my accounts"
+   - "Listar transacciones recientes" / "List recent transactions"
+   - "Ayuda" / "Help"
+3. Sube imágenes de extractos bancarios o recibos:
+   - Haz clic en "Subir Imagen" (Upload Image) en el chat
+   - Selecciona una imagen con datos de transacciones
+   - El chatbot extraerá y analizará el texto
+4. Obtén ayuda contextual:
+   - Pregunta sobre tipos de cuenta: "¿Qué es una cuenta corriente?" / "What's a checking account?"
+   - Aprende sobre categorías: "Ayúdame a categorizar mis gastos" / "Help me categorize my expenses"
 
-### Accessing Application Logs
-Logs are stored in browser localStorage and can be:
-- Exported programmatically via `LoggingService.exportLogs()` (JSON)
-- Exported as CSV via `LoggingService.exportLogsAsCSV()`
-- Filtered by category, level, or date range
-- Used for audit trails and debugging
-5. Click "Create"
+### Accediendo a los Registros de la Aplicación (Accessing Application Logs)
+Los registros se almacenan en el localStorage del navegador y pueden ser:
+- Exportados programáticamente vía `LoggingService.exportLogs()` (JSON)
+- Exportados como CSV vía `LoggingService.exportLogsAsCSV()`
+- Filtrados por categoría, nivel o rango de fechas
+- Usados para auditorías y depuración
 
-### Exporting Data
-1. Navigate to "Export Data"
-2. Click "Export to Excel"
-3. Your data will be downloaded as an Excel file with multiple sheets
+### Exportando Datos (Exporting Data)
+1. Navega a "Exportar Datos" (Export Data)
+2. Haz clic en "Exportar a Excel" (Export to Excel)
+3. Tus datos serán descargados como un archivo Excel con múltiples hojas
 
-## Data Storage
+## Almacenamiento de Datos (Data Storage)
 
-All data is stored locally in your browser using SQLite (via SQL.js). The database is automatically saved to localStorage after each operation, ensuring your data persists across browser sessions.
+Todos los datos se almacenan localmente en tu navegador usando SQLite (vía SQL.js). La base de datos se guarda automáticamente en localStorage después de cada operación, asegurando que tus datos persistan entre sesiones del navegador.
 
-### Database Schema
+### Esquema de Base de Datos (Database Schema)
 
-- **accounts** - User accounts (checking, savings, credit cards, etc.)
-- **transactions** - All income and expense transactions
-- **investments** - Investment portfolio tracking
-- **loans** - Loan and debt tracking
-- **transfers** - Money transfers between accounts
-- **categories** - Transaction categories
+- **accounts** - Cuentas de usuario (corriente, ahorros, tarjetas de crédito, etc.)
+- **transactions** - Todas las transacciones de ingresos y gastos
+- **investments** - Seguimiento de portafolio de inversiones
+- **loans** - Seguimiento de préstamos y deudas
+- **transfers** - Transferencias de dinero entre cuentas
+- **categories** - Categorías de transacciones
 
-### Querying the Database from VSCode
+### Consultando la Base de Datos desde VSCode (Querying the Database from VSCode)
 
-The application stores its SQLite database in the browser's localStorage. To inspect or query the data:
+La aplicación almacena su base de datos SQLite en el localStorage del navegador. Para inspeccionar o consultar los datos:
 
-#### Method 1: Using Browser DevTools (Recommended)
+#### Método 1: Usando DevTools del Navegador (Recomendado) (Using Browser DevTools - Recommended)
 
-1. Open your application in a browser (Chrome, Firefox, Edge, etc.)
-2. Open Developer Tools (`F12` or `Right-click > Inspect`)
-3. Go to the **Application** tab (Chrome) or **Storage** tab (Firefox)
-4. Navigate to **Local Storage** > `http://localhost:5173` (or your domain)
-5. Find the key `cashflow_db` - this contains your database as a base64-encoded string
+1. Abre tu aplicación en un navegador (Chrome, Firefox, Edge, etc.)
+2. Abre las Herramientas de Desarrollador (`F12` o `Clic derecho > Inspeccionar`)
+3. Ve a la pestaña **Application** (Chrome) o **Storage** (Firefox)
+4. Navega a **Local Storage** > `http://localhost:5173` (o tu dominio)
+5. Encuentra la clave `cashflow_db` - esta contiene tu base de datos como una cadena codificada en base64
 
-#### Method 2: Extracting and Querying with SQLite Tools
+#### Método 2: Extrayendo y Consultando con Herramientas SQLite (Extracting and Querying with SQLite Tools)
 
-1. **Extract the database:**
+1. **Extrae la base de datos:**
    ```javascript
-   // Open browser console and run:
+   // Abre la consola del navegador y ejecuta:
    const dbData = localStorage.getItem('cashflow_db');
    const blob = new Blob([Uint8Array.from(atob(dbData), c => c.charCodeAt(0))], { type: 'application/octet-stream' });
    const url = URL.createObjectURL(blob);
@@ -210,15 +221,15 @@ The application stores its SQLite database in the browser's localStorage. To ins
    a.click();
    ```
 
-2. **Open in VSCode with SQLite extension:**
-   - Install the [SQLite Viewer extension](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer) or [SQLite](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite) extension
-   - Right-click the downloaded `cashflow.db` file
-   - Select "Open with SQLite Viewer" or use Command Palette: `SQLite: Open Database`
+2. **Abre en VSCode con extensión SQLite:**
+   - Instala la [extensión SQLite Viewer](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer) o la extensión [SQLite](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite)
+   - Haz clic derecho en el archivo `cashflow.db` descargado
+   - Selecciona "Open with SQLite Viewer" o usa la Paleta de Comandos: `SQLite: Open Database`
 
-3. **Query using command-line tools:**
+3. **Consulta usando herramientas de línea de comandos:**
    ```bash
    sqlite3 cashflow.db
-   # Now you can run SQL queries:
+   # Ahora puedes ejecutar consultas SQL:
    SELECT * FROM accounts;
    SELECT * FROM transactions ORDER BY date DESC LIMIT 10;
    SELECT a.name, SUM(t.amount) as total
@@ -228,44 +239,44 @@ The application stores its SQLite database in the browser's localStorage. To ins
    GROUP BY a.id;
    ```
 
-#### Method 3: Using In-App Console (Advanced)
+#### Método 3: Usando la Consola de la Aplicación (Avanzado) (Using In-App Console - Advanced)
 
-You can query the database directly from the browser console:
+Puedes consultar la base de datos directamente desde la consola del navegador:
 
 ```javascript
-// Access the database service
+// Accede al servicio de base de datos
 import { getDatabase } from './src/data/database';
 
-// Get database instance
+// Obtén la instancia de la base de datos
 const db = getDatabase();
 
-// Run queries
+// Ejecuta consultas
 const result = db.exec('SELECT * FROM accounts');
 console.table(result[0].values);
 
-// Get all transactions
+// Obtén todas las transacciones
 const transactions = db.exec('SELECT * FROM transactions ORDER BY date DESC LIMIT 10');
 console.table(transactions[0].values);
 ```
 
-#### Common SQL Queries
+#### Consultas SQL Comunes (Common SQL Queries)
 
 ```sql
--- View all accounts with balances
+-- Ver todas las cuentas con saldos
 SELECT id, name, type, balance, currency FROM accounts;
 
--- Recent transactions
+-- Transacciones recientes
 SELECT t.*, a.name as account_name 
 FROM transactions t 
 JOIN accounts a ON t.account_id = a.id 
 ORDER BY t.date DESC LIMIT 20;
 
--- Total balance by currency
+-- Saldo total por moneda
 SELECT currency, SUM(balance) as total_balance 
 FROM accounts 
 GROUP BY currency;
 
--- Monthly expense summary
+-- Resumen mensual de gastos
 SELECT 
   strftime('%Y-%m', date) as month,
   category,
@@ -276,133 +287,133 @@ GROUP BY month, category
 ORDER BY month DESC, total DESC;
 ```
 
-### Database Location
+### Ubicación de la Base de Datos (Database Location)
 
-- **Browser**: `localStorage['cashflow_db']` (base64-encoded binary)
-- **Format**: SQLite 3.x database file
-- **Persistence**: Automatically saved after each database operation
-- **Size**: Varies based on data, typically a few KB to a few MB
+- **Navegador (Browser)**: `localStorage['cashflow_db']` (binario codificado en base64)
+- **Formato (Format)**: Archivo de base de datos SQLite 3.x
+- **Persistencia (Persistence)**: Se guarda automáticamente después de cada operación de base de datos
+- **Tamaño (Size)**: Varía según los datos, típicamente desde unos KB hasta unos MB
 
-## Advanced Features
+## Características Avanzadas (Advanced Features)
 
-### Currency Exchange System
+### Sistema de Cambio de Moneda (Currency Exchange System)
 
-The application includes a sophisticated currency exchange system:
+La aplicación incluye un sofisticado sistema de cambio de moneda:
 
-- **Real-Time Rates** - Fetches live exchange rates from exchangerate-api.com
-- **Offline-First** - Caches rates locally for offline use
-- **Auto-Update** - Automatically refreshes rates when online (hourly)
-- **Cross-Currency** - Supports conversions between all supported currencies
-- **Default Currency** - Set your preferred default currency globally
+- **Tasas en Tiempo Real (Real-Time Rates)** - Obtiene tasas de cambio en vivo de exchangerate-api.com
+- **Offline-First** - Almacena en caché las tasas localmente para uso sin conexión
+- **Auto-Actualización (Auto-Update)** - Actualiza automáticamente las tasas cuando está en línea (cada hora)
+- **Multi-Moneda (Cross-Currency)** - Soporta conversiones entre todas las monedas soportadas
+- **Moneda Predeterminada (Default Currency)** - Establece tu moneda predeterminada preferida globalmente
 
-The currency store persists exchange rates in localStorage and automatically updates when you reconnect to the internet.
+El almacén de monedas persiste las tasas de cambio en localStorage y se actualiza automáticamente cuando te reconectas a internet.
 
-### Stock Price Integration
+### Integración de Precios de Acciones (Stock Price Integration)
 
-For investment tracking, the app integrates with stock price APIs:
+Para el seguimiento de inversiones, la app se integra con APIs de precios de acciones:
 
-- **Live Prices** - Fetches real-time stock prices from Yahoo Finance
-- **Offline Caching** - Stores last known prices for offline access
-- **Auto-Refresh** - Updates prices when connection is restored
-- **Queue System** - Queues updates while offline and processes when online
-- **Symbol Support** - Track stocks by ticker symbol (e.g., AAPL, GOOGL)
+- **Precios en Vivo (Live Prices)** - Obtiene precios de acciones en tiempo real de Yahoo Finance
+- **Caché Offline (Offline Caching)** - Almacena los últimos precios conocidos para acceso sin conexión
+- **Auto-Actualización (Auto-Refresh)** - Actualiza precios cuando se restaura la conexión
+- **Sistema de Cola (Queue System)** - Encola actualizaciones mientras está sin conexión y las procesa cuando está en línea
+- **Soporte de Símbolos (Symbol Support)** - Rastrea acciones por símbolo de ticker (ej., AAPL, GOOGL)
 
-### Cloud Sync Foundation
+### Base para Sincronización en la Nube (Cloud Sync Foundation)
 
-Infrastructure is in place for cloud spreadsheet synchronization:
+La infraestructura está preparada para sincronización con hojas de cálculo en la nube:
 
-- **Offline-First Queue** - Changes are queued when offline and synced when online
-- **Google Sheets Ready** - Structure prepared for Google Sheets integration
-- **SharePoint Ready** - Structure prepared for SharePoint integration
-- **Automatic Sync** - Syncs automatically when connection is restored
+- **Cola Offline-First** - Los cambios se encolan cuando está sin conexión y se sincronizan cuando está en línea
+- **Listo para Google Sheets** - Estructura preparada para integración con Google Sheets
+- **Listo para SharePoint** - Estructura preparada para integración con SharePoint
+- **Sincronización Automática (Automatic Sync)** - Se sincroniza automáticamente cuando se restaura la conexión
 
-> **Note**: Full OAuth implementation for Google Sheets and SharePoint requires a backend service. The current implementation provides the foundation and can be extended with proper OAuth flows.
+> **Nota**: La implementación completa de OAuth para Google Sheets y SharePoint requiere un servicio backend. La implementación actual proporciona la base y puede extenderse con flujos OAuth apropiados.
 
-## PWA Features
+## Características PWA (PWA Features)
 
-The application can be installed as a Progressive Web App:
+La aplicación puede instalarse como una Progressive Web App:
 
-- **Offline Support** - Core functionality works without an internet connection
-- **Install Prompt** - Install on mobile devices and desktops
-- **Service Worker** - Caches assets for faster loading
-- **Responsive Design** - Mobile-first design optimized for all screen sizes
-- **No Horizontal Scroll** - Properly constrained viewport for mobile devices
+- **Soporte Offline (Offline Support)** - La funcionalidad principal funciona sin conexión a internet
+- **Prompt de Instalación (Install Prompt)** - Instala en dispositivos móviles y escritorios
+- **Service Worker** - Almacena en caché los recursos para carga más rápida
+- **Diseño Responsivo (Responsive Design)** - Diseño mobile-first optimizado para todos los tamaños de pantalla
+- **Sin Scroll Horizontal (No Horizontal Scroll)** - Viewport correctamente restringido para dispositivos móviles
 
-## Deployment
+## Despliegue (Deployment)
 
-### Deploy to Vercel
+### Desplegar en Vercel (Deploy to Vercel)
 
-The easiest way to deploy CashFlow Manager is using Vercel:
+La forma más fácil de desplegar CashFlow Manager es usando Vercel:
 
-#### One-Click Deploy
+#### Despliegue con Un Clic (One-Click Deploy)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Tincho-dev/CashFlowManager)
 
-#### Manual Deployment
+#### Despliegue Manual (Manual Deployment)
 
-1. **Install Vercel CLI:**
+1. **Instala Vercel CLI:**
    ```bash
    npm install -g vercel
    ```
 
-2. **Login to Vercel:**
+2. **Inicia sesión en Vercel:**
    ```bash
    vercel login
    ```
 
-3. **Deploy:**
+3. **Despliega:**
    ```bash
-   # For preview deployment
+   # Para despliegue de vista previa
    vercel
    
-   # For production deployment
+   # Para despliegue de producción
    vercel --prod
    ```
 
-#### Automatic Deployment with GitHub Actions
+#### Despliegue Automático con GitHub Actions (Automatic Deployment with GitHub Actions)
 
-The repository includes a GitHub Actions workflow that automatically deploys to Vercel on every push to `main` and creates preview deployments for pull requests.
+El repositorio incluye un workflow de GitHub Actions que despliega automáticamente a Vercel en cada push a `main` y crea despliegues de vista previa para pull requests.
 
-**Setup Steps:**
+**Pasos de Configuración (Setup Steps):**
 
-1. **Create a Vercel account** at [vercel.com](https://vercel.com)
+1. **Crea una cuenta en Vercel** en [vercel.com](https://vercel.com)
 
-2. **Get your Vercel tokens:**
-   - Go to [Vercel Account Settings > Tokens](https://vercel.com/account/tokens)
-   - Create a new token and copy it
+2. **Obtén tus tokens de Vercel:**
+   - Ve a [Configuración de Cuenta de Vercel > Tokens](https://vercel.com/account/tokens)
+   - Crea un nuevo token y cópialo
 
-3. **Get your Project IDs:**
+3. **Obtén tus IDs de Proyecto:**
    ```bash
-   # Install Vercel CLI
+   # Instala Vercel CLI
    npm install -g vercel
    
-   # Link your project
+   # Vincula tu proyecto
    vercel link
    
-   # Get your project ID and org ID from .vercel/project.json
+   # Obtén tu project ID y org ID de .vercel/project.json
    cat .vercel/project.json
    ```
 
-4. **Add GitHub Secrets:**
-   - Go to your GitHub repository > Settings > Secrets and variables > Actions
-   - Add the following secrets:
-     - `VERCEL_TOKEN`: Your Vercel token
-     - `VERCEL_ORG_ID`: Your Vercel organization ID
-     - `VERCEL_PROJECT_ID`: Your Vercel project ID
+4. **Agrega Secretos de GitHub (Add GitHub Secrets):**
+   - Ve a tu repositorio de GitHub > Settings > Secrets and variables > Actions
+   - Agrega los siguientes secretos:
+     - `VERCEL_TOKEN`: Tu token de Vercel
+     - `VERCEL_ORG_ID`: Tu ID de organización de Vercel
+     - `VERCEL_PROJECT_ID`: Tu ID de proyecto de Vercel
 
-5. **Push to GitHub:**
-   - The workflow will automatically deploy to Vercel on push to `main`
-   - Pull requests will get preview deployments
+5. **Sube a GitHub (Push to GitHub):**
+   - El workflow desplegará automáticamente a Vercel en push a `main`
+   - Los pull requests obtendrán despliegues de vista previa
 
-### Deploy to Other Platforms
+### Desplegar en Otras Plataformas (Deploy to Other Platforms)
 
 #### Netlify
 
-1. Connect your GitHub repository to Netlify
-2. Configure build settings:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-3. Add redirect rules in `netlify.toml`:
+1. Conecta tu repositorio de GitHub a Netlify
+2. Configura los ajustes de construcción:
+   - Comando de construcción (Build command): `npm run build`
+   - Directorio de publicación (Publish directory): `dist`
+3. Agrega reglas de redirección en `netlify.toml`:
    ```toml
    [[redirects]]
      from = "/*"
@@ -412,31 +423,31 @@ The repository includes a GitHub Actions workflow that automatically deploys to 
 
 #### GitHub Pages
 
-1. Update `vite.config.ts` with your repository base:
+1. Actualiza `vite.config.ts` con la base de tu repositorio:
    ```typescript
    export default defineConfig({
      base: '/CashFlowManager/',
-     // ... rest of config
+     // ... resto de la configuración
    })
    ```
 
-2. Build and deploy:
+2. Construye y despliega:
    ```bash
    npm run build
    npx gh-pages -d dist
    ```
 
-## Contributing
+## Contribuyendo (Contributing)
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+¡Las contribuciones son bienvenidas! Por favor, siéntete libre de enviar un Pull Request.
 
-### Style Guidelines
+### Guías de Estilo (Style Guidelines)
 
-- **All styles must be SCSS modules** - Create `.module.scss` files and import them
-- Never use inline styles in `.tsx` files (except for dynamic values)
-- Use camelCase or BEM naming for CSS classes
-- Keep styles modular and reusable
+- **Todos los estilos deben ser módulos SCSS** - Crea archivos `.module.scss` e impórtalos
+- Nunca uses estilos en línea en archivos `.tsx` (excepto para valores dinámicos)
+- Usa camelCase o nomenclatura BEM para clases CSS
+- Mantén los estilos modulares y reutilizables
 
-## License
+## Licencia (License)
 
-MIT License - feel free to use this project for personal or commercial purposes.
+Licencia MIT - siéntete libre de usar este proyecto para propósitos personales o comerciales.
