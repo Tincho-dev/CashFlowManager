@@ -142,32 +142,58 @@ export class LoanService {
     paymentFrequency?: PaymentFrequency
   ): void {
     const frequency = paymentFrequency || PaymentFrequency.MONTHLY;
-    const totalInterest = principal * interestRate;
-    const totalAmount = principal + totalInterest;
-    const installmentAmount = totalAmount / installmentCount;
-    const principalPerInstallment = principal / installmentCount;
-    const interestPerInstallment = totalInterest / installmentCount;
+    
+    // Calculate periodic interest rate based on annual rate and frequency
+    const periodicRate = this.getPeriodicInterestRate(interestRate, frequency);
+    
+    // Calculate fixed payment using amortization formula: P * (r(1+r)^n) / ((1+r)^n - 1)
+    const fixedPayment = periodicRate > 0
+      ? principal * (periodicRate * Math.pow(1 + periodicRate, installmentCount)) / (Math.pow(1 + periodicRate, installmentCount) - 1)
+      : principal / installmentCount;
 
+    let remainingPrincipal = principal;
     let currentDate = new Date(startDate);
 
     for (let i = 1; i <= installmentCount; i++) {
-      // Move to next payment date based on frequency
-      if (i > 1) {
-        currentDate = this.addPaymentFrequency(currentDate, frequency);
-      }
+      // First installment due date is one period after start date
+      currentDate = this.addPaymentFrequency(currentDate, frequency);
+
+      // Calculate interest on remaining principal
+      const interestAmount = roundCurrency(remainingPrincipal * periodicRate);
+      const principalAmount = roundCurrency(fixedPayment - interestAmount);
+      const totalAmount = roundCurrency(principalAmount + interestAmount);
+      
+      remainingPrincipal -= principalAmount;
 
       this.installmentRepo.create({
         loanId,
         sequence: i,
         dueDate: currentDate.toISOString().split('T')[0],
-        principalAmount: roundCurrency(principalPerInstallment),
-        interestAmount: roundCurrency(interestPerInstallment),
+        principalAmount,
+        interestAmount,
         feesAmount: 0,
-        totalAmount: roundCurrency(installmentAmount),
+        totalAmount,
         paid: false,
         paidDate: null,
         paymentAccountId: null,
       });
+    }
+  }
+
+  private getPeriodicInterestRate(annualRate: number, frequency: PaymentFrequency): number {
+    switch (frequency) {
+      case PaymentFrequency.WEEKLY:
+        return annualRate / 52;
+      case PaymentFrequency.BIWEEKLY:
+        return annualRate / 26;
+      case PaymentFrequency.MONTHLY:
+        return annualRate / 12;
+      case PaymentFrequency.QUARTERLY:
+        return annualRate / 4;
+      case PaymentFrequency.YEARLY:
+        return annualRate;
+      default:
+        return annualRate / 12;
     }
   }
 

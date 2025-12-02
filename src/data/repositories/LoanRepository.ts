@@ -195,7 +195,8 @@ export class LoanInstallmentRepository {
   }
 
   create(installment: Omit<LoanInstallment, 'id'>): LoanInstallment {
-    const totalAmount = installment.principalAmount + installment.interestAmount + installment.feesAmount;
+    // Always calculate totalAmount from components for consistency
+    const calculatedTotal = installment.principalAmount + installment.interestAmount + installment.feesAmount;
     
     this.db.run(
       `INSERT INTO LoanInstallment (LoanId, Sequence, DueDate, PrincipalAmount, InterestAmount, FeesAmount, TotalAmount, Paid, PaidDate, PaymentAccountId) 
@@ -207,7 +208,7 @@ export class LoanInstallmentRepository {
         installment.principalAmount,
         installment.interestAmount,
         installment.feesAmount,
-        totalAmount,
+        calculatedTotal,
         installment.paid ? 1 : 0,
         installment.paidDate,
         installment.paymentAccountId,
