@@ -303,17 +303,17 @@ const Investments: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>{t('common.edit')}</DialogTitle>
+        <DialogTitle>{t('investments.transfer')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {transferringInvestment && (
               <>
                 <Typography variant="body1" sx={{ mb: 2 }}>
-                  {t('transactions.toAccount')}: <strong>{transferringInvestment.name}</strong>
+                  {t('investments.transferDescription')}: <strong>{transferringInvestment.name}</strong>
                 </Typography>
                 <TextField
                   select
-                  label={t('transactions.toAccount')}
+                  label={t('investments.destinationAccount')}
                   value={transferToAccountId}
                   onChange={(e) => setTransferToAccountId(parseInt(e.target.value))}
                   fullWidth
