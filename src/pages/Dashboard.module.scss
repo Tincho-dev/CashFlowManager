@@ -22,10 +22,18 @@
   fill: #1a1a2e;
 }
 
+.monthNavigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .actionButtons {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 16px;
   flex-wrap: wrap;
   width: 100%;
   max-width: 600px;
@@ -36,21 +44,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  min-width: 90px;
+  gap: 6px;
+  min-width: 70px;
 }
 
 .expenseLabel {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   text-align: center;
   color: #666;
-  max-width: 100px;
+  max-width: 80px;
 }
 
 .expenseAmount {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
+}
+
+.incomeAmount {
+  color: #2196f3;
 }
 
 .fixedExpenseAmount {
@@ -68,7 +80,7 @@
 .legendContainer {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
@@ -83,6 +95,10 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
+}
+
+.incomeColor {
+  background-color: #2196f3;
 }
 
 .fixedExpenseColor {
@@ -108,14 +124,23 @@
   }
 
   .actionButtons {
-    gap: 16px;
+    gap: 12px;
   }
 
   .actionButtonWrapper {
-    min-width: 80px;
+    min-width: 60px;
+  }
+
+  .expenseLabel {
+    font-size: 0.6rem;
+    max-width: 60px;
+  }
+
+  .expenseAmount {
+    font-size: 0.75rem;
   }
 
   .legendContainer {
-    gap: 16px;
+    gap: 12px;
   }
 }

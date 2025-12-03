@@ -1,47 +1,101 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Box, Container, Typography, Fab, Tooltip } from '@mui/material';
-import { Minus, PiggyBank, TrendingDown } from 'lucide-react';
+import { Box, Container, Typography, Fab, Tooltip, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Minus, PiggyBank, TrendingDown, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { useApp } from '../hooks';
 import { TransactionType } from '../types';
 import styles from './Dashboard.module.scss';
 
-// Configuration constants
-const CIRCLE_SEGMENTS = 3;
+// Number of data categories in the donut chart (income, fixed expenses, variable expenses, savings)
+const CHART_SEGMENTS = 4;
 
 interface ExpenseStats {
+  income: number;
   fixedExpenses: number;
   variableExpenses: number;
   savings: number;
   totalBalance: number;
 }
 
+type ViewMode = 'monthly' | 'accumulated';
+
 const Dashboard: React.FC = () => {
   const { accountService, transactionService, isInitialized } = useApp();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // Month selection state
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>('monthly');
+  
   const [stats, setStats] = useState<ExpenseStats>({
+    income: 0,
     fixedExpenses: 0,
     variableExpenses: 0,
     savings: 0,
     totalBalance: 0,
   });
 
+  // Get month/year label
+  const monthYearLabel = useMemo(() => {
+    return selectedDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  }, [selectedDate]);
+
+  // Navigate months
+  const handlePreviousMonth = useCallback(() => {
+    setSelectedDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate;
+    });
+  }, []);
+
+  const handleNextMonth = useCallback(() => {
+    setSelectedDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + 1);
+      return newDate;
+    });
+  }, []);
+
+  const handleViewModeChange = (_event: React.MouseEvent<HTMLElement>, newMode: ViewMode | null) => {
+    if (newMode !== null) {
+      setViewMode(newMode);
+    }
+  };
+
   const loadData = useCallback(() => {
     if (!accountService || !transactionService) return;
 
     const allTransactions = transactionService.getAllTransactions();
     
-    // Calculate expenses by type
+    // Filter transactions based on view mode
+    const filteredTransactions = viewMode === 'accumulated' 
+      ? allTransactions.filter(tx => {
+          const txDate = new Date(tx.date);
+          // Get all transactions up to end of selected month
+          const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59);
+          return txDate <= endOfMonth;
+        })
+      : allTransactions.filter(tx => {
+          const txDate = new Date(tx.date);
+          return txDate.getMonth() === selectedDate.getMonth() && 
+                 txDate.getFullYear() === selectedDate.getFullYear();
+        });
+    
+    // Calculate by type
+    let income = 0;
     let fixedExpenses = 0;
     let variableExpenses = 0;
     let savings = 0;
 
-    allTransactions.forEach((tx) => {
+    filteredTransactions.forEach((tx) => {
       const type = tx.transactionType;
       // Use Math.abs to ensure positive values for display
-      if (type === TransactionType.FIXED_EXPENSE) {
+      if (type === TransactionType.INCOME) {
+        income += Math.abs(tx.amount);
+      } else if (type === TransactionType.FIXED_EXPENSE) {
         fixedExpenses += Math.abs(tx.amount);
       } else if (type === TransactionType.VARIABLE_EXPENSE) {
         variableExpenses += Math.abs(tx.amount);
@@ -52,11 +106,12 @@ const Dashboard: React.FC = () => {
 
     setStats({
       totalBalance: accountService.getTotalBalance(),
+      income,
       fixedExpenses,
       variableExpenses,
       savings,
     });
-  }, [accountService, transactionService]);
+  }, [accountService, transactionService, selectedDate, viewMode]);
 
   useEffect(() => {
     if (isInitialized && accountService && transactionService) {
@@ -66,36 +121,42 @@ const Dashboard: React.FC = () => {
 
   // Calculate circle segments
   const circleData = useMemo(() => {
-    const total = stats.fixedExpenses + stats.variableExpenses + stats.savings;
+    const total = stats.income + stats.fixedExpenses + stats.variableExpenses + stats.savings;
     const circumference = 2 * Math.PI * 80; // r=80
     
     if (total === 0) {
-      // Default display when no data - show equal thirds
-      const segmentLength = circumference / CIRCLE_SEGMENTS;
+      // Default display when no data - show equal segments for each category
+      const segmentLength = circumference / CHART_SEGMENTS;
       return {
-        fixedOffset: 0,
+        incomeOffset: 0,
+        incomeLength: segmentLength,
+        fixedOffset: segmentLength,
         fixedLength: segmentLength,
-        variableOffset: segmentLength,
+        variableOffset: segmentLength * 2,
         variableLength: segmentLength,
-        savingsOffset: segmentLength * 2,
+        savingsOffset: segmentLength * 3,
         savingsLength: segmentLength,
       };
     }
 
+    const incomePercent = stats.income / total;
     const fixedPercent = stats.fixedExpenses / total;
     const variablePercent = stats.variableExpenses / total;
     const savingsPercent = stats.savings / total;
 
+    const incomeLength = circumference * incomePercent;
     const fixedLength = circumference * fixedPercent;
     const variableLength = circumference * variablePercent;
     const savingsLength = circumference * savingsPercent;
 
     return {
-      fixedOffset: 0,
+      incomeOffset: 0,
+      incomeLength,
+      fixedOffset: incomeLength,
       fixedLength,
-      variableOffset: fixedLength,
+      variableOffset: incomeLength + fixedLength,
       variableLength,
-      savingsOffset: fixedLength + variableLength,
+      savingsOffset: incomeLength + fixedLength + variableLength,
       savingsLength,
     };
   }, [stats]);
@@ -120,6 +181,10 @@ const Dashboard: React.FC = () => {
     navigate('/transactions', { state: { transactionType: TransactionType.SAVINGS } });
   };
 
+  const handleAddIncome = () => {
+    navigate('/transactions', { state: { transactionType: TransactionType.INCOME } });
+  };
+
   const circumference = 2 * Math.PI * 80;
 
   return (
@@ -131,11 +196,42 @@ const Dashboard: React.FC = () => {
         sx={{ 
           textAlign: 'center',
           fontSize: { xs: '1.5rem', sm: '2.125rem' },
-          mb: 3
+          mb: 2
         }}
       >
         {t('dashboard.title')}
       </Typography>
+
+      {/* View Mode Toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={handleViewModeChange}
+          size="small"
+          aria-label={t('dashboard.viewMode')}
+        >
+          <ToggleButton value="monthly" aria-label={t('dashboard.monthly')}>
+            {t('dashboard.monthly')}
+          </ToggleButton>
+          <ToggleButton value="accumulated" aria-label={t('dashboard.accumulated')}>
+            {t('dashboard.accumulated')}
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {/* Month Navigation */}
+      <Box className={styles.monthNavigation}>
+        <IconButton onClick={handlePreviousMonth} aria-label={t('dashboard.previousMonth')}>
+          <ChevronLeft size={24} />
+        </IconButton>
+        <Typography variant="h6" sx={{ minWidth: 180, textAlign: 'center', textTransform: 'capitalize' }}>
+          {viewMode === 'accumulated' ? t('dashboard.upTo') + ' ' : ''}{monthYearLabel}
+        </Typography>
+        <IconButton onClick={handleNextMonth} aria-label={t('dashboard.nextMonth')}>
+          <ChevronRight size={24} />
+        </IconButton>
+      </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
         <Box className={styles.circleChartContainer}>
@@ -154,6 +250,20 @@ const Dashboard: React.FC = () => {
               </filter>
             </defs>
             
+            {/* Income - Blue */}
+            <circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke="#2196f3"
+              strokeWidth="40"
+              strokeDasharray={`${circleData.incomeLength} ${circumference}`}
+              strokeDashoffset={-circleData.incomeOffset}
+              transform="rotate(-90 100 100)"
+              filter="url(#shadow)"
+            />
+            
             {/* Fixed Expenses - Red */}
             <circle
               cx="100"
@@ -165,7 +275,6 @@ const Dashboard: React.FC = () => {
               strokeDasharray={`${circleData.fixedLength} ${circumference}`}
               strokeDashoffset={-circleData.fixedOffset}
               transform="rotate(-90 100 100)"
-              filter="url(#shadow)"
             />
             
             {/* Variable Expenses - Yellow/Orange */}
@@ -225,6 +334,10 @@ const Dashboard: React.FC = () => {
         {/* Legend */}
         <Box className={styles.legendContainer}>
           <Box className={styles.legendItem}>
+            <Box className={`${styles.legendColor} ${styles.incomeColor}`} />
+            <Typography className={styles.legendText}>{t('dashboard.income')}</Typography>
+          </Box>
+          <Box className={styles.legendItem}>
             <Box className={`${styles.legendColor} ${styles.fixedExpenseColor}`} />
             <Typography className={styles.legendText}>{t('dashboard.fixedExpenses')}</Typography>
           </Box>
@@ -240,6 +353,32 @@ const Dashboard: React.FC = () => {
 
         {/* Action buttons */}
         <Box className={styles.actionButtons}>
+          {/* Income Button */}
+          <Box className={styles.actionButtonWrapper}>
+            <Tooltip title={t('dashboard.addIncome')}>
+              <Fab
+                size="large"
+                onClick={handleAddIncome}
+                aria-label={t('dashboard.addIncome')}
+                sx={{
+                  bgcolor: '#2196f3',
+                  color: 'white',
+                  '&:hover': { bgcolor: '#1976d2' },
+                  width: { xs: 48, sm: 64 },
+                  height: { xs: 48, sm: 64 },
+                }}
+              >
+                <TrendingUp size={24} />
+              </Fab>
+            </Tooltip>
+            <Typography className={styles.expenseLabel}>
+              {t('dashboard.income')}
+            </Typography>
+            <Typography className={`${styles.expenseAmount} ${styles.incomeAmount}`}>
+              ${stats.income.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </Typography>
+          </Box>
+
           {/* Fixed Expense Button */}
           <Box className={styles.actionButtonWrapper}>
             <Tooltip title={t('dashboard.addFixedExpense')}>
@@ -251,11 +390,11 @@ const Dashboard: React.FC = () => {
                   bgcolor: '#f44336',
                   color: 'white',
                   '&:hover': { bgcolor: '#d32f2f' },
-                  width: { xs: 56, sm: 72 },
-                  height: { xs: 56, sm: 72 },
+                  width: { xs: 48, sm: 64 },
+                  height: { xs: 48, sm: 64 },
                 }}
               >
-                <Minus size={28} />
+                <Minus size={24} />
               </Fab>
             </Tooltip>
             <Typography className={styles.expenseLabel}>
@@ -277,11 +416,11 @@ const Dashboard: React.FC = () => {
                   bgcolor: '#ff9800',
                   color: 'white',
                   '&:hover': { bgcolor: '#f57c00' },
-                  width: { xs: 56, sm: 72 },
-                  height: { xs: 56, sm: 72 },
+                  width: { xs: 48, sm: 64 },
+                  height: { xs: 48, sm: 64 },
                 }}
               >
-                <TrendingDown size={28} />
+                <TrendingDown size={24} />
               </Fab>
             </Tooltip>
             <Typography className={styles.expenseLabel}>
@@ -303,11 +442,11 @@ const Dashboard: React.FC = () => {
                   bgcolor: '#4caf50',
                   color: 'white',
                   '&:hover': { bgcolor: '#388e3c' },
-                  width: { xs: 56, sm: 72 },
-                  height: { xs: 56, sm: 72 },
+                  width: { xs: 48, sm: 64 },
+                  height: { xs: 48, sm: 64 },
                 }}
               >
-                <PiggyBank size={28} />
+                <PiggyBank size={24} />
               </Fab>
             </Tooltip>
             <Typography className={styles.expenseLabel}>
