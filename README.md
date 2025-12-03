@@ -55,6 +55,10 @@ Para más información sobre el proyecto, consulta los siguientes documentos:
 - 📱 **Navegación Inferior Móvil (Mobile Bottom Navigation)** - Navegación fácil en dispositivos móviles
 - 🌐 **Soporte Bilingüe (Bilingual Support)** - Soporte completo para inglés y español
 - ♿ **Accesibilidad (Accessibility)** - Etiquetas ARIA y soporte de navegación por teclado
+- 🎯 **Dashboard con Círculo de Gastos** - Visualización de gastos fijos (rojo), variables (amarillo) y ahorros (verde)
+- 📥 **Drag and Drop** - Arrastra archivos para importar transacciones
+- ⚠️ **Manejo de Errores** - ErrorBoundary global con mensajes descriptivos para el usuario
+- 📄 **Paginación** - Vista paginada para importación de registros masivos
 
 ## Stack Tecnológico (Tech Stack)
 
@@ -80,7 +84,7 @@ La aplicación sigue un patrón de arquitectura en capas:
 - **Base de Datos (Database)** (`src/data/database.ts`) - Inicialización de SQLite y gestión de migraciones
 - **Repositorios (Repositories)** (`src/data/repositories/`) - Capa de acceso a datos con operaciones CRUD
   - `AccountRepository.ts` - Operaciones de datos de cuentas (accounts)
-  - `TransactionRepository.ts` - Operaciones de datos de transacciones (transactions)
+  - `TransactionRepository.ts` - Operaciones de datos de transacciones (transactions) con soporte para tipos de transacción, tarjetas de crédito y descripciones
 
 ### Capa de Servicios (Service Layer)
 - **Servicios (Services)** (`src/services/`) - Capa de lógica de negocio

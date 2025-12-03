@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../hooks';
 import { exportToExcel } from '../utils/excelExport';
-import { FileSpreadsheet, Download, Upload, FileText, Check, X } from 'lucide-react';
+import ImportService from '../services/ImportService';
+import { FileSpreadsheet, Download, Upload, FileText, Check, X, ExternalLink } from 'lucide-react';
 import {
   Container,
   Box,
@@ -32,11 +34,13 @@ interface ParsedTransaction {
   description: string;
   amount: number;
   selected: boolean;
+  type: 'income' | 'expense';
 }
 
 const ExportData: React.FC = () => {
   const { accountService, transactionService, isInitialized } = useApp();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -55,6 +59,10 @@ const ExportData: React.FC = () => {
     exportToExcel(accounts, transactions);
   };
 
+  const handleGoToImport = () => {
+    navigate('/import');
+  };
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -64,64 +72,39 @@ const ExportData: React.FC = () => {
     setImportSuccess(false);
 
     try {
-      // For now, we'll use a simple text extraction approach
-      // In a real implementation, you'd use pdf-parse or similar library
-      const text = await extractTextFromPDF(file);
-      const transactions = parseTransactionsFromText(text);
+      // Use the ImportService for proper file parsing
+      const result = await ImportService.analyzeFile(file);
       
-      if (transactions.length === 0) {
-        setImportError(t('exportData.noTransactionsFound'));
-      } else {
+      if (result.success && result.transactions.length > 0) {
+        const transactions: ParsedTransaction[] = result.transactions.map((tx) => ({
+          id: tx.id,
+          date: tx.date,
+          description: tx.description,
+          amount: tx.amount,
+          selected: tx.selected,
+          type: tx.type === 'income' ? 'income' : 'expense',
+        }));
         setParsedTransactions(transactions);
+      } else if (result.error) {
+        // Provide more descriptive error messages
+        let errorMessage = result.error;
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          errorMessage = t('exportData.pdfParseError');
+        }
+        setImportError(errorMessage);
+      } else {
+        setImportError(t('exportData.noTransactionsFound'));
       }
-    } catch {
+    } catch (err) {
+      console.error('Import error:', err);
       setImportError(t('exportData.importError'));
     } finally {
       setIsAnalyzing(false);
-    }
-  };
-
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    // Use FileReader to read the file as text (for demo purposes)
-    // In production, you would use a PDF parsing library
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string || '';
-        resolve(text);
-      };
-      reader.onerror = () => resolve('');
-      reader.readAsText(file);
-    });
-  };
-
-  const parseTransactionsFromText = (text: string): ParsedTransaction[] => {
-    const lines = text.split('\n').filter(line => line.trim());
-    const transactions: ParsedTransaction[] = [];
-    
-    // Simple pattern matching for common bank statement formats
-    const datePattern = /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/;
-    const amountPattern = /\$?\s*-?[\d,]+\.?\d{0,2}/g;
-
-    lines.forEach((line, index) => {
-      const dateMatch = line.match(datePattern);
-      const amountMatches = line.match(amountPattern);
-      
-      if (dateMatch && amountMatches && amountMatches.length > 0) {
-        const amount = parseFloat(amountMatches[amountMatches.length - 1].replace(/[$,\s]/g, ''));
-        if (!isNaN(amount) && amount !== 0) {
-          transactions.push({
-            id: `tx-${index}`,
-            date: dateMatch[1],
-            description: line.replace(datePattern, '').replace(amountPattern, '').trim().slice(0, 100),
-            amount,
-            selected: true,
-          });
-        }
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
-    });
-
-    return transactions;
+    }
   };
 
   const handleToggleTransaction = (id: string) => {
@@ -271,33 +254,56 @@ const ExportData: React.FC = () => {
           <Typography variant="h5" gutterBottom>
             {t('exportData.importData')}
           </Typography>
-          <Typography color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+          <Typography color="text.secondary" textAlign="center" sx={{ mb: 2 }}>
             {t('exportData.importDescription')}
           </Typography>
-          <input
-            type="file"
-            accept=".pdf,.txt,.csv"
-            onChange={handleFileSelect}
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-          />
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="large"
-            startIcon={isAnalyzing ? <CircularProgress size={20} /> : <Upload size={20} />}
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isAnalyzing}
-            sx={{ 
-              px: 4, 
-              py: 1.5,
-              fontSize: '1rem',
-              fontWeight: 600,
-              borderRadius: 2,
-            }}
-          >
-            {isAnalyzing ? t('exportData.analyzing') : t('exportData.selectFile')}
-          </Button>
+          <Alert severity="info" sx={{ mb: 2, width: '100%' }}>
+            <Typography variant="body2">
+              {t('exportData.recommendImportPage')}
+            </Typography>
+          </Alert>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              startIcon={<ExternalLink size={20} />}
+              onClick={handleGoToImport}
+              sx={{ 
+                px: 4, 
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                borderRadius: 2,
+              }}
+            >
+              {t('exportData.goToImportPage')}
+            </Button>
+            <input
+              type="file"
+              accept=".pdf,.txt,.csv,.xlsx,.xls,.jpg,.jpeg,.png"
+              onChange={handleFileSelect}
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+            />
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="large"
+              startIcon={isAnalyzing ? <CircularProgress size={20} /> : <Upload size={20} />}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isAnalyzing}
+              sx={{ 
+                px: 4, 
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                borderRadius: 2,
+              }}
+            >
+              {isAnalyzing ? t('exportData.analyzing') : t('exportData.selectFile')}
+            </Button>
+          </Box>
         </Paper>
 
         {/* Import Preview */}

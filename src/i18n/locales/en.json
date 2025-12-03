@@ -203,16 +203,19 @@
     "includeTransfers": "Transfer records",
     "exportNote": "The exported file will be downloaded to your device and can be opened with Microsoft Excel, Google Sheets, or any compatible spreadsheet application.",
     "importData": "Import Data",
-    "importDescription": "Import transactions from a bank statement PDF. The system will analyze the document and extract transaction data.",
-    "selectFile": "Select PDF File",
+    "importDescription": "Import transactions from a bank statement. The system will analyze the document and extract transaction data.",
+    "selectFile": "Select File",
     "previewTitle": "Preview Transactions",
     "previewDescription": "Review the extracted transactions before importing them to the database.",
     "importButton": "Import Selected",
     "noFileSelected": "No file selected",
     "analyzing": "Analyzing document...",
-    "noTransactionsFound": "No transactions found in the document",
+    "noTransactionsFound": "No transactions found in the document. Try the Import Records page for more options.",
     "importSuccess": "Transactions imported successfully!",
-    "importError": "Error importing transactions"
+    "importError": "Error importing transactions",
+    "pdfParseError": "Could not extract text from PDF. Try using the Import Records page which supports OCR for images.",
+    "recommendImportPage": "For best results, use the Import Records page which supports more formats, OCR for images, and editing options.",
+    "goToImportPage": "Go to Import Records"
   },
   "importRecords": {
     "title": "Import Records",
