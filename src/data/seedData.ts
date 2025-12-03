@@ -39,6 +39,18 @@ interface SeedTransaction {
   auditDate: string | null;
   assetIndex: number | null;
   categoryIndex: number | null;
+  description?: string;
+}
+
+interface SeedCreditCard {
+  name: string;
+  last4: string;
+  closingDay: number;
+  dueDay: number;
+  taxPercent: number;
+  fixedFees: number;
+  bank: string;
+  accountIndex: number; // Index in seedAccounts array
 }
 
 // Seed owners
@@ -141,37 +153,85 @@ const seedCategories: SeedCategory[] = [
   },
 ];
 
-// Seed accounts
+// Seed accounts - Argentine banks with ARS and USD accounts
 const seedAccounts: SeedAccount[] = [
+  // BBVA accounts
   {
-    name: 'Main Checking',
-    description: 'Primary checking account',
-    cbu: '1234567890',
-    accountNumber: '12345',
-    alias: 'main.check',
-    bank: 'Bank A',
+    name: 'BBVA Pesos',
+    description: 'Cuenta corriente en pesos BBVA',
+    cbu: '0170123456789012345678',
+    accountNumber: '12345678',
+    alias: 'bbva.pesos',
+    bank: 'BBVA',
     ownerIndex: 0,
-    balance: '1500.00',
-    currency: AccountCurrency.USD,
+    balance: '150000.00',
+    currency: AccountCurrency.ARS,
   },
   {
-    name: 'Savings Account',
-    description: 'Savings for emergencies',
-    cbu: '0987654321',
-    accountNumber: '67890',
-    alias: 'savings',
-    bank: 'Bank A',
+    name: 'BBVA Dólares',
+    description: 'Caja de ahorro en dólares BBVA',
+    cbu: '0170123456789012345679',
+    accountNumber: '12345679',
+    alias: 'bbva.dolares',
+    bank: 'BBVA',
     ownerIndex: 0,
-    balance: '5000.00',
+    balance: '500.00',
     currency: AccountCurrency.USD,
   },
+  // Galicia accounts
   {
-    name: 'Cuenta Pesos',
-    description: 'Cuenta en pesos argentinos',
+    name: 'Galicia Pesos',
+    description: 'Cuenta corriente en pesos Galicia',
+    cbu: '0070123456789012345678',
+    accountNumber: '87654321',
+    alias: 'galicia.pesos',
+    bank: 'Galicia',
+    ownerIndex: 0,
+    balance: '250000.00',
+    currency: AccountCurrency.ARS,
+  },
+  {
+    name: 'Galicia Dólares',
+    description: 'Caja de ahorro en dólares Galicia',
+    cbu: '0070123456789012345679',
+    accountNumber: '87654322',
+    alias: 'galicia.dolares',
+    bank: 'Galicia',
+    ownerIndex: 0,
+    balance: '1000.00',
+    currency: AccountCurrency.USD,
+  },
+  // Uala accounts
+  {
+    name: 'Uala Pesos',
+    description: 'Cuenta Uala en pesos - Alta tasa remuneradora',
     cbu: null,
-    accountNumber: '11111',
-    alias: 'pesos',
-    bank: 'Bank B',
+    accountNumber: '98765432',
+    alias: 'uala.pesos',
+    bank: 'Uala',
+    ownerIndex: 0,
+    balance: '500000.00',
+    currency: AccountCurrency.ARS,
+  },
+  {
+    name: 'Uala Dólares',
+    description: 'Cuenta Uala en dólares',
+    cbu: null,
+    accountNumber: '98765433',
+    alias: 'uala.dolares',
+    bank: 'Uala',
+    ownerIndex: 0,
+    balance: '200.00',
+    currency: AccountCurrency.USD,
+  },
+  // Efectivo (cash)
+  {
+    name: 'Efectivo',
+    description: 'Dinero en efectivo',
+    cbu: null,
+    accountNumber: null,
+    alias: 'efectivo',
+    bank: null,
     ownerIndex: 0,
     balance: '50000.00',
     currency: AccountCurrency.ARS,
@@ -181,22 +241,101 @@ const seedAccounts: SeedAccount[] = [
 // Seed transactions
 const seedTransactions: SeedTransaction[] = [
   {
-    fromAccountIndex: 0,
-    amount: 100.00,
-    toAccountIndex: 1,
+    fromAccountIndex: 0, // BBVA Pesos
+    amount: 5000.00,
+    toAccountIndex: 2, // Galicia Pesos
     date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     auditDate: null,
-    assetIndex: 0,
+    assetIndex: 1, // ARS
     categoryIndex: 8, // Transferencia
+    description: 'Transferencia entre cuentas',
   },
   {
-    fromAccountIndex: 1,
-    amount: 50.00,
-    toAccountIndex: 0,
+    fromAccountIndex: 4, // Uala Pesos
+    amount: 2000.00,
+    toAccountIndex: 6, // Efectivo
     date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     auditDate: null,
-    assetIndex: 0,
+    assetIndex: 1, // ARS
     categoryIndex: 8, // Transferencia
+    description: 'Extracción de efectivo',
+  },
+  {
+    fromAccountIndex: 0, // BBVA Pesos
+    amount: 15000.00,
+    toAccountIndex: 0, // same - expense
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    auditDate: null,
+    assetIndex: 1, // ARS
+    categoryIndex: 0, // Alimentación
+    description: 'Compra supermercado',
+  },
+  {
+    fromAccountIndex: 2, // Galicia Pesos
+    amount: 50000.00,
+    toAccountIndex: 4, // Uala Pesos
+    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    auditDate: null,
+    assetIndex: 1, // ARS
+    categoryIndex: 10, // Inversiones
+    description: 'Inversión en FCI',
+  },
+];
+
+// Seed credit cards
+const seedCreditCards: SeedCreditCard[] = [
+  // BBVA Credit Cards
+  {
+    name: 'BBVA Visa',
+    last4: '1234',
+    closingDay: 27,
+    dueDay: 9,
+    taxPercent: 21,
+    fixedFees: 2500,
+    bank: 'BBVA',
+    accountIndex: 0, // BBVA Pesos
+  },
+  {
+    name: 'BBVA Mastercard',
+    last4: '5678',
+    closingDay: 27,
+    dueDay: 9,
+    taxPercent: 21,
+    fixedFees: 2000,
+    bank: 'BBVA',
+    accountIndex: 0, // BBVA Pesos
+  },
+  // Galicia Credit Cards
+  {
+    name: 'Galicia Visa',
+    last4: '4045',
+    closingDay: 15,
+    dueDay: 5,
+    taxPercent: 21,
+    fixedFees: 3000,
+    bank: 'Galicia',
+    accountIndex: 2, // Galicia Pesos
+  },
+  {
+    name: 'Galicia Mastercard',
+    last4: '9012',
+    closingDay: 15,
+    dueDay: 5,
+    taxPercent: 21,
+    fixedFees: 2500,
+    bank: 'Galicia',
+    accountIndex: 2, // Galicia Pesos
+  },
+  // Uala Credit Card (prepaid/debit-like)
+  {
+    name: 'Uala Mastercard',
+    last4: '3456',
+    closingDay: 1,
+    dueDay: 1,
+    taxPercent: 0,
+    fixedFees: 0,
+    bank: 'Uala',
+    accountIndex: 4, // Uala Pesos
   },
 ];
 
@@ -306,7 +445,7 @@ export const seedDatabase = (db: Database): boolean => {
 
     // Insert seed transactions
     const txStmt = db.prepare(
-      'INSERT INTO [Transaction] (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO [Transaction] (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     seedTransactions.forEach(tx => {
@@ -324,14 +463,39 @@ export const seedDatabase = (db: Database): boolean => {
           tx.auditDate,
           assetId,
           categoryId,
+          tx.description || null,
         ]);
-        console.log(`Created transaction: ${tx.amount} from account ${fromAccountId} to ${toAccountId}`);
+        console.log(`Created transaction: ${tx.amount} from account ${fromAccountId} to ${toAccountId} - ${tx.description || 'no description'}`);
       }
     });
     txStmt.free();
 
+    // Insert seed credit cards
+    const ccStmt = db.prepare(
+      'INSERT INTO CreditCard (AccountId, Name, Last4, ClosingDay, DueDay, TaxPercent, FixedFees, Bank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    seedCreditCards.forEach(cc => {
+      const accountId = accountIds[cc.accountIndex];
+      if (accountId) {
+        ccStmt.run([
+          accountId,
+          cc.name,
+          cc.last4,
+          cc.closingDay,
+          cc.dueDay,
+          cc.taxPercent,
+          cc.fixedFees,
+          cc.bank,
+        ]);
+        console.log(`Created credit card: ${cc.name} (${cc.last4}) for account ID ${accountId}`);
+      }
+    });
+    ccStmt.free();
+
     // Insert seed investments (if we have investment accounts)
-    if (accountIds.length >= 4) {
+    // Account indices: 0=BBVA Pesos, 1=BBVA Dólares, 2=Galicia Pesos, 3=Galicia Dólares, 4=Uala Pesos, 5=Uala Dólares, 6=Efectivo
+    if (accountIds.length >= 6) {
       const investmentStmt = db.prepare(
         `INSERT INTO investments 
          (account_id, type, name, symbol, quantity, purchase_price, amount, commission, currency, purchase_date, current_value) 
@@ -340,7 +504,7 @@ export const seedDatabase = (db: Database): boolean => {
 
       const investments = [
         {
-          accountId: accountIds[3], // Investment Account USD
+          accountId: accountIds[3], // Galicia Dólares
           type: 'STOCKS',
           name: 'Apple Inc.',
           symbol: 'AAPL',
@@ -353,7 +517,7 @@ export const seedDatabase = (db: Database): boolean => {
           currentValue: 1550.00, // Will be updated by quotation service
         },
         {
-          accountId: accountIds[3], // Investment Account USD
+          accountId: accountIds[3], // Galicia Dólares
           type: 'STOCKS',
           name: 'Microsoft Corporation',
           symbol: 'MSFT',
@@ -366,17 +530,30 @@ export const seedDatabase = (db: Database): boolean => {
           currentValue: 1520.00,
         },
         {
-          accountId: accountIds[4], // Investment Account ARS
-          type: 'STOCKS',
-          name: 'Galicia',
-          symbol: 'GGAL.BA',
-          quantity: 100,
+          accountId: accountIds[2], // Galicia Pesos
+          type: 'MUTUAL_FUNDS',
+          name: 'FIMA Premium',
+          symbol: 'FIMA',
+          quantity: 1000,
           purchasePrice: 350.00,
-          amount: 35087.50, // 100 * 350 + 87.50 commission
-          commission: 87.50,
+          amount: 350000, // 1000 * 350
+          commission: 0,
           currency: AccountCurrency.ARS,
           purchaseDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          currentValue: 36000.00,
+          currentValue: 360000.00,
+        },
+        {
+          accountId: accountIds[4], // Uala Pesos
+          type: 'STOCKS',
+          name: 'S&P 500 ETF',
+          symbol: 'SPY',
+          quantity: 2,
+          purchasePrice: 52000.00,
+          amount: 104000, // 2 * 52000
+          commission: 0,
+          currency: AccountCurrency.ARS,
+          purchaseDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          currentValue: 108000.00,
         },
       ];
 

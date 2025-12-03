@@ -27,7 +27,7 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { accountService, transactionService, isInitialized } = useApp();
+  const { accountService, transactionService, creditCardService, isInitialized } = useApp();
   const { language } = useLanguage();
 
   const addMessage = useCallback((message: ChatMessage) => {
@@ -40,13 +40,14 @@ const Chatbot: React.FC = () => {
         await ChatbotService.initialize(
           accountService, 
           transactionService, 
-          language
+          language,
+          creditCardService || undefined
         );
         setIsInitializing(false);
         
         const welcomeMessage = language === 'es' 
-          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Guiarte para crear cuentas y transacciones\n\n¿Cómo puedo ayudarte hoy?`
-          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Guide you to create accounts and transactions\n\nHow can I help you today?`;
+          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Crear cuentas, gastos y tarjetas de crédito\n- Registrar cambios de moneda\n\n¿Cómo puedo ayudarte hoy?`
+          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Create accounts, expenses and credit cards\n- Record currency exchanges\n\nHow can I help you today?`;
         
         addMessage({
           id: '0',
@@ -68,13 +69,13 @@ const Chatbot: React.FC = () => {
         timestamp: new Date(),
       });
     }
-  }, [accountService, transactionService, language, addMessage]);
+  }, [accountService, transactionService, creditCardService, language, addMessage]);
 
   useEffect(() => {
     if (isInitialized && accountService && transactionService) {
       initializeChatbot();
     }
-  }, [isInitialized, accountService, transactionService, initializeChatbot]);
+  }, [isInitialized, accountService, transactionService, creditCardService, initializeChatbot]);
 
   useEffect(() => {
     ChatbotService.setLanguage(language);
