@@ -10,8 +10,8 @@ import {
   Box,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Currency, InvestmentType } from '../../types';
-import type { Investment, Account } from '../../types';
+import { AccountCurrency, InvestmentType } from '../../types';
+import type { Investment, Account, Currency } from '../../types';
 
 interface InvestmentDialogProps {
   open: boolean;
@@ -203,7 +203,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               }
               fullWidth
             >
-              {Object.values(Currency).map((curr) => (
+              {Object.values(AccountCurrency).map((curr) => (
                 <MenuItem key={curr} value={curr}>
                   {curr}
                 </MenuItem>

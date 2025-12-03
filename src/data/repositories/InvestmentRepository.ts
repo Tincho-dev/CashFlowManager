@@ -1,6 +1,6 @@
 import type { Database } from 'sql.js';
-import type { Investment } from '../../types';
-import { InvestmentType, Currency } from '../../types';
+import type { Investment, Currency } from '../../types';
+import { InvestmentType, AccountCurrency } from '../../types';
 import { saveDatabase } from '../database';
 import DataAccessLayer from '../DataAccessLayer';
 

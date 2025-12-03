@@ -19,17 +19,6 @@ interface AccountDialogProps {
   onSubmit: (e: React.FormEvent) => void;
   formData: {
     name: string;
-    type: string;
-    balance: number;
-    currency: Currency;
-    commissionRate?: number;
-  };
-  setFormData: React.Dispatch<React.SetStateAction<{
-    name: string;
-    type: string;
-    balance: number;
-    currency: Currency;
-    commissionRate?: number;
     description: string;
     cbu: string;
     accountNumber: string;
@@ -85,38 +74,6 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
               fullWidth
               multiline
               rows={2}
-            />
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                <InputLabel sx={{ fontSize: '0.75rem' }}>{t('accounts.currency')}</InputLabel>
-                <InfoTooltip title={t('tooltips.currency')} size={16} />
-              </Box>
-              <TextField
-                select
-                value={formData.currency}
-                onChange={(e) =>
-                  setFormData({ ...formData, currency: e.target.value as Currency })
-                }
-                fullWidth
-                size="small"
-              >
-                {Object.values(Currency).map((curr) => (
-                  <MenuItem key={curr} value={curr}>
-                    {curr}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
-            <TextField
-              type="number"
-              label="Commission Rate (%)"
-              value={formData.commissionRate || 0}
-              onChange={(e) =>
-                setFormData({ ...formData, commissionRate: parseFloat(e.target.value) || 0 })
-              }
-              fullWidth
-              inputProps={{ step: '0.01', min: '0' }}
-              helperText="Commission percentage for operations (e.g., 0.25 for 0.25%)"
             />
             <TextField
               label={t('accounts.bank')}

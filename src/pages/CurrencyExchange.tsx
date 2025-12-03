@@ -13,9 +13,9 @@ import {
   Divider,
 } from '@mui/material';
 import { ArrowRightLeft } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import type { Account } from '../types';
-import { Currency } from '../types';
+import { AccountCurrency } from '../types';
 import { CurrencyExchangeService } from '../services/CurrencyExchangeService';
 
 const CurrencyExchange: React.FC = () => {
@@ -58,8 +58,8 @@ const CurrencyExchange: React.FC = () => {
     setAccounts(allAccounts);
     
     // Set default accounts (first USD and first ARS if available)
-    const usdAccount = allAccounts.find(a => a.currency === Currency.USD);
-    const arsAccount = allAccounts.find(a => a.currency === Currency.ARS);
+    const usdAccount = allAccounts.find(a => a.currency === AccountCurrency.USD);
+    const arsAccount = allAccounts.find(a => a.currency === AccountCurrency.ARS);
     
     if (usdAccount) setFromAccountId(usdAccount.id);
     if (arsAccount && usdAccount?.id !== arsAccount.id) setToAccountId(arsAccount.id);
@@ -187,7 +187,7 @@ const CurrencyExchange: React.FC = () => {
                   >
                     {accounts.map((account) => (
                       <MenuItem key={account.id} value={account.id}>
-                        {account.name} ({account.currency}) - Balance: {account.balance.toFixed(2)}
+                        {account.name} ({account.currency}) - Balance: {parseFloat(account.balance || '0').toFixed(2)}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -218,7 +218,7 @@ const CurrencyExchange: React.FC = () => {
                       .filter(a => a.id !== fromAccountId)
                       .map((account) => (
                         <MenuItem key={account.id} value={account.id}>
-                          {account.name} ({account.currency}) - Balance: {account.balance.toFixed(2)}
+                          {account.name} ({account.currency}) - Balance: {parseFloat(account.balance || '0').toFixed(2)}
                         </MenuItem>
                       ))}
                   </TextField>

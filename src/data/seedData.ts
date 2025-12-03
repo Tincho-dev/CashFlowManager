@@ -51,30 +51,6 @@ const seedOwners: SeedOwner[] = [
     name: 'Business',
     description: 'Business accounts',
   },
-  {
-    name: 'Investment Account USD',
-    type: 'Investment',
-    balance: 10000.00,
-    currency: Currency.USD,
-  },
-  {
-    name: 'Investment Account ARS',
-    type: 'Investment',
-    balance: 500000.00,
-    currency: Currency.ARS,
-  },
-  {
-    name: 'Cuenta Dólares',
-    type: 'Savings',
-    balance: 2000.00,
-    currency: Currency.USD,
-  },
-  {
-    name: 'Cuenta Pesos',
-    type: 'Savings',
-    balance: 150000.00,
-    currency: Currency.ARS,
-  },
 ];
 
 // Seed assets
@@ -372,7 +348,7 @@ export const seedDatabase = (db: Database): boolean => {
           purchasePrice: 150.00,
           amount: 1503.75, // 10 * 150 + 3.75 commission (0.25%)
           commission: 3.75,
-          currency: Currency.USD,
+          currency: AccountCurrency.USD,
           purchaseDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           currentValue: 1550.00, // Will be updated by quotation service
         },
@@ -385,7 +361,7 @@ export const seedDatabase = (db: Database): boolean => {
           purchasePrice: 300.00,
           amount: 1503.75, // 5 * 300 + 3.75 commission
           commission: 3.75,
-          currency: Currency.USD,
+          currency: AccountCurrency.USD,
           purchaseDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           currentValue: 1520.00,
         },
@@ -398,7 +374,7 @@ export const seedDatabase = (db: Database): boolean => {
           purchasePrice: 350.00,
           amount: 35087.50, // 100 * 350 + 87.50 commission
           commission: 87.50,
-          currency: Currency.ARS,
+          currency: AccountCurrency.ARS,
           purchaseDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           currentValue: 36000.00,
         },
@@ -429,13 +405,12 @@ export const seedDatabase = (db: Database): boolean => {
     );
 
     const quotations = [
-      { symbol: 'AAPL', price: 155.00, currency: Currency.USD },
-      { symbol: 'MSFT', price: 304.00, currency: Currency.USD },
-      { symbol: 'GOOGL', price: 145.00, currency: Currency.USD },
-      { symbol: 'GGAL.BA', price: 360.00, currency: Currency.ARS },
-      { symbol: 'YPF.BA', price: 25000.00, currency: Currency.ARS },
-      { symbol: 'USD/ARS', price: 1050.00, currency: Currency.ARS },
-      { symbol: 'USD/EUR', price: 0.92, currency: Currency.EUR },
+      { symbol: 'AAPL', price: 155.00, currency: AccountCurrency.USD },
+      { symbol: 'MSFT', price: 304.00, currency: AccountCurrency.USD },
+      { symbol: 'GOOGL', price: 145.00, currency: AccountCurrency.USD },
+      { symbol: 'GGAL.BA', price: 360.00, currency: AccountCurrency.ARS },
+      { symbol: 'YPF.BA', price: 25000.00, currency: AccountCurrency.ARS },
+      { symbol: 'USD/ARS', price: 1050.00, currency: AccountCurrency.ARS },
     ];
 
     const now = new Date().toISOString();

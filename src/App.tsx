@@ -61,6 +61,7 @@ function App() {
                     path="/transactions"
                     element={<Transactions />}
                   />
+                  <Route path="/investments" element={<Investments />} />
                   <Route
                     path="/currency-exchange"
                     element={<CurrencyExchange />}

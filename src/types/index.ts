@@ -45,6 +45,7 @@ export interface Account {
   ownerId: number;
   balance: string | null;
   currency: AccountCurrency;
+  commissionRate?: number;
 }
 
 export interface Transaction {
@@ -137,6 +138,51 @@ export interface CurrencyExchange {
   exchangeRate: number;
   commission: number;
   date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Investment types
+export const InvestmentType = {
+  STOCKS: 'STOCKS',
+  BONDS: 'BONDS',
+  CRYPTO: 'CRYPTO',
+  MUTUAL_FUNDS: 'MUTUAL_FUNDS',
+  REAL_ESTATE: 'REAL_ESTATE',
+  OTHER: 'OTHER',
+} as const;
+
+export type InvestmentType = (typeof InvestmentType)[keyof typeof InvestmentType];
+
+export interface Investment {
+  id: number;
+  accountId: number;
+  type: InvestmentType;
+  name: string;
+  symbol?: string;
+  quantity?: number;
+  purchasePrice?: number;
+  amount: number;
+  commission: number;
+  currency: Currency;
+  purchaseDate: string;
+  currentValue: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Transfer interface
+export interface Transfer {
+  id: number;
+  fromAccountId: number;
+  toAccountId: number;
+  amount: number;
+  fromCurrency: Currency;
+  toCurrency: Currency;
+  exchangeRate: number;
+  commission: number;
+  date: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 }

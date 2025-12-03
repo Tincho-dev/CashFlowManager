@@ -17,9 +17,9 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Plus, RefreshCw } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../hooks';
 import type { Investment, Account } from '../types';
-import { Currency, InvestmentType } from '../types';
+import { AccountCurrency, InvestmentType } from '../types';
 import InvestmentCard from '../components/investments/InvestmentCard';
 import InvestmentDialog from '../components/investments/InvestmentDialog';
 import { InvestmentService } from '../services/InvestmentService';
