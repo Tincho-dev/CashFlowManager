@@ -12,6 +12,7 @@
     "loans": "Loans",
     "transfers": "Transfers",
     "export": "Export Data",
+    "import": "Import Records",
     "creditCards": "Credit Cards"
   },
   "dashboard": {
@@ -210,6 +211,43 @@
     "noTransactionsFound": "No transactions found in the document",
     "importSuccess": "Transactions imported successfully!",
     "importError": "Error importing transactions"
+  },
+  "importRecords": {
+    "title": "Import Records",
+    "uploadFile": "Upload File",
+    "uploadDescription": "Upload a file containing transaction data. The AI will analyze and extract the relevant information.",
+    "selectFile": "Select File",
+    "analyzing": "Analyzing...",
+    "supportedFormats": "Supported Formats",
+    "aiDescription": "Our AI system will analyze the file content and extract transaction data including dates, amounts, and descriptions.",
+    "previewTitle": "Preview Data",
+    "previewDescription": "Review and edit the extracted transactions before importing. Click on any cell to edit its value.",
+    "clickToEdit": "Click to edit",
+    "type": "Type",
+    "types": {
+      "income": "Income",
+      "expense": "Expense",
+      "transfer": "Transfer"
+    },
+    "fromAccount": "From Account",
+    "toAccount": "To Account",
+    "clearAll": "Clear All",
+    "selected": "Selected",
+    "totalIncome": "Total Income",
+    "totalExpense": "Total Expense",
+    "importButton": "Import Selected",
+    "noFileSelected": "No file selected",
+    "selectFileHint": "Select a file to import transactions from CSV, PDF, TXT, or image files.",
+    "noTransactionsFound": "No transactions could be extracted from the file",
+    "analyzeError": "Error analyzing the file",
+    "importSuccess": "Transactions imported successfully!",
+    "importError": "Error importing transactions",
+    "importFailed": "Failed to import transactions",
+    "selectAccounts": "Please select both from and to accounts",
+    "sameAccountError": "From and To accounts must be different",
+    "noTransactionsSelected": "No transactions selected for import",
+    "servicesNotAvailable": "Services not available",
+    "showRawText": "Show extracted text"
   },
   "common": {
     "save": "Save",
