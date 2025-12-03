@@ -206,14 +206,13 @@ describe('useAccounts', () => {
     });
   });
 
-  describe('getBanks', () => {
+  describe('banks', () => {
     it('should return unique banks', () => {
       const { result } = renderHook(() => useAccounts(), {
         wrapper: createWrapper(true),
       });
 
-      const banks = result.current.getBanks();
-      expect(banks).toEqual(['Bank A', 'Bank B']);
+      expect(result.current.banks).toEqual(['Bank A', 'Bank B']);
     });
   });
 

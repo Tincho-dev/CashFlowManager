@@ -11,8 +11,8 @@ export interface TransactionFormData {
   assetId: number | null;
   categoryId: number | null;
   description: string | null;
-  transactionType: TransactionType | null;
-  creditCardId: number | null;
+  transactionType?: TransactionType;
+  creditCardId?: number | null;
 }
 
 export interface TransactionFilters {
@@ -156,12 +156,7 @@ export const useTransactions = (accounts: Account[] = []): UseTransactionsReturn
 
   const updateTransaction = useCallback((id: number, data: Partial<TransactionFormData>): Transaction | null => {
     if (!transactionService) return null;
-    // Convert null values to undefined for compatibility with Transaction type
-    const updateData: Partial<Omit<Transaction, 'id'>> = {
-      ...data,
-      transactionType: data.transactionType === null ? undefined : data.transactionType,
-    };
-    const transaction = transactionService.updateTransaction(id, updateData);
+    const transaction = transactionService.updateTransaction(id, data);
     refreshTransactions();
     return transaction;
   }, [transactionService, refreshTransactions]);

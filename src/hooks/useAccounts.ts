@@ -39,7 +39,7 @@ export interface UseAccountsReturn {
   getAccountsByCurrency: (currency: AccountCurrency) => Account[];
   getTotalBalance: () => number;
   getTotalBalanceByCurrency: (currency: AccountCurrency) => number;
-  getBanks: () => string[];
+  banks: string[];
   getDefaultFormData: () => AccountFormData;
 }
 
@@ -129,14 +129,12 @@ export const useAccounts = (): UseAccountsReturn => {
       }, 0);
   }, [accounts]);
 
-  const getBanks = useMemo((): () => string[] => {
-    return () => {
-      const banks = new Set<string>();
-      accounts.forEach(a => {
-        if (a.bank) banks.add(a.bank);
-      });
-      return Array.from(banks).sort();
-    };
+  const getBanks = useMemo((): string[] => {
+    const banks = new Set<string>();
+    accounts.forEach(a => {
+      if (a.bank) banks.add(a.bank);
+    });
+    return Array.from(banks).sort();
   }, [accounts]);
 
   const getDefaultFormData = useCallback((): AccountFormData => {
@@ -159,7 +157,7 @@ export const useAccounts = (): UseAccountsReturn => {
     getAccountsByCurrency,
     getTotalBalance,
     getTotalBalanceByCurrency,
-    getBanks,
+    banks: getBanks,
     getDefaultFormData,
   };
 };
