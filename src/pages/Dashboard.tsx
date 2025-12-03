@@ -7,8 +7,8 @@ import { useApp } from '../hooks';
 import { TransactionType } from '../types';
 import styles from './Dashboard.module.scss';
 
-// Configuration constants
-const CIRCLE_SEGMENTS = 4;
+// Number of data categories in the donut chart (income, fixed expenses, variable expenses, savings)
+const CHART_SEGMENTS = 4;
 
 interface ExpenseStats {
   income: number;
@@ -125,8 +125,8 @@ const Dashboard: React.FC = () => {
     const circumference = 2 * Math.PI * 80; // r=80
     
     if (total === 0) {
-      // Default display when no data - show equal fourths
-      const segmentLength = circumference / CIRCLE_SEGMENTS;
+      // Default display when no data - show equal segments for each category
+      const segmentLength = circumference / CHART_SEGMENTS;
       return {
         incomeOffset: 0,
         incomeLength: segmentLength,
