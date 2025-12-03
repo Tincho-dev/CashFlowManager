@@ -82,17 +82,17 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
   - [ ] Integración con SharePoint
   - [ ] Integración con Google Sheets
   - [ ] Sincronización offline-first con cola de cambios
-- [ ] Deploy automático
-  - [ ] Configuración para Vercel
-  - [ ] GitHub Actions para CI/CD
+- [x] ~~Deploy automático~~ - COMPLETED
+  - [x] ~~Configuración para Vercel~~ - COMPLETED: Archivo vercel.json configurado
+  - [x] ~~GitHub Actions para CI/CD~~ - COMPLETED: Workflow deploy.yml con lint, test y deploy
 
 ### Refactoring Técnico
-- [x] ~~Migrar completamente de CSS a SCSS modules~~ - COMPLETED (parcialmente, falta Transactions)
+- [x] ~~Migrar completamente de CSS a SCSS modules~~ - COMPLETED: Todos los componentes usan SCSS modules o MUI sx props. Archivos CSS legacy eliminados (Accounts.css, Transactions.css, CreditCards.css, Dashboard.css, ExportData.css)
 - [x] ~~Extraer lógica de negocio a custom hooks~~ - COMPLETED: Implementados useAccounts y useTransactions hooks
 - [ ] Implementar React Query para mejor manejo de estado (ya instalado)
 - [x] ~~Agregar tests unitarios~~ - COMPLETED: 164 tests (incluidos hooks useAccounts y useTransactions)
 - [ ] Agregar tests de integración
-- [ ] Implementar CI/CD pipeline
+- [x] ~~Implementar CI/CD pipeline~~ - COMPLETED: Workflow con jobs separados para test y deploy
 
 ## 🚀 Nuevas Funcionalidades Propuestas / Proposed New Features
 
@@ -238,13 +238,13 @@ SQLite Database (localStorage)
 
 ### ✅ Completado (Cumplido 100%)
 1. **Refactoring de UI**: Migración completa a MUI components
-2. **SCSS Modules**: Implementado para varios componentes
+2. **SCSS Modules**: Todos los componentes usan SCSS modules o MUI sx props (archivos CSS legacy eliminados)
 3. **Bottom Navigation**: Navegación móvil mejorada
 4. **Chatbot con IA**: Sistema completo de asistente inteligente
 5. **OCR**: Procesamiento de imágenes funcional
 6. **Logging**: Sistema completo de auditoría
 7. **Tooltips**: Sistema de ayuda contextual
-8. **Traducciones**: Soporte completo bilingüe
+8. **Traducciones**: Soporte completo bilingüe (incluyendo Investments page)
 9. **Mobile-First Styles**: Overflow y responsive design corregido
 10. **Chatbot Multilingüe**: Soporte completo en Español e Inglés
 11. **Store de Configuración**: Cuenta y moneda predeterminadas en AppContext
@@ -255,22 +255,20 @@ SQLite Database (localStorage)
 16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
 17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
 18. **Tests Unitarios**: 164 tests para servicios, repositorios y hooks
+19. **CI/CD Pipeline**: GitHub Actions con lint, test y deploy a Vercel
 
 ### 🚧 En Progreso / En Curso
-- Refactoring de página Transactions (pendiente)
 - Viewer de logs en UI (falta implementar)
 - Integración con APIs externas (cotizaciones y tipos de cambio)
 - Sistema de sincronización con hojas de cálculo
 
 ### 📋 Pendiente / To Do
-- Mejoras de accesibilidad
+- Mejoras de accesibilidad (parcialmente implementado, continuar mejorando)
 - Dark mode
 - Tests de integración
-- CI/CD pipeline
-- Deploy automático en Vercel
 - Store global de monedas y tasas de cambio
 
 ---
 
 *Última actualización: 2025-12-03*
-*Versión: 2.4.0 - Custom hooks y tests unitarios*
+*Versión: 2.5.0 - CI/CD pipeline y traducciones completas de Investments*

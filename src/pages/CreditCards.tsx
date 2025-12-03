@@ -24,7 +24,6 @@ import { Plus, Trash2, Edit, CreditCard as CreditCardIcon, FileUp } from 'lucide
 import { useApp } from '../hooks';
 import type { CreditCard, Account } from '../types';
 import { CreditCardService } from '../services/CreditCardService';
-import './CreditCards.css';
 
 interface FormData {
   accountId: number;

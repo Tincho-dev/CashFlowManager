@@ -143,7 +143,7 @@ const Investments: React.FC = () => {
       setTransferringInvestment(null);
       setTransferToAccountId(0);
     } else {
-      alert('Failed to transfer investment');
+      alert(t('importRecords.importFailed'));
     }
   };
 
@@ -166,7 +166,7 @@ const Investments: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this investment?')) {
+    if (window.confirm(t('investments.deleteConfirm'))) {
       investmentService.deleteInvestment(id);
       loadInvestments();
     }
@@ -205,14 +205,15 @@ const Investments: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-          Investments
+          {t('investments.title')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Refresh Quotations">
+          <Tooltip title={t('investments.refreshPrices')}>
             <IconButton
               color="primary"
               onClick={handleRefreshQuotations}
               disabled={isRefreshing}
+              aria-label={t('investments.refreshPrices')}
               sx={{ 
                 border: '1px solid',
                 borderColor: 'primary.main',
@@ -223,7 +224,7 @@ const Investments: React.FC = () => {
           </Tooltip>
           <Fab
             color="primary"
-            aria-label="Add investment"
+            aria-label={t('investments.add')}
             onClick={() => setShowModal(true)}
             size={window.innerWidth < 600 ? 'medium' : 'large'}
             disabled={accounts.length === 0}
@@ -235,25 +236,27 @@ const Investments: React.FC = () => {
 
       {accounts.length === 0 ? (
         <Alert severity="warning" sx={{ mt: 4 }}>
-          Please create an account first before adding investments.
+          {t('investments.emptyAccounts')}
         </Alert>
       ) : investments.length === 0 ? (
         <Alert severity="info" sx={{ mt: 4 }}>
-          No investments yet. Click the + button to add your first investment!
+          {t('investments.empty')}
         </Alert>
       ) : (
         <>
           <Box sx={{ mb: 4, p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
-            <Typography variant="h6" gutterBottom>Portfolio Summary</Typography>
+            <Typography variant="h6" gutterBottom>{t('investments.totalValue')}</Typography>
             <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Total Value</Typography>
+                <Typography variant="body2" color="text.secondary">{t('investments.currentValue')}</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
                   ${totalValue.toFixed(2)}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary">Total Gain/Loss</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {totalGain >= 0 ? t('investments.gain') : t('investments.loss')}
+                </Typography>
                 <Typography 
                   variant="h5" 
                   sx={{ 
@@ -300,17 +303,17 @@ const Investments: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Transfer Investment</DialogTitle>
+        <DialogTitle>{t('common.edit')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {transferringInvestment && (
               <>
                 <Typography variant="body1" sx={{ mb: 2 }}>
-                  Transfer <strong>{transferringInvestment.name}</strong> to another account
+                  {t('transactions.toAccount')}: <strong>{transferringInvestment.name}</strong>
                 </Typography>
                 <TextField
                   select
-                  label="Destination Account"
+                  label={t('transactions.toAccount')}
                   value={transferToAccountId}
                   onChange={(e) => setTransferToAccountId(parseInt(e.target.value))}
                   fullWidth
@@ -333,14 +336,14 @@ const Investments: React.FC = () => {
             setTransferringInvestment(null);
             setTransferToAccountId(0);
           }}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleTransferSubmit} 
             variant="contained"
             disabled={!transferToAccountId}
           >
-            Transfer
+            {t('common.confirm')}
           </Button>
         </DialogActions>
       </Dialog>
