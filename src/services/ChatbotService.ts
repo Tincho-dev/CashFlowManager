@@ -4,6 +4,8 @@ import type { TransactionService } from './TransactionService';
 import LoggingService, { LogCategory } from './LoggingService';
 import ToonParserService from './ToonParserService';
 import type { ToonTransaction } from '../types/toon';
+import { llmService, isLLMEnabled } from './LLMService';
+import { appConfig } from '../config/appConfig';
 
 export interface ChatMessage {
   id: string;
@@ -25,6 +27,7 @@ class ChatbotService {
   private accountService: AccountService | null = null;
   private transactionService: TransactionService | null = null;
   private currentLanguage: string = 'en';
+  private useLLM: boolean = false;
 
   async initialize(
     accountService: AccountService, 
@@ -37,11 +40,23 @@ class ChatbotService {
       this.accountService = accountService;
       this.transactionService = transactionService;
       this.currentLanguage = language;
-
-      LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
-        model: 'keyword-based-multilingual',
-        language,
-      });
+      
+      // Check if LLM is available (when not in local mode)
+      this.useLLM = isLLMEnabled();
+      if (this.useLLM) {
+        await llmService.initialize();
+        LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
+          model: llmService.getProviderName(),
+          language,
+          useLLM: true,
+        });
+      } else {
+        LoggingService.info(LogCategory.SYSTEM, 'CHATBOT_INITIALIZED', {
+          model: 'keyword-based-multilingual',
+          language,
+          useLLM: false,
+        });
+      }
 
       this.isInitialized = true;
     } catch (error) {
@@ -54,6 +69,10 @@ class ChatbotService {
 
   setLanguage(language: string): void {
     this.currentLanguage = language;
+  }
+  
+  isUsingLLM(): boolean {
+    return this.useLLM && !appConfig.isLocal;
   }
 
   async processMessage(message: string): Promise<ChatbotResponse> {

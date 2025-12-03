@@ -73,11 +73,21 @@ export class TransactionRepository {
     return results[0].values.map(row => this.mapRowToTransaction(row));
   }
 
+  getByCategory(categoryId: number): Transaction[] {
+    const results = this.db.exec(
+      'SELECT * FROM [Transaction] WHERE CategoryId = ? ORDER BY Date DESC, Id DESC',
+      [categoryId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToTransaction(row));
+  }
+
   create(transaction: Omit<Transaction, 'id'>): Transaction {
     this.db.run(
       `INSERT INTO [Transaction] 
-       (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         transaction.fromAccountId,
         transaction.amount,
@@ -85,6 +95,7 @@ export class TransactionRepository {
         transaction.date,
         transaction.auditDate,
         transaction.assetId,
+        transaction.categoryId,
       ]
     );
 
@@ -123,6 +134,10 @@ export class TransactionRepository {
       updates.push('AssetId = ?');
       values.push(transaction.assetId);
     }
+    if (transaction.categoryId !== undefined) {
+      updates.push('CategoryId = ?');
+      values.push(transaction.categoryId);
+    }
 
     if (updates.length === 0) {
       return this.getById(id);
@@ -154,6 +169,7 @@ export class TransactionRepository {
       date: row[4] as string,
       auditDate: row[5] as string | null,
       assetId: row[6] as number | null,
+      categoryId: row[7] as number | null,
     };
   }
 }

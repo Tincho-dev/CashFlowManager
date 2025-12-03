@@ -16,6 +16,23 @@ CREATE TABLE Assets (
     Price   FLOAT NULL
 );
 
+-- Tabla Currency: lista de monedas soportadas (normalizada)
+CREATE TABLE Currency (
+    Code        NVARCHAR(3) PRIMARY KEY,      -- p.ej. 'ARS','USD'
+    Name        NVARCHAR(64) NOT NULL,
+    Symbol      NVARCHAR(8) NULL,
+    IsDefault   BIT NOT NULL DEFAULT 0
+);
+
+-- Tabla Category: categorías para clasificar transacciones
+CREATE TABLE Category (
+    Id          INT PRIMARY KEY IDENTITY(1,1),
+    Name        NVARCHAR(64) NOT NULL,
+    Description NVARCHAR(256) NULL,
+    Color       NVARCHAR(7) NULL,             -- Color en formato hexadecimal (#RRGGBB)
+    Icon        NVARCHAR(32) NULL             -- Nombre del icono (opcional)
+);
+
 -- Tabla Account
 CREATE TABLE Account (
     Id              INT PRIMARY KEY IDENTITY(1,1),
@@ -38,7 +55,8 @@ CREATE TABLE [Transaction] (
     ToAccountId     INT NOT NULL,
     Date            DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),  -- default fecha actual
     AuditDate       DATETIME2(7) NULL DEFAULT SYSUTCDATETIME(),      -- default fecha actual
-    AssetId         INT NULL
+    AssetId         INT NULL,
+    CategoryId      INT NULL                                          -- FK a Category
 );
 
 -- Tabla CreditCard
@@ -91,14 +109,6 @@ CREATE TABLE LoanInstallment (
     CONSTRAINT CK_Installment_Amounts CHECK (PrincipalAmount >= 0 AND InterestAmount >= 0 AND FeesAmount >= 0)
 );
 
--- Tabla Currency: lista de monedas soportadas (normalizada)
-CREATE TABLE Currency (
-    Code        NVARCHAR(3) PRIMARY KEY,      -- p.ej. 'ARS','USD'
-    Name        NVARCHAR(64) NOT NULL,
-    Symbol      NVARCHAR(8) NULL,
-    IsDefault   BIT NOT NULL DEFAULT 0
-);
-
 -- Tabla ExchangeRate: tipo de cambio histórico (From -> To)
 CREATE TABLE ExchangeRate (
     Id              INT PRIMARY KEY IDENTITY(1,1),
@@ -119,6 +129,9 @@ ALTER TABLE Account
 ADD CONSTRAINT FK_Account_Owner FOREIGN KEY (OwnerId)
 REFERENCES Owner (Id);
 
+-- FK: Account.Currency -> Currency(Code)
+ALTER TABLE Account
+ADD CONSTRAINT FK_Account_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
 
 -- FK 2 & 3: [Transaction] -> Account (Usando el nombre de la tabla entre corchetes)
 ALTER TABLE [Transaction]
@@ -129,12 +142,15 @@ ALTER TABLE [Transaction]
 ADD CONSTRAINT FK_Transaction_ToAccount FOREIGN KEY (ToAccountId)
 REFERENCES Account (Id);
 
-
 -- FK 4: [Transaction] -> Assets (Usando el nombre de la tabla entre corchetes)
 ALTER TABLE [Transaction]
 ADD CONSTRAINT FK_Transaction_Asset FOREIGN KEY (AssetId)
 REFERENCES Assets (Id);
 
+-- FK 5: [Transaction] -> Category
+ALTER TABLE [Transaction]
+ADD CONSTRAINT FK_Transaction_Category FOREIGN KEY (CategoryId)
+REFERENCES Category (Id);
 
 -- FK 5: CreditCard -> Account
 ALTER TABLE CreditCard
@@ -149,6 +165,10 @@ REFERENCES Account (Id);
 ALTER TABLE Loan
 ADD CONSTRAINT FK_Loan_LenderAccount FOREIGN KEY (LenderAccountId)
 REFERENCES Account (Id);
+
+-- FK: Loan.Currency -> Currency(Code)
+ALTER TABLE Loan
+ADD CONSTRAINT FK_Loan_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
 
 -- Agregar FK: LoanInstallment -> Loan
 ALTER TABLE LoanInstallment
@@ -167,10 +187,24 @@ ADD CONSTRAINT FK_ExchangeRate_FromCurrency FOREIGN KEY (FromCurrency) REFERENCE
 ALTER TABLE ExchangeRate
 ADD CONSTRAINT FK_ExchangeRate_ToCurrency FOREIGN KEY (ToCurrency) REFERENCES Currency (Code);
 
--- FK: Account.Currency -> Currency(Code)
-ALTER TABLE Account
-ADD CONSTRAINT FK_Account_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
+-------------------------------------------------------
+-- 3. SEED DATA (Datos iniciales)
+-------------------------------------------------------
 
--- FK: Loan.Currency -> Currency(Code)
-ALTER TABLE Loan
-ADD CONSTRAINT FK_Loan_Currency FOREIGN KEY (Currency) REFERENCES Currency (Code);
+-- Insertar monedas por defecto
+INSERT INTO Currency (Code, Name, Symbol, IsDefault) VALUES ('ARS', 'Peso Argentino', '$', 1);
+INSERT INTO Currency (Code, Name, Symbol, IsDefault) VALUES ('USD', 'Dólar Estadounidense', 'US$', 0);
+
+-- Insertar categorías por defecto
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Alimentación', 'Gastos en comida, supermercado y restaurantes', '#4CAF50', 'utensils');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Transporte', 'Gastos en transporte público, combustible y vehículos', '#2196F3', 'car');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Vivienda', 'Alquiler, hipoteca y servicios del hogar', '#9C27B0', 'home');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Servicios', 'Agua, luz, gas, internet y teléfono', '#FF9800', 'zap');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Salud', 'Gastos médicos, medicamentos y seguros de salud', '#F44336', 'heart');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Entretenimiento', 'Ocio, suscripciones y actividades recreativas', '#E91E63', 'music');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Educación', 'Cursos, libros y materiales educativos', '#3F51B5', 'book');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Compras', 'Ropa, electrodomésticos y artículos personales', '#00BCD4', 'shopping-bag');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Transferencia', 'Transferencias entre cuentas propias', '#607D8B', 'repeat');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Ingresos', 'Salarios, bonos y otros ingresos', '#8BC34A', 'dollar-sign');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Inversiones', 'Compra y venta de activos financieros', '#FFC107', 'trending-up');
+INSERT INTO Category (Name, Description, Color, Icon) VALUES ('Otros', 'Gastos no categorizados', '#9E9E9E', 'more-horizontal');

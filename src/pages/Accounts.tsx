@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Container, Box, Typography, Fab, Alert } from '@mui/material';
-import { Plus } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { Container, Box, Typography, Fab, Alert, ToggleButton, ToggleButtonGroup, Divider } from '@mui/material';
+import { Plus, Layers, Building, DollarSign, TrendingUp } from 'lucide-react';
+import { useApp } from '../hooks';
 import type { Account } from '../types';
 import { AccountCurrency } from '../types';
 import AccountCard from '../components/accounts/AccountCard';
 import AccountDialog from '../components/accounts/AccountDialog';
+
+type GroupBy = 'none' | 'bank' | 'currency' | 'balance';
 
 const Accounts: React.FC = () => {
   const { accountService, ownerService, isInitialized } = useApp();
@@ -14,6 +16,7 @@ const Accounts: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [groupBy, setGroupBy] = useState<GroupBy>('none');
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
@@ -36,22 +39,79 @@ const Accounts: React.FC = () => {
     currency: AccountCurrency.USD,
   });
 
+  const loadAccounts = useCallback(() => {
+    if (!accountService) return;
+    setAccounts(accountService.getAllAccounts());
+  }, [accountService]);
+
   useEffect(() => {
     if (isInitialized && accountService) {
       loadAccounts();
       // Set default owner if available
       if (ownerService) {
         const owners = ownerService.getAllOwners();
-        if (owners.length > 0 && formData.ownerId === 0) {
-          setFormData(prev => ({ ...prev, ownerId: owners[0].id }));
+        if (owners.length > 0) {
+          setFormData(prev => {
+            if (prev.ownerId === 0) {
+              return { ...prev, ownerId: owners[0].id };
+            }
+            return prev;
+          });
         }
       }
     }
-  }, [isInitialized, accountService, ownerService]);
+  }, [isInitialized, accountService, ownerService, loadAccounts]);
 
-  const loadAccounts = () => {
-    if (!accountService) return;
-    setAccounts(accountService.getAllAccounts());
+  // Group accounts based on selected grouping
+  const groupedAccounts = useMemo(() => {
+    if (groupBy === 'none') {
+      return { [t('accounts.title')]: accounts };
+    }
+
+    const groups: { [key: string]: Account[] } = {};
+
+    accounts.forEach(account => {
+      let groupKey: string;
+
+      switch (groupBy) {
+        case 'bank':
+          groupKey = account.bank || t('accounts.noBank');
+          break;
+        case 'currency':
+          groupKey = account.currency;
+          break;
+        case 'balance': {
+          const balance = account.balance ? parseFloat(account.balance) : 0;
+          if (balance < 0) {
+            groupKey = t('accounts.balanceNegative');
+          } else if (balance === 0) {
+            groupKey = t('accounts.balanceZero');
+          } else if (balance < 10000) {
+            groupKey = t('accounts.balanceLow');
+          } else if (balance < 100000) {
+            groupKey = t('accounts.balanceMedium');
+          } else {
+            groupKey = t('accounts.balanceHigh');
+          }
+          break;
+        }
+        default:
+          groupKey = t('accounts.title');
+      }
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(account);
+    });
+
+    return groups;
+  }, [accounts, groupBy, t]);
+
+  const handleGroupByChange = (_event: React.MouseEvent<HTMLElement>, newGroupBy: GroupBy | null) => {
+    if (newGroupBy !== null) {
+      setGroupBy(newGroupBy);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -153,21 +213,87 @@ const Accounts: React.FC = () => {
         </Fab>
       </Box>
 
+      {/* Grouping Options */}
+      {accounts.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            {t('accounts.groupBy')}
+          </Typography>
+          <ToggleButtonGroup
+            value={groupBy}
+            exclusive
+            onChange={handleGroupByChange}
+            aria-label={t('accounts.groupBy')}
+            size="small"
+            sx={{ flexWrap: 'wrap' }}
+          >
+            <ToggleButton value="none" aria-label={t('accounts.groupNone')}>
+              <Layers size={16} style={{ marginRight: 4 }} />
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {t('accounts.groupNone')}
+              </Box>
+            </ToggleButton>
+            <ToggleButton value="bank" aria-label={t('accounts.groupByBank')}>
+              <Building size={16} style={{ marginRight: 4 }} />
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {t('accounts.groupByBank')}
+              </Box>
+            </ToggleButton>
+            <ToggleButton value="currency" aria-label={t('accounts.groupByCurrency')}>
+              <DollarSign size={16} style={{ marginRight: 4 }} />
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {t('accounts.groupByCurrency')}
+              </Box>
+            </ToggleButton>
+            <ToggleButton value="balance" aria-label={t('accounts.groupByBalance')}>
+              <TrendingUp size={16} style={{ marginRight: 4 }} />
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {t('accounts.groupByBalance')}
+              </Box>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+      )}
+
       {accounts.length === 0 ? (
         <Alert severity="info" sx={{ mt: 4 }}>
           {t('accounts.empty')}
         </Alert>
       ) : (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
-          {accounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </Box>
+        Object.entries(groupedAccounts).map(([groupName, groupAccounts]) => (
+          <Box key={groupName} sx={{ mb: 4 }}>
+            {groupBy !== 'none' && (
+              <>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2, 
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  {groupName}
+                  <Typography component="span" variant="body2" color="text.disabled">
+                    ({groupAccounts.length})
+                  </Typography>
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+              </>
+            )}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+              {groupAccounts.map((account) => (
+                <AccountCard
+                  key={account.id}
+                  account={account}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </Box>
+          </Box>
+        ))
       )}
 
       <AccountDialog

@@ -4,7 +4,7 @@ interface SyncRecord {
   id: string;
   type: 'account' | 'transaction' | 'investment' | 'loan' | 'transfer';
   action: 'create' | 'update' | 'delete';
-  data: any;
+  data: unknown;
   timestamp: Date;
   synced: boolean;
 }
@@ -48,8 +48,8 @@ class CloudSyncService {
     try {
       const saved = localStorage.getItem(this.QUEUE_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        this.syncQueue = parsed.map((record: any) => ({
+        const parsed = JSON.parse(saved) as Array<SyncRecord & { timestamp: string }>;
+        this.syncQueue = parsed.map((record) => ({
           ...record,
           timestamp: new Date(record.timestamp),
         }));
@@ -137,7 +137,7 @@ class CloudSyncService {
   queueRecord(
     type: SyncRecord['type'],
     action: SyncRecord['action'],
-    data: any
+    data: unknown
   ): void {
     if (!this.config.enabled) return;
 

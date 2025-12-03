@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
 import ExportData from './pages/ExportData';
+import CreditCards from './pages/CreditCards';
+import Loans from './pages/Loans';
+import ImportRecords from './pages/ImportRecords';
 import './App.css';
 
 const theme = createTheme({
@@ -54,8 +57,11 @@ function App() {
                   <Route path="/accounts" element={<Accounts />} />
                   <Route
                     path="/transactions"
-                    element={<Transactions title="Transactions" />}
+                    element={<Transactions />}
                   />
+                  <Route path="/credit-cards" element={<CreditCards />} />
+                  <Route path="/loans" element={<Loans />} />
+                  <Route path="/import" element={<ImportRecords />} />
                   <Route path="/export" element={<ExportData />} />
                 </Routes>
               </Layout>

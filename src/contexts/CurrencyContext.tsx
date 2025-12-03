@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { AccountCurrency } from '../types';
 
@@ -13,7 +13,7 @@ interface ExchangeRate {
   lastUpdated: Date;
 }
 
-interface CurrencyContextType {
+export interface CurrencyContextType {
   defaultCurrency: Currency;
   setDefaultCurrency: (currency: Currency) => void;
   exchangeRates: Map<string, ExchangeRate>;
@@ -23,15 +23,7 @@ interface CurrencyContextType {
   isUpdatingRates: boolean;
 }
 
-const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
-
-export const useCurrency = (): CurrencyContextType => {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrency must be used within a CurrencyProvider');
-  }
-  return context;
-};
+export const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 interface CurrencyProviderProps {
   children: ReactNode;
@@ -88,7 +80,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     localStorage.setItem(RATES_STORAGE_KEY, JSON.stringify(obj));
   };
 
-  const getExchangeRate = (from: Currency, to: Currency): number | null => {
+  const getExchangeRate = useCallback((from: Currency, to: Currency): number | null => {
     if (from === to) return 1;
     
     const key = `${from}-${to}`;
@@ -106,9 +98,9 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     }
     
     return null;
-  };
+  }, [exchangeRates]);
 
-  const convertAmount = (amount: number, from: Currency, to: Currency): number => {
+  const convertAmount = useCallback((amount: number, from: Currency, to: Currency): number => {
     if (from === to) return amount;
     
     const rate = getExchangeRate(from, to);
@@ -118,11 +110,26 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     }
     
     return amount * rate;
-  };
+  }, [getExchangeRate]);
 
-  const updateExchangeRates = async (): Promise<void> => {
+  const updateExchangeRates = useCallback(async (): Promise<void> => {
     if (isUpdatingRates) return;
-    
+
+    // If we already have rates and they were updated less than 1 hour ago, skip fetching.
+    if (exchangeRates && exchangeRates.size > 0) {
+      let mostRecent = 0;
+      exchangeRates.forEach(r => {
+        const t = r.lastUpdated.getTime();
+        if (t > mostRecent) mostRecent = t;
+      });
+      const now = Date.now();
+      const ONE_HOUR = 60 * 60 * 1000;
+      if (now - mostRecent < ONE_HOUR) {
+        // Rates are fresh, skip update
+        return;
+      }
+    }
+
     setIsUpdatingRates(true);
     try {
       const response = await fetch(EXCHANGE_API_URL);
@@ -177,7 +184,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     } finally {
       setIsUpdatingRates(false);
     }
-  };
+  }, [isUpdatingRates, setExchangeRates, exchangeRates]);
 
   // Update rates on mount and when online
   useEffect(() => {
@@ -195,7 +202,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     return () => {
       window.removeEventListener('online', handleOnline);
     };
-  }, []);
+  }, [updateExchangeRates]);
 
   // Auto-update rates every hour if online
   useEffect(() => {
@@ -206,7 +213,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     }, 60 * 60 * 1000); // 1 hour
 
     return () => clearInterval(interval);
-  }, []);
+  }, [updateExchangeRates]);
 
   return (
     <CurrencyContext.Provider

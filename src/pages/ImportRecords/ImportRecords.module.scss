@@ -1,0 +1,246 @@
+@use '../../App.css';
+
+.importRecordsContainer {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.uploadSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.uploadCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.uploadIcon {
+  color: var(--color-primary, #4a90e2);
+  margin-bottom: 1rem;
+}
+
+.uploadTitle {
+  margin-bottom: 0.5rem;
+}
+
+.uploadDescription {
+  margin-bottom: 1.5rem;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadButton {
+  min-width: 200px;
+}
+
+.supportedFormats {
+  padding: 2rem;
+}
+
+.formatsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.previewSection {
+  margin-top: 2rem;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.previewTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.previewActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dataGrid {
+  margin-bottom: 1.5rem;
+}
+
+.tableContainer {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.editableCell {
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.cellInput {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #4a90e2;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+}
+
+.amountCell {
+  font-weight: 500;
+}
+
+.incomeAmount {
+  color: #4caf50;
+}
+
+.expenseAmount {
+  color: #f44336;
+}
+
+.transferAmount {
+  color: #2196f3;
+}
+
+.typeChip {
+  font-size: 0.75rem;
+}
+
+.accountSelect {
+  min-width: 200px;
+}
+
+.summarySection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.summaryInfo {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.summaryItem {
+  text-align: center;
+}
+
+.summaryLabel {
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.incomeValue {
+  color: #4caf50;
+}
+
+.expenseValue {
+  color: #f44336;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.emptyIcon {
+  color: #bdbdbd;
+  margin-bottom: 1rem;
+}
+
+.rawTextSection {
+  margin-top: 2rem;
+}
+
+.rawTextToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  color: #666;
+  user-select: none;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+.rawTextContent {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow: auto;
+  font-family: monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}

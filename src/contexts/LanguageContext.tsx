@@ -1,21 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountCurrency } from '../types';
 
-interface LanguageContextType {
+export interface LanguageContextType {
   language: string;
   currency: AccountCurrency;
   setLanguage: (lang: string) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType>({
+export const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   currency: AccountCurrency.USD,
   setLanguage: () => {},
 });
-
-export const useLanguage = () => useContext(LanguageContext);
 
 interface LanguageProviderProps {
   children: ReactNode;

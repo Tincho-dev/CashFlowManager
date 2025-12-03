@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -19,8 +19,8 @@ import {
   Chip,
 } from '@mui/material';
 import { Plus, Trash2, Edit } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
-import type { Transaction, Asset } from '../types';
+import { useApp } from '../hooks';
+import type { Transaction, Asset, Category } from '../types';
 import './Transactions.css';
 
 interface TransactionsProps {
@@ -34,17 +34,21 @@ interface FormData {
   date: string;
   auditDate: string;
   assetId: number | null;
+  categoryId: number | null;
 }
 
-const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) => {
-  const { accountService, transactionService, assetService, isInitialized } = useApp();
+const Transactions: React.FC<TransactionsProps> = ({ title }) => {
+  const { accountService, transactionService, assetService, categoryService, isInitialized } = useApp();
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  const accounts = accountService?.getAllAccounts() || [];
+  const displayTitle = title || t('transactions.title');
+
+  const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
 
   const getDefaultFormData = (): FormData => ({
@@ -54,9 +58,15 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
     date: new Date().toISOString(),
     auditDate: '',
     assetId: null,
+    categoryId: null,
   });
 
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+
+  const loadTransactions = useCallback(() => {
+    if (!transactionService) return;
+    setTransactions(transactionService.getAllTransactions());
+  }, [transactionService]);
 
   useEffect(() => {
     if (isInitialized && transactionService) {
@@ -64,8 +74,11 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
       if (assetService) {
         setAssets(assetService.getAllAssets());
       }
+      if (categoryService) {
+        setCategories(categoryService.getAllCategories());
+      }
     }
-  }, [isInitialized, transactionService, assetService]);
+  }, [isInitialized, transactionService, assetService, categoryService, loadTransactions]);
 
   useEffect(() => {
     if (accounts.length > 0 && formData.fromAccountId === 0) {
@@ -75,12 +88,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         toAccountId: accounts.length > 1 ? accounts[1].id : accounts[0].id,
       }));
     }
-  }, [accounts]);
-
-  const loadTransactions = () => {
-    if (!transactionService) return;
-    setTransactions(transactionService.getAllTransactions());
-  };
+  }, [accounts, formData.fromAccountId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +102,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         date: formData.date,
         auditDate: formData.auditDate || null,
         assetId: formData.assetId,
+        categoryId: formData.categoryId,
       });
     } else {
       transactionService.createTransaction(
@@ -102,7 +111,8 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
         formData.amount,
         formData.date,
         formData.auditDate || null,
-        formData.assetId
+        formData.assetId,
+        formData.categoryId
       );
     }
 
@@ -119,6 +129,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
       date: transaction.date,
       auditDate: transaction.auditDate || '',
       assetId: transaction.assetId,
+      categoryId: transaction.categoryId,
     });
     setShowModal(true);
   };
@@ -153,6 +164,18 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
     return asset ? (asset.ticket || `Asset ${assetId}`) : '';
   };
 
+  const getCategoryName = (categoryId: number | null): string => {
+    if (!categoryId) return '';
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.name : '';
+  };
+
+  const getCategoryColor = (categoryId: number | null): string => {
+    if (!categoryId) return '#9E9E9E';
+    const category = categories.find(c => c.id === categoryId);
+    return category?.color || '#9E9E9E';
+  };
+
   if (!isInitialized) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -165,7 +188,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-          {title}
+          {displayTitle}
         </Typography>
         <Fab
           color="primary"
@@ -231,6 +254,16 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
                         size="small"
                         variant="outlined"
                       />
+                      {transaction.categoryId && (
+                        <Chip
+                          label={getCategoryName(transaction.categoryId)}
+                          size="small"
+                          sx={{ 
+                            backgroundColor: getCategoryColor(transaction.categoryId),
+                            color: 'white',
+                          }}
+                        />
+                      )}
                       {transaction.assetId && (
                         <Chip
                           label={getAssetName(transaction.assetId)}
@@ -332,6 +365,33 @@ const Transactions: React.FC<TransactionsProps> = ({ title = 'Transactions' }) =
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />
+
+              <TextField
+                select
+                label={t('transactions.category')}
+                value={formData.categoryId || ''}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value ? parseInt(e.target.value) : null })}
+                fullWidth
+              >
+                <MenuItem value="">
+                  {t('transactions.noCategory')}
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          backgroundColor: category.color || '#9E9E9E',
+                        }}
+                      />
+                      {category.name}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
 
               <TextField
                 label={t('transactions.auditDate')}
