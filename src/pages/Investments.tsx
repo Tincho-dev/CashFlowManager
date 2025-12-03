@@ -58,7 +58,7 @@ const Investments: React.FC = () => {
     purchasePrice: undefined,
     amount: 0,
     commission: undefined,
-    currency: Currency.USD,
+    currency: AccountCurrency.USD,
     purchaseDate: new Date().toISOString().split('T')[0],
     currentValue: 0,
   });
@@ -182,7 +182,7 @@ const Investments: React.FC = () => {
       purchasePrice: undefined,
       amount: 0,
       commission: undefined,
-      currency: Currency.USD,
+      currency: AccountCurrency.USD,
       purchaseDate: new Date().toISOString().split('T')[0],
       currentValue: 0,
     });

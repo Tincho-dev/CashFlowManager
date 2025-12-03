@@ -1,6 +1,6 @@
 import type { Database } from 'sql.js';
 import type { Investment, Currency } from '../../types';
-import { InvestmentType, AccountCurrency } from '../../types';
+import { InvestmentType } from '../../types';
 import { saveDatabase } from '../database';
 import DataAccessLayer from '../DataAccessLayer';
 
@@ -169,7 +169,7 @@ export class InvestmentRepository {
       quantity: row[5] as number | undefined,
       purchasePrice: row[6] as number | undefined,
       amount: row[7] as number,
-      commission: row[8] as number | undefined,
+      commission: (row[8] as number | null) ?? 0,
       currency: row[9] as Currency,
       purchaseDate: row[10] as string,
       currentValue: row[11] as number,

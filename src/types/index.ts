@@ -177,12 +177,9 @@ export interface Transfer {
   fromAccountId: number;
   toAccountId: number;
   amount: number;
-  fromCurrency: Currency;
-  toCurrency: Currency;
-  exchangeRate: number;
-  commission: number;
-  date: string;
+  currency: Currency;
   description?: string;
+  date: string;
   createdAt: string;
   updatedAt: string;
 }

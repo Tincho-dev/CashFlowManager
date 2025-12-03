@@ -1,5 +1,5 @@
-import type { Investment } from '../types';
-import { InvestmentType, Currency } from '../types';
+import type { Investment, Currency } from '../types';
+import { InvestmentType, AccountCurrency } from '../types';
 import { InvestmentRepository } from '../data/repositories/InvestmentRepository';
 import LoggingService, { LogCategory } from './LoggingService';
 import DataAccessLayer from '../data/DataAccessLayer';
@@ -64,7 +64,12 @@ export class InvestmentService {
     purchaseDate: string;
     currentValue: number;
   }): Investment {
-    const investment = this.getRepository().create(params);
+    // Ensure commission has a default value
+    const investmentParams = {
+      ...params,
+      commission: params.commission ?? 0,
+    };
+    const investment = this.getRepository().create(investmentParams);
 
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_INVESTMENT', {
       investmentId: investment.id,

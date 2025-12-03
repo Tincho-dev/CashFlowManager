@@ -1,7 +1,7 @@
 import type { Database } from 'sql.js';
 import { getDatabase, saveDatabase } from '../data/database';
-import type { Quotation } from '../types';
-import { Currency } from '../types';
+import type { Quotation, Currency } from '../types';
+import { AccountCurrency } from '../types';
 import LoggingService, { LogCategory } from './LoggingService';
 
 interface QuotationCache {
@@ -266,10 +266,10 @@ export class QuotationService {
    */
   private mapCurrencyCode(code: string): Currency {
     const upperCode = code.toUpperCase();
-    if (Object.values(Currency).includes(upperCode as Currency)) {
+    if (Object.values(AccountCurrency).includes(upperCode as Currency)) {
       return upperCode as Currency;
     }
-    return Currency.USD; // Default fallback
+    return AccountCurrency.USD; // Default fallback
   }
 
   /**

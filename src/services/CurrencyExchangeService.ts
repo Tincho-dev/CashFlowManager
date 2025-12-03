@@ -1,5 +1,4 @@
-import type { CurrencyExchange } from '../types';
-import { Currency } from '../types';
+import type { CurrencyExchange, Currency } from '../types';
 import { CurrencyExchangeRepository } from '../data/repositories/CurrencyExchangeRepository';
 import { AccountRepository } from '../data/repositories/AccountRepository';
 import LoggingService, { LogCategory } from './LoggingService';
@@ -107,7 +106,8 @@ export class CurrencyExchangeService {
     }
 
     // Validate from account has sufficient balance
-    if (fromAccount.balance < finalFromAmount!) {
+    const fromBalance = parseFloat(fromAccount.balance || '0');
+    if (fromBalance < finalFromAmount!) {
       console.error('Insufficient balance in from account');
       return null;
     }
@@ -125,9 +125,9 @@ export class CurrencyExchangeService {
       date,
     });
 
-    // Update account balances
-    this.accountRepo.updateBalance(fromAccountId, -finalFromAmount!);
-    this.accountRepo.updateBalance(toAccountId, finalToAmount!);
+    // Update account balances (convert number back to string for storage)
+    this.accountRepo.updateBalance(fromAccountId, (fromBalance - finalFromAmount!).toString());
+    this.accountRepo.updateBalance(toAccountId, (parseFloat(toAccount.balance || '0') + finalToAmount!).toString());
 
     LoggingService.info(LogCategory.TRANSACTION, 'CREATE_CURRENCY_EXCHANGE', {
       exchangeId: exchange.id,
@@ -152,16 +152,31 @@ export class CurrencyExchangeService {
     const oldExchange = this.exchangeRepo.getById(id);
     if (!oldExchange) return null;
 
+    // Get current account balances and revert old exchange
+    const fromAccount = this.accountRepo.getById(oldExchange.fromAccountId);
+    const toAccount = this.accountRepo.getById(oldExchange.toAccountId);
+    if (!fromAccount || !toAccount) return null;
+
+    const fromBalance = parseFloat(fromAccount.balance || '0');
+    const toBalance = parseFloat(toAccount.balance || '0');
+    
     // Revert old balance changes
-    this.accountRepo.updateBalance(oldExchange.fromAccountId, oldExchange.fromAmount);
-    this.accountRepo.updateBalance(oldExchange.toAccountId, -oldExchange.toAmount);
+    this.accountRepo.updateBalance(oldExchange.fromAccountId, (fromBalance + oldExchange.fromAmount).toString());
+    this.accountRepo.updateBalance(oldExchange.toAccountId, (toBalance - oldExchange.toAmount).toString());
 
     const updated = this.exchangeRepo.update(id, updates);
     if (!updated) return null;
 
-    // Apply new balance changes
-    this.accountRepo.updateBalance(updated.fromAccountId, -updated.fromAmount);
-    this.accountRepo.updateBalance(updated.toAccountId, updated.toAmount);
+    // Apply new balance changes - need to re-fetch accounts after revert
+    const updatedFromAccount = this.accountRepo.getById(updated.fromAccountId);
+    const updatedToAccount = this.accountRepo.getById(updated.toAccountId);
+    if (!updatedFromAccount || !updatedToAccount) return null;
+
+    const newFromBalance = parseFloat(updatedFromAccount.balance || '0');
+    const newToBalance = parseFloat(updatedToAccount.balance || '0');
+    
+    this.accountRepo.updateBalance(updated.fromAccountId, (newFromBalance - updated.fromAmount).toString());
+    this.accountRepo.updateBalance(updated.toAccountId, (newToBalance + updated.toAmount).toString());
 
     LoggingService.info(LogCategory.TRANSACTION, 'UPDATE_CURRENCY_EXCHANGE', {
       exchangeId: id,
@@ -175,9 +190,17 @@ export class CurrencyExchangeService {
     const exchange = this.exchangeRepo.getById(id);
     if (!exchange) return false;
 
+    // Get current account balances
+    const fromAccount = this.accountRepo.getById(exchange.fromAccountId);
+    const toAccount = this.accountRepo.getById(exchange.toAccountId);
+    if (!fromAccount || !toAccount) return false;
+
+    const fromBalance = parseFloat(fromAccount.balance || '0');
+    const toBalance = parseFloat(toAccount.balance || '0');
+    
     // Revert balance changes
-    this.accountRepo.updateBalance(exchange.fromAccountId, exchange.fromAmount);
-    this.accountRepo.updateBalance(exchange.toAccountId, -exchange.toAmount);
+    this.accountRepo.updateBalance(exchange.fromAccountId, (fromBalance + exchange.fromAmount).toString());
+    this.accountRepo.updateBalance(exchange.toAccountId, (toBalance - exchange.toAmount).toString());
 
     const success = this.exchangeRepo.delete(id);
 
