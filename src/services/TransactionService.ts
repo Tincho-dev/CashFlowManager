@@ -1,4 +1,5 @@
-import type { Transaction } from '../types';
+import type { Transaction, TransactionType } from '../types';
+import { TransactionType as TxType } from '../types';
 import { TransactionRepository } from '../data/repositories/TransactionRepository';
 import { AccountRepository } from '../data/repositories/AccountRepository';
 import LoggingService, { LogCategory } from './LoggingService';
@@ -51,10 +52,15 @@ export class TransactionService {
     date: string,
     auditDate?: string | null,
     assetId?: number | null,
-    categoryId?: number | null
+    categoryId?: number | null,
+    transactionType?: TransactionType | null,
+    creditCardId?: number | null,
+    description?: string | null
   ): Transaction | null {
-    // Validate that from and to accounts are different
-    if (fromAccountId === toAccountId) {
+    // Validate that from and to accounts are different only for TRANSFER type
+    // For income, expenses, and credit card transactions, same account is allowed
+    const isTransfer = transactionType === TxType.TRANSFER;
+    if (isTransfer && fromAccountId === toAccountId) {
       console.error('Cannot transfer to the same account');
       return null;
     }
@@ -81,14 +87,25 @@ export class TransactionService {
       auditDate: auditDate ?? null,
       assetId: assetId ?? null,
       categoryId: categoryId ?? null,
+      transactionType: transactionType ?? undefined,
+      creditCardId: creditCardId ?? undefined,
+      description: description ?? undefined,
     });
 
     // Update account balances
-    const fromBalance = fromAccount.balance ? parseFloat(fromAccount.balance) : 0;
-    const toBalance = toAccount.balance ? parseFloat(toAccount.balance) : 0;
-    
-    this.accountRepo.updateBalance(fromAccountId, (fromBalance - amount).toString());
-    this.accountRepo.updateBalance(toAccountId, (toBalance + amount).toString());
+    // For same-account transactions (income/expense), only update one account
+    if (fromAccountId === toAccountId) {
+      // For same account: income adds, expense subtracts
+      // The net effect is already handled by the sign of the amount
+      // We don't need to update balance twice for the same account
+    } else {
+      // For different accounts: standard transfer logic
+      const fromBalance = fromAccount.balance ? parseFloat(fromAccount.balance) : 0;
+      const toBalance = toAccount.balance ? parseFloat(toAccount.balance) : 0;
+      
+      this.accountRepo.updateBalance(fromAccountId, (fromBalance - amount).toString());
+      this.accountRepo.updateBalance(toAccountId, (toBalance + amount).toString());
+    }
 
     LoggingService.info(LogCategory.TRANSACTION, 'CREATE_TRANSACTION', {
       transactionId: transaction.id,
@@ -97,6 +114,8 @@ export class TransactionService {
       amount,
       date,
       categoryId,
+      transactionType,
+      creditCardId,
     });
 
     return transaction;

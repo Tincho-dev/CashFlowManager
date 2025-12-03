@@ -129,22 +129,38 @@ describe('Transaction Balance Updates', () => {
   });
 
   describe('validateTransactionAccounts', () => {
-    const validateAccounts = (fromId: number, toId: number): { valid: boolean; error?: string } => {
-      if (fromId === toId) {
+    // Validation now considers transaction type - only TRANSFER requires different accounts
+    const validateAccounts = (
+      fromId: number, 
+      toId: number, 
+      transactionType?: string
+    ): { valid: boolean; error?: string } => {
+      const isTransfer = transactionType === 'TRANSFER';
+      if (isTransfer && fromId === toId) {
         return { valid: false, error: 'Cannot transfer to the same account' };
       }
       return { valid: true };
     };
 
-    it('should reject same account transfer', () => {
-      const result = validateAccounts(1, 1);
+    it('should reject same account for TRANSFER type', () => {
+      const result = validateAccounts(1, 1, 'TRANSFER');
       
       expect(result.valid).toBe(false);
       expect(result.error).toBe('Cannot transfer to the same account');
     });
 
+    it('should accept same account for non-TRANSFER types', () => {
+      const incomeResult = validateAccounts(1, 1, 'INCOME');
+      const expenseResult = validateAccounts(1, 1, 'CREDIT_CARD_EXPENSE');
+      const noTypeResult = validateAccounts(1, 1);
+
+      expect(incomeResult.valid).toBe(true);
+      expect(expenseResult.valid).toBe(true);
+      expect(noTypeResult.valid).toBe(true);
+    });
+
     it('should accept different account transfer', () => {
-      const result = validateAccounts(1, 2);
+      const result = validateAccounts(1, 2, 'TRANSFER');
       
       expect(result.valid).toBe(true);
     });
