@@ -185,11 +185,11 @@ function parseTextWithoutLLM(text: string): ToonTransaction[] {
   for (const line of lines) {
     const trimmedLine = line.trim();
     
-    // Try to extract amount using various patterns
+    // Try to extract amount using various patterns (in priority order)
+    // Pattern: "50usd", "100 usd" - USD takes priority
+    const usdPattern = /(\d+(?:\.\d+)?)\s*(?:usd|u\$d|dolares?)/i;
     // Pattern: "1k", "50k", "1.5k" -> multiply by 1000
-    const kPattern = /(\d+(?:\.\d+)?)\s*k\b/gi;
-    // Pattern: "50usd", "100 usd"
-    const usdPattern = /(\d+(?:\.\d+)?)\s*(?:usd|u\$d|dolares?)/gi;
+    const kPattern = /(\d+(?:\.\d+)?)\s*k\b/i;
     // Pattern: plain numbers
     const numPattern = /\b(\d+(?:\.\d+)?)\b/;
     
@@ -197,27 +197,25 @@ function parseTextWithoutLLM(text: string): ToonTransaction[] {
     let currency: 'ARS' | 'USD' = 'ARS';
     let description = trimmedLine;
     
-    // Check for "k" notation (thousands)
-    const kMatch = kPattern.exec(trimmedLine);
-    if (kMatch) {
-      amount = parseFloat(kMatch[1]) * 1000;
-      description = trimmedLine.replace(kPattern, '').trim();
-    }
-    
-    // Check for USD amounts
+    // Check for USD amounts first (highest priority)
     const usdMatch = usdPattern.exec(trimmedLine);
     if (usdMatch) {
       amount = parseFloat(usdMatch[1]);
       currency = 'USD';
       description = trimmedLine.replace(usdPattern, '').trim();
-    }
-    
-    // If no special pattern found, look for plain number
-    if (amount === 0) {
-      const numMatch = numPattern.exec(trimmedLine);
-      if (numMatch) {
-        amount = parseFloat(numMatch[1]);
-        description = trimmedLine.replace(numMatch[0], '').trim();
+    } else {
+      // Check for "k" notation (thousands)
+      const kMatch = kPattern.exec(trimmedLine);
+      if (kMatch) {
+        amount = parseFloat(kMatch[1]) * 1000;
+        description = trimmedLine.replace(kPattern, '').trim();
+      } else {
+        // If no special pattern found, look for plain number
+        const numMatch = numPattern.exec(trimmedLine);
+        if (numMatch) {
+          amount = parseFloat(numMatch[1]);
+          description = trimmedLine.replace(numMatch[0], '').trim();
+        }
       }
     }
     
@@ -459,11 +457,12 @@ class ToonParserService {
 
   /**
    * Find account ID by name (with fuzzy matching)
+   * Returns the first matching account or null if no match found
    */
   private findAccountId(
     name: string, 
     accountMap: Map<string, number>,
-    accounts: { id: number; name: string }[]
+    _accounts: { id: number; name: string }[]
   ): number | null {
     const lowerName = name.toLowerCase();
     
@@ -479,8 +478,8 @@ class ToonParserService {
       }
     }
     
-    // Return first account as default if none found
-    return accounts.length > 0 ? accounts[0].id : null;
+    // No match found - return null to let caller handle the case
+    return null;
   }
 
   /**
