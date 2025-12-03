@@ -24,6 +24,7 @@ import InvestmentCard from '../components/investments/InvestmentCard';
 import InvestmentDialog from '../components/investments/InvestmentDialog';
 import { InvestmentService } from '../services/InvestmentService';
 import QuotationService from '../services/QuotationService';
+import styles from './Investments.module.scss';
 
 const Investments: React.FC = () => {
   const { accountService, isInitialized } = useApp();
@@ -217,7 +218,7 @@ const Investments: React.FC = () => {
                 borderColor: 'primary.main',
               }}
             >
-              <RefreshCw size={20} className={isRefreshing ? 'rotating' : ''} />
+              <RefreshCw size={20} className={isRefreshing ? styles.rotating : ''} />
             </IconButton>
           </Tooltip>
           <Fab

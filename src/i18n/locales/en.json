@@ -13,7 +13,8 @@
     "transfers": "Transfers",
     "export": "Export Data",
     "import": "Import Records",
-    "creditCards": "Credit Cards"
+    "creditCards": "Credit Cards",
+    "currencyExchange": "Currency Exchange"
   },
   "dashboard": {
     "title": "Dashboard",

@@ -1,13 +1,31 @@
 import type { Database, SqlValue } from 'sql.js';
 import type { Loan, LoanInstallment } from '../../types';
 import { AccountCurrency, LoanStatus, PaymentFrequency } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+// MERGE NOTES: kept HEAD imports active. Origin/main imports preserved as comment for later cleanup.
+/* origin/main imports (backup):
+import type { Database } from 'sql.js';
+import type { Loan } from '../../types';
+import { LoanType, Currency } from '../../types';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
+*/
+
+/**
+ * LoanRepository - Data access for loans
+ * BACKEND MIGRATION NOTES: See DataAccessLayer.ts for migration guide
+ */
 export class LoanRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Loan[] {

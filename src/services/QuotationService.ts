@@ -179,9 +179,19 @@ export class QuotationService {
       }
       
       const data = await response.json();
+      
+      // Validate API response structure
+      if (!data?.chart?.result?.[0]?.meta) {
+        throw new Error('Invalid API response format');
+      }
+      
       const result = data.chart.result[0];
       const price = result.meta.regularMarketPrice;
       const currency = result.meta.currency;
+      
+      if (price === undefined || !currency) {
+        throw new Error('Missing price or currency in response');
+      }
       
       const quotation: Quotation = {
         symbol,
@@ -207,14 +217,14 @@ export class QuotationService {
 
   /**
    * Fetch currency exchange rate
-   * Uses a free API for exchange rates
+   * Uses the Frankfurter free API for exchange rates
+   * See: https://www.frankfurter.app/docs/
    */
   private async fetchCurrencyExchangeRate(pair: string): Promise<Quotation | null> {
     try {
       const [from, to] = pair.split('/');
       
-      // Using exchangerate-api.com free tier (no key required for basic usage)
-      // Alternative: https://api.frankfurter.app/latest?from=USD&to=EUR
+      // Using https://api.frankfurter.app/latest?from=USD&to=EUR (no key required)
       const url = `https://api.frankfurter.app/latest?from=${from}&to=${to}`;
       const response = await fetch(url);
       
@@ -223,7 +233,12 @@ export class QuotationService {
       }
       
       const data = await response.json();
-      const rate = data.rates[to];
+      
+      // Validate API response
+      const rate = data.rates?.[to];
+      if (rate === undefined) {
+        throw new Error(`Exchange rate not found for ${to}`);
+      }
       
       const quotation: Quotation = {
         symbol: pair,

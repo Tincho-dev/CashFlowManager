@@ -31,6 +31,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [ ] Mejorar accesibilidad (ARIA labels, keyboard navigation)
 
 ### Funcionalidades Pendientes
+
+<!-- Kept HEAD section active -->
 - [ ] Página de Inversiones (Investments) con integración API de cotizaciones
   - [ ] Integrar API pública de cotizaciones de acciones (Alpha Vantage, Yahoo Finance, etc.)
   - [ ] Campo para cantidad de nominales de cada activo
@@ -48,6 +50,24 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
   - [ ] Store global para tasas de cambio (React Context o Zustand)
   - [ ] API pública de tipos de cambio en tiempo real
   - [ ] Persistencia en base de datos o React store
+
+<!-- origin/main version preserved below as an HTML comment for later cleanup -->
+<!--
+- [x] Página de Inversiones (Investments) con integración API de cotizaciones - COMPLETED
+  - [x] Integrar API pública de cotizaciones de acciones (Alpha Vantage, Yahoo Finance, etc.) - COMPLETED (Yahoo Finance)
+  - [x] Campo para cantidad de nominales de cada activo - COMPLETED
+  - [x] Cache offline de precios (última cotización conocida) - COMPLETED (SQLite)
+  - [x] Actualización automática al conectarse a internet - COMPLETED
+- [ ] Página de Préstamos (Loans)
+- [x] Página de Transferencias (Transfers) con conversión de monedas - COMPLETED
+  - [x] Soporte para transferencias entre cuentas de diferentes monedas - COMPLETED
+  - [x] Integración API de tipos de cambio - COMPLETED (Frankfurter API)
+  - [x] Cache offline de tasas de cambio - COMPLETED (SQLite)
+- [x] Sistema de monedas multi-divisa - COMPLETED
+  - [x] Store global para tasas de cambio (React Context o Zustand) - COMPLETED (QuotationService)
+  - [x] API pública de tipos de cambio en tiempo real - COMPLETED (Frankfurter API)
+  - [x] Persistencia en base de datos o React store - COMPLETED (SQLite quotations table)
+-->
 - [x] ~~Store de moneda predeterminada~~ - COMPLETED
   - [x] ~~Configuración global de moneda preferida del usuario~~ - COMPLETED
   - [x] ~~Usar moneda predeterminada en formularios nuevos~~ - COMPLETED
@@ -139,8 +159,48 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - ✅ Material-UI para componentes consistentes - IMPLEMENTED
 - ✅ SCSS Modules para estilos escalables - IMPLEMENTED
 - ✅ Transformers.js con modelo Xenova/distilbert para NLP - ACTIVATED (con fallback a keywords)
+- ✅ DataAccessLayer para abstracción de base de datos y preparación para backend - IMPLEMENTED
 - ⏳ Web Workers para procesamiento pesado sin bloquear UI (pendiente)
 - ⏳ IndexedDB como alternativa a localStorage para mejor performance (pendiente)
+
+### 🏗️ Arquitectura de Base de Datos (Database Architecture)
+
+**ESTADO ACTUAL: Offline-first con SQLite en el navegador**
+
+La aplicación ahora implementa una capa de abstracción de datos (DataAccessLayer) que prepara el código para una futura migración a backend con SQL Server, manteniendo compatibilidad con el modelo actual offline-first.
+
+**Estructura de capas:**
+```
+UI Components (React)
+    ↓
+Services (Lógica de negocio)
+    ↓
+DataAccessLayer (Abstracción de acceso a datos) ← NUEVO
+    ↓
+Repositories (CRUD operations)
+    ↓
+SQLite Database (localStorage)
+```
+
+**Ventajas de esta arquitectura:**
+- ✅ Separación de responsabilidades clara
+- ✅ Fácil migración a backend sin cambiar UI
+- ✅ Soporte para modelo híbrido (offline + online)
+- ✅ Inicialización controlada y segura
+- ✅ Evita errores de acceso a BD no inicializada
+
+**Para migrar a backend SQL Server:**
+1. Ver documentación detallada en `src/data/DataAccessLayer.ts`
+2. Implementar endpoints REST API en el backend
+3. Modificar DataAccessLayer para detectar online/offline
+4. Agregar cola de sincronización para operaciones offline
+5. Mantener SQLite como caché local
+
+**Archivos clave:**
+- `src/data/DataAccessLayer.ts` - Capa de abstracción (CON GUÍA COMPLETA DE MIGRACIÓN)
+- `src/data/repositories/*` - Acceso directo a datos
+- `src/services/*` - Lógica de negocio
+- `src/contexts/AppContext.tsx` - Inicialización de la app
 
 ### ⚠️ IMPORTANTE: Guía de Estilos para PRs
 **TODOS LOS ESTILOS DEBEN IR COMO SCSS MODULES**

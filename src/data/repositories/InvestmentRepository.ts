@@ -1,13 +1,30 @@
 import type { Database } from 'sql.js';
 import type { Investment } from '../../types';
 import { InvestmentType, Currency } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+/**
+ * InvestmentRepository - Data access for investments
+ * 
+ * BACKEND MIGRATION NOTES:
+ * - Replace direct DB calls with API calls to backend
+ * - Keep SQLite as local cache for offline support
+ * - See DataAccessLayer.ts for detailed migration guide
+ */
 export class InvestmentRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    // Use provided database or get from DataAccessLayer
+    // This allows for dependency injection (useful for testing)
+    if (db) {
+      this.db = db;
+    } else {
+      // Get database through DataAccessLayer
+      // This ensures proper initialization before access
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Investment[] {
