@@ -13,7 +13,7 @@ import {
   ListItemText,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme as useMuiTheme
 } from '@mui/material';
 import { 
   Home, 
@@ -30,8 +30,10 @@ import {
   FileText
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
+import ThemeSwitcher from '../ThemeSwitcher';
 import BottomNavigation from './BottomNavigation';
 import Chatbot from '../chatbot/Chatbot';
+import { useTheme } from '../../hooks';
 
 interface LayoutProps {
   children: ReactNode;
@@ -41,9 +43,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const location = useLocation();
   const { t } = useTranslation();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const muiTheme = useMuiTheme();
+  const { mode } = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const isDesktop = useMediaQuery(muiTheme.breakpoints.up('md'));
+
+  // Define colors based on theme mode
+  const sidebarBgColor = mode === 'dark' ? '#0d0d1a' : '#1a1a2e';
+  const sidebarActiveBgColor = mode === 'dark' ? '#1a1a2e' : '#16213e';
+  const mainBgColor = mode === 'dark' ? '#121212' : '#f5f5f5';
 
   const navItems = [
     { path: '/', icon: Home, label: t('nav.dashboard') },
@@ -65,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#1a1a2e', color: 'white' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: sidebarBgColor, color: 'white' }}>
       <Box 
         sx={{ 
           p: 2, 
@@ -80,19 +88,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
           {t('app.title')}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <ThemeSwitcher />
           <LanguageSwitcher />
           {isMobile && (
             <IconButton
               onClick={() => setIsSidebarOpen(false)}
               sx={{ color: 'white', p: 0.5 }}
+              aria-label={t('common.close')}
             >
               <X size={20} />
             </IconButton>
           )}
         </Box>
       </Box>
-      <List sx={{ flex: 1, py: 2.5 }}>
+      <List sx={{ flex: 1, py: 2.5 }} role="navigation" aria-label={t('nav.dashboard')}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -103,18 +113,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 to={item.path}
                 onClick={handleNavClick}
                 selected={isActive}
+                aria-current={isActive ? 'page' : undefined}
                 sx={{
                   py: 1.5,
                   px: 2.5,
                   color: isActive ? '#4a90e2' : 'rgba(255, 255, 255, 0.7)',
-                  bgcolor: isActive ? '#16213e' : 'transparent',
+                  bgcolor: isActive ? sidebarActiveBgColor : 'transparent',
                   borderLeft: isActive ? '4px solid #4a90e2' : 'none',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
                     color: 'white',
                   },
                   '&.Mui-selected': {
-                    bgcolor: '#16213e',
+                    bgcolor: sidebarActiveBgColor,
                     '&:hover': {
                       bgcolor: 'rgba(255, 255, 255, 0.1)',
                     },
@@ -122,7 +133,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                  <Icon size={20} />
+                  <Icon size={20} aria-hidden="true" />
                 </ListItemIcon>
                 <ListItemText primary={item.label} />
               </ListItemButton>
@@ -134,7 +145,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: mainBgColor }}>
       {/* Desktop Drawer */}
       {isDesktop && (
         <Drawer
@@ -159,20 +170,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <>
           <IconButton
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label={t('nav.dashboard')}
+            aria-expanded={isSidebarOpen}
             sx={{
               position: 'fixed',
               top: 15,
               left: 15,
               zIndex: 1101,
-              bgcolor: '#1a1a2e',
+              bgcolor: sidebarBgColor,
               color: 'white',
               '&:hover': {
-                bgcolor: '#16213e',
+                bgcolor: sidebarActiveBgColor,
               },
               boxShadow: 2,
             }}
           >
-            <Menu size={24} />
+            <Menu size={24} aria-hidden="true" />
           </IconButton>
           <Drawer
             anchor="left"

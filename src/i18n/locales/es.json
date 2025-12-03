@@ -17,6 +17,13 @@
     "currencyExchange": "Cambio de Moneda",
     "logs": "Registros del Sistema"
   },
+  "theme": {
+    "light": "Modo Claro",
+    "dark": "Modo Oscuro",
+    "toggle": "Cambiar tema",
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
+  },
   "dashboard": {
     "title": "Inicio",
     "totalBalance": "Saldo Total",
