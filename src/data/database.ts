@@ -14,15 +14,22 @@ export const initDatabase = async (): Promise<Database> => {
 
   // Try to load existing database from localStorage
   const savedDb = localStorage.getItem('cashflow_db');
-  
+  let shouldSeed = false;
+
   if (savedDb) {
     const buffer = Uint8Array.from(atob(savedDb), c => c.charCodeAt(0));
     dbInstance = new SQL.Database(buffer);
   } else {
     dbInstance = new SQL.Database();
-    await runMigrations(dbInstance);
-    
-    // Seed the database with initial data only if it's a fresh database
+    // mark to seed after running migrations for a fresh DB
+    shouldSeed = true;
+  }
+
+  // Always run migrations on startup to keep DB schema up-to-date
+  await runMigrations(dbInstance);
+
+  // Seed only when the DB was just created
+  if (shouldSeed) {
     const { seedDatabase } = await import('./seedData');
     seedDatabase(dbInstance);
   }
