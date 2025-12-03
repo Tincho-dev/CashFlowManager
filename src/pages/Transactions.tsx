@@ -54,6 +54,26 @@ interface FormData {
 
 type ViewMode = 'list' | 'table';
 
+// Helper function to get tooltip text for transaction types
+const getTransactionTypeTooltipKey = (type: TransactionType | ''): string => {
+  switch (type) {
+    case TxType.INCOME:
+      return 'tooltips.transactionTypes.income';
+    case TxType.FIXED_EXPENSE:
+      return 'tooltips.transactionTypes.fixedExpense';
+    case TxType.VARIABLE_EXPENSE:
+      return 'tooltips.transactionTypes.variableExpense';
+    case TxType.SAVINGS:
+      return 'tooltips.transactionTypes.savings';
+    case TxType.TRANSFER:
+      return 'tooltips.transactionTypes.transfer';
+    case TxType.CREDIT_CARD_EXPENSE:
+      return 'tooltips.transactionTypes.creditCardExpense';
+    default:
+      return 'tooltips.transactionTypes.income';
+  }
+};
+
 const Transactions: React.FC<TransactionsProps> = ({ title }) => {
   const { accountService, transactionService, assetService, categoryService, isInitialized } = useApp();
   const { t } = useTranslation();
@@ -678,15 +698,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
                   <MenuItem value={TxType.TRANSFER}>{t('transactions.types.transfer')}</MenuItem>
                   <MenuItem value={TxType.CREDIT_CARD_EXPENSE}>{t('transactions.types.creditCardExpense')}</MenuItem>
                 </TextField>
-                <InfoTooltip title={
-                  formData.transactionType === TxType.INCOME ? t('tooltips.transactionTypes.income') :
-                  formData.transactionType === TxType.FIXED_EXPENSE ? t('tooltips.transactionTypes.fixedExpense') :
-                  formData.transactionType === TxType.VARIABLE_EXPENSE ? t('tooltips.transactionTypes.variableExpense') :
-                  formData.transactionType === TxType.SAVINGS ? t('tooltips.transactionTypes.savings') :
-                  formData.transactionType === TxType.TRANSFER ? t('tooltips.transactionTypes.transfer') :
-                  formData.transactionType === TxType.CREDIT_CARD_EXPENSE ? t('tooltips.transactionTypes.creditCardExpense') :
-                  t('tooltips.transactionTypes.income')
-                } />
+                <InfoTooltip title={t(getTransactionTypeTooltipKey(formData.transactionType))} />
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center' }}>

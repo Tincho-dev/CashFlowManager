@@ -13,6 +13,11 @@ import {
   Collapse,
   InputAdornment,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   FileText,
@@ -34,8 +39,12 @@ import LoggingService, {
   LogLevel,
   LogCategory,
 } from '../services/LoggingService';
-import type { LogEntry, LogLevel as LogLevelType, LogCategory as LogCategoryType } from '../services/LoggingService';
+import type { LogEntry } from '../services/LoggingService';
 import styles from './LogViewer.module.scss';
+
+// Type aliases for filter states that can be empty
+type LogLevelFilter = typeof LogLevel[keyof typeof LogLevel] | '';
+type LogCategoryFilter = typeof LogCategory[keyof typeof LogCategory] | '';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -43,12 +52,13 @@ const LogViewer: React.FC = () => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>(() => LoggingService.getAllLogs());
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterLevel, setFilterLevel] = useState<LogLevelType | ''>('');
-  const [filterCategory, setFilterCategory] = useState<LogCategoryType | ''>('');
+  const [filterLevel, setFilterLevel] = useState<LogLevelFilter>('');
+  const [filterCategory, setFilterCategory] = useState<LogCategoryFilter>('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   const refreshLogs = useCallback(() => {
@@ -130,10 +140,13 @@ const LogViewer: React.FC = () => {
   };
 
   const handleClearLogs = () => {
-    if (confirm(t('logs.clearConfirm'))) {
-      LoggingService.clearLogs();
-      refreshLogs();
-    }
+    setShowClearDialog(true);
+  };
+
+  const confirmClearLogs = () => {
+    LoggingService.clearLogs();
+    refreshLogs();
+    setShowClearDialog(false);
   };
 
   const handleExportJSON = () => {
@@ -158,7 +171,7 @@ const LogViewer: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const getLevelIcon = (level: LogLevelType) => {
+  const getLevelIcon = (level: typeof LogLevel[keyof typeof LogLevel]) => {
     switch (level) {
       case LogLevel.ERROR:
         return <AlertCircle size={16} />;
@@ -173,7 +186,7 @@ const LogViewer: React.FC = () => {
     }
   };
 
-  const getLevelColor = (level: LogLevelType): 'error' | 'warning' | 'info' | 'default' => {
+  const getLevelColor = (level: typeof LogLevel[keyof typeof LogLevel]): 'error' | 'warning' | 'info' | 'default' => {
     switch (level) {
       case LogLevel.ERROR:
         return 'error';
@@ -188,7 +201,7 @@ const LogViewer: React.FC = () => {
     }
   };
 
-  const getCategoryColor = (category: LogCategoryType): string => {
+  const getCategoryColor = (category: typeof LogCategory[keyof typeof LogCategory]): string => {
     switch (category) {
       case LogCategory.ACCOUNT:
         return '#4a90e2';
@@ -325,7 +338,7 @@ const LogViewer: React.FC = () => {
               label={t('logs.filterLevel')}
               value={filterLevel}
               onChange={(e) => {
-                setFilterLevel(e.target.value as LogLevelType | '');
+                setFilterLevel(e.target.value as LogLevelFilter);
                 setCurrentPage(1);
               }}
               size="small"
@@ -343,7 +356,7 @@ const LogViewer: React.FC = () => {
               label={t('logs.filterCategory')}
               value={filterCategory}
               onChange={(e) => {
-                setFilterCategory(e.target.value as LogCategoryType | '');
+                setFilterCategory(e.target.value as LogCategoryFilter);
                 setCurrentPage(1);
               }}
               size="small"
@@ -485,6 +498,31 @@ const LogViewer: React.FC = () => {
           </>
         )}
       </Paper>
+
+      {/* Clear Logs Confirmation Dialog */}
+      <Dialog
+        open={showClearDialog}
+        onClose={() => setShowClearDialog(false)}
+        aria-labelledby="clear-logs-dialog-title"
+        aria-describedby="clear-logs-dialog-description"
+      >
+        <DialogTitle id="clear-logs-dialog-title">
+          {t('logs.clearAll')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="clear-logs-dialog-description">
+            {t('logs.clearConfirm')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowClearDialog(false)}>
+            {t('common.cancel')}
+          </Button>
+          <Button onClick={confirmClearLogs} color="error" autoFocus>
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
