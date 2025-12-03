@@ -16,6 +16,7 @@
     "creditCards": "Credit Cards",
     "currencyExchange": "Currency Exchange",
     "logs": "System Logs",
+    "reports": "Reports",
     "mainNavigation": "Main navigation",
     "closeSidebar": "Close sidebar"
   },
@@ -51,7 +52,54 @@
     "accumulated": "Accumulated",
     "previousMonth": "Previous Month",
     "nextMonth": "Next Month",
-    "upTo": "Up to"
+    "upTo": "Up to",
+    "showCharts": "Show Charts",
+    "hideCharts": "Hide Charts"
+  },
+  "charts": {
+    "monthlyTrend": "Monthly Trend",
+    "expenseBreakdown": "Expense Breakdown",
+    "categoryDistribution": "Expense by Category",
+    "income": "Income",
+    "fixedExpenses": "Fixed Expenses",
+    "variableExpenses": "Variable Expenses",
+    "savings": "Savings",
+    "netCashFlow": "Net Cash Flow",
+    "total": "Total"
+  },
+  "reports": {
+    "title": "Reports",
+    "monthlyReport": "Monthly Report",
+    "annualReport": "Annual Report",
+    "executiveSummary": "Executive Summary",
+    "exportPDF": "Export PDF",
+    "exportCSV": "Export CSV",
+    "period": "Period",
+    "overview": "Overview",
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "totalSavings": "Total Savings",
+    "netCashFlow": "Net Cash Flow",
+    "savingsRate": "Savings Rate",
+    "highlights": "Highlights",
+    "concerns": "Concerns",
+    "topExpenses": "Top Expenses",
+    "monthlyTrend": "Monthly Trend",
+    "predictions": "Predictions",
+    "recommendations": "Recommendations",
+    "categoryBreakdown": "Category Breakdown",
+    "yearOverYear": "Year Over Year",
+    "periodComparison": "Period Comparison",
+    "reportType": "Report Type",
+    "year": "Year",
+    "month": "Month",
+    "transactionCount": "Transaction Count",
+    "averageTransaction": "Avg. Transaction",
+    "trend": {
+      "increasing": "Increasing",
+      "decreasing": "Decreasing",
+      "stable": "Stable"
+    }
   },
   "transactions": {
     "title": "Transactions",

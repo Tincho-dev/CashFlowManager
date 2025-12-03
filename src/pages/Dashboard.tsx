@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Box, Container, Typography, Fab, Tooltip, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { Minus, PiggyBank, TrendingDown, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
+import { Box, Container, Typography, Fab, Tooltip, IconButton, ToggleButton, ToggleButtonGroup, Button, Collapse } from '@mui/material';
+import { Minus, PiggyBank, TrendingDown, ChevronLeft, ChevronRight, TrendingUp, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../hooks';
 import { TransactionType } from '../types';
+import type { Transaction, Category } from '../types';
+import { CategoryRepository } from '../data/repositories/CategoryRepository';
+import DashboardCharts from '../components/common/DashboardCharts';
 import styles from './Dashboard.module.scss';
 
 // Number of data categories in the donut chart (income, fixed expenses, variable expenses, savings)
@@ -28,6 +31,9 @@ const Dashboard: React.FC = () => {
   // Month selection state
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
+  const [showCharts, setShowCharts] = useState(false);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   
   const [stats, setStats] = useState<ExpenseStats>({
     income: 0,
@@ -68,17 +74,26 @@ const Dashboard: React.FC = () => {
   const loadData = useCallback(() => {
     if (!accountService || !transactionService) return;
 
-    const allTransactions = transactionService.getAllTransactions();
+    const txs = transactionService.getAllTransactions();
+    setAllTransactions(txs);
+    
+    // Load categories
+    try {
+      const categoryRepo = new CategoryRepository();
+      setCategories(categoryRepo.getAll());
+    } catch {
+      // Categories may not be available
+    }
     
     // Filter transactions based on view mode
     const filteredTransactions = viewMode === 'accumulated' 
-      ? allTransactions.filter(tx => {
+      ? txs.filter(tx => {
           const txDate = new Date(tx.date);
           // Get all transactions up to end of selected month
           const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59);
           return txDate <= endOfMonth;
         })
-      : allTransactions.filter(tx => {
+      : txs.filter(tx => {
           const txDate = new Date(tx.date);
           return txDate.getMonth() === selectedDate.getMonth() && 
                  txDate.getFullYear() === selectedDate.getFullYear();
@@ -160,6 +175,87 @@ const Dashboard: React.FC = () => {
       savingsLength,
     };
   }, [stats]);
+
+  // Prepare chart data
+  const chartMonthlyData = useMemo(() => {
+    const year = selectedDate.getFullYear();
+    const monthlyData = [];
+    
+    for (let month = 0; month < 12; month++) {
+      const monthStart = new Date(year, month, 1);
+      const monthEnd = new Date(year, month + 1, 0);
+      
+      const monthTxs = allTransactions.filter(tx => {
+        const txDate = new Date(tx.date);
+        return txDate >= monthStart && txDate <= monthEnd;
+      });
+
+      let income = 0;
+      let fixedExpenses = 0;
+      let variableExpenses = 0;
+      let savings = 0;
+
+      monthTxs.forEach(tx => {
+        const type = tx.transactionType;
+        if (type === TransactionType.INCOME) {
+          income += Math.abs(tx.amount);
+        } else if (type === TransactionType.FIXED_EXPENSE) {
+          fixedExpenses += Math.abs(tx.amount);
+        } else if (type === TransactionType.VARIABLE_EXPENSE) {
+          variableExpenses += Math.abs(tx.amount);
+        } else if (type === TransactionType.SAVINGS) {
+          savings += Math.abs(tx.amount);
+        }
+      });
+
+      monthlyData.push({
+        month: monthStart.toLocaleString('default', { month: 'short' }),
+        income,
+        fixedExpenses,
+        variableExpenses,
+        savings,
+        netCashFlow: income - fixedExpenses - variableExpenses,
+      });
+    }
+
+    return monthlyData;
+  }, [allTransactions, selectedDate]);
+
+  // Prepare category data for pie chart
+  const chartCategoryData = useMemo(() => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0);
+
+    const monthTxs = allTransactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate >= monthStart && txDate <= monthEnd &&
+        (tx.transactionType === TransactionType.FIXED_EXPENSE ||
+         tx.transactionType === TransactionType.VARIABLE_EXPENSE);
+    });
+
+    // Group by category
+    const categoryTotals = new Map<number | null, number>();
+    monthTxs.forEach(tx => {
+      const current = categoryTotals.get(tx.categoryId) || 0;
+      categoryTotals.set(tx.categoryId, current + Math.abs(tx.amount));
+    });
+
+    const colors = [
+      '#2196f3', '#f44336', '#ff9800', '#4caf50', '#9c27b0',
+      '#00bcd4', '#e91e63', '#673ab7', '#009688', '#ffc107',
+    ];
+
+    return Array.from(categoryTotals.entries()).map(([categoryId, value], index) => {
+      const category = categories.find(c => c.id === categoryId);
+      return {
+        name: category?.name || t('transactions.noCategory'),
+        value,
+        color: category?.color || colors[index % colors.length],
+      };
+    }).sort((a, b) => b.value - a.value);
+  }, [allTransactions, selectedDate, categories, t]);
 
   if (!isInitialized) {
     return (
@@ -457,6 +553,31 @@ const Dashboard: React.FC = () => {
             </Typography>
           </Box>
         </Box>
+
+        {/* Charts Toggle Button */}
+        <Box sx={{ mt: 4, width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={() => setShowCharts(!showCharts)}
+            startIcon={<BarChart3 size={20} />}
+            endIcon={showCharts ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            aria-expanded={showCharts}
+            aria-label={showCharts ? t('dashboard.hideCharts') : t('dashboard.showCharts')}
+          >
+            {showCharts ? t('dashboard.hideCharts') : t('dashboard.showCharts')}
+          </Button>
+        </Box>
+
+        {/* Interactive Charts Section */}
+        <Collapse in={showCharts} timeout="auto" unmountOnExit>
+          <Box sx={{ width: '100%', mt: 2 }}>
+            <DashboardCharts
+              monthlyData={chartMonthlyData}
+              categoryData={chartCategoryData}
+              selectedYear={selectedDate.getFullYear()}
+            />
+          </Box>
+        </Collapse>
       </Box>
     </Container>
   );

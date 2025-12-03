@@ -126,8 +126,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Filtros avanzados de logs en UI~~ - COMPLETED: Filtros por nivel, categoría, rango de fechas y búsqueda en LogViewer
 
 ### Avanzadas
-- [ ] Reconocimiento automático de patrones de gasto
-- [ ] Predicción de gastos futuros
+- [x] ~~Reconocimiento automático de patrones de gasto~~ - COMPLETED: SpendingAnalysisService con análisis de periodicidad y tendencias
+- [x] ~~Predicción de gastos futuros~~ - COMPLETED: Algoritmo de predicción basado en patrones históricos
 - [ ] Alertas y notificaciones personalizables
 - [ ] Integración con APIs bancarias
 - [ ] Compartir cuentas con otros usuarios
@@ -135,12 +135,12 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 
 ## 📊 Métricas y Reportes Deseados
 
-- [ ] Dashboard con gráficos interactivos (Chart.js o Recharts)
-- [ ] Reporte mensual/anual de gastos
-- [ ] Análisis de tendencias
-- [ ] Comparación período a período
-- [ ] Categorización automática de gastos
-- [ ] Resumen ejecutivo exportable
+- [x] ~~Dashboard con gráficos interactivos (Chart.js o Recharts)~~ - COMPLETED: Componente DashboardCharts con Recharts (Line, Bar, Pie charts)
+- [x] ~~Reporte mensual/anual de gastos~~ - COMPLETED: SpendingAnalysisService.generateMonthlyReport() y generateAnnualReport()
+- [x] ~~Análisis de tendencias~~ - COMPLETED: SpendingAnalysisService.analyzeTrends() con comparación histórica
+- [x] ~~Comparación período a período~~ - COMPLETED: SpendingAnalysisService.comparePeriods() para cualquier rango de fechas
+- [x] ~~Categorización automática de gastos~~ - COMPLETED: SpendingAnalysisService.suggestCategory() basado en descripción
+- [x] ~~Resumen ejecutivo exportable~~ - COMPLETED: Reports page con exportación a CSV y resumen ejecutivo completo
 
 ## 🔒 Seguridad y Privacidad
 
@@ -227,6 +227,7 @@ SQLite Database (localStorage)
 - `@xenova/transformers`: Modelos de IA ejecutables en el navegador
 - `tesseract.js`: OCR (reconocimiento de texto en imágenes)
 - `sass`: Preprocesador CSS para SCSS modules
+- `recharts`: Biblioteca de gráficos interactivos para React
 
 ### Paquetes Ya Existentes
 - `@mui/material`: Componentes UI de Material Design
@@ -257,17 +258,23 @@ SQLite Database (localStorage)
 17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
 18. **Tests Unitarios e Integración**: 255 tests para servicios, repositorios, hooks y componentes
 19. **CI/CD Pipeline**: GitHub Actions con lint, test y deploy a Vercel
-20. **Bundle Size Optimization**: Code splitting implementado, chunk principal de 417KB
+20. **Bundle Size Optimization**: Code splitting implementado, chunk principal de 472KB
 21. **Utilidades de Moneda**: currencyUtils.ts con formateo, parsing y conversión
 22. **Visor de Logs (LogViewer)**: UI component completo con filtros, búsqueda, paginación y exportación
 23. **Dark Mode**: ThemeContext con toggle, persiste en localStorage, respeta preferencia del sistema
 24. **Accesibilidad Mejorada**: ARIA labels en navegación, botones y controles principales
+25. **Dashboard Interactivo**: Gráficos con Recharts (línea, barra, torta) para visualización de datos
+26. **Sistema de Análisis de Gastos**: SpendingAnalysisService con patrones, predicciones y tendencias
+27. **Página de Reportes**: Reports.tsx con reportes mensuales, anuales y resumen ejecutivo
+28. **Exportación de Reportes**: Exportación a CSV de reportes y análisis
 
 ### 🚧 En Progreso / En Curso
 - Integración con APIs externas (cotizaciones y tipos de cambio)
 - Sistema de sincronización con hojas de cálculo
 
 ### 📋 Pendiente / To Do
+- Animaciones de transición entre páginas
+- Reemplazar dropdowns con grids clickeables (mejora UX)
 - Store global de monedas y tasas de cambio
 - Tutorial interactivo para nuevos usuarios
 - Sistema de onboarding
@@ -275,4 +282,4 @@ SQLite Database (localStorage)
 ---
 
 *Última actualización: 2025-12-03*
-*Versión: 2.8.0 - Dark Mode, accesibilidad mejorada y 255 tests*
+*Versión: 2.9.0 - Dashboard con gráficos interactivos, sistema de análisis de gastos y página de reportes*

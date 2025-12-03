@@ -1,0 +1,233 @@
+.reportsContainer {
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.positive {
+  color: #4caf50;
+}
+
+.negative {
+  color: #f44336;
+}
+
+.neutral {
+  color: #ff9800;
+}
+
+.listSection {
+  margin-top: 16px;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.listItemLabel {
+  font-weight: 500;
+}
+
+.listItemValue {
+  font-weight: 600;
+}
+
+.trendIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.up {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+  }
+
+  &.down {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+  }
+
+  &.stable {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+  }
+}
+
+.highlightsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+}
+
+.concernsList {
+  @extend .highlightsList;
+}
+
+.recommendationsList {
+  @extend .highlightsList;
+}
+
+.exportButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.progressBar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.categoryRow {
+  margin-bottom: 12px;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.categoryName {
+  font-weight: 500;
+}
+
+.categoryAmount {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.categoryPercentage {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-left: 8px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  opacity: 0.7;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .exportButtons {
+    flex-direction: column;
+  }
+}
