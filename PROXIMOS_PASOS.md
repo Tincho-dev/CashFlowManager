@@ -10,6 +10,7 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~El chatbot no reconoce el tipo de moneda~~ - FIXED: Mejorado reconocimiento de monedas
 - [x] ~~La cuenta por defecto no funciona~~ - FIXED: Implementado store de configuración en AppContext
 - [x] ~~Falta sistema de datos semilla~~ - FIXED: Implementado sistema de seedData con datos iniciales
+- [x] ~~Error en Inversiones: investment.quantity.toFixed is not a function~~ - FIXED: Agregadas validaciones de tipo en InvestmentCard
 
 ### Media Prioridad
 - [ ] Warnings de ESLint sobre dependencias en useEffect
@@ -25,6 +26,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Optimizar responsive design en tablets~~ - IMPROVED
 - [x] ~~Corregir overflow horizontal y vertical en mobile~~ - COMPLETED
 - [x] ~~Mobile-first viewport configuration~~ - COMPLETED
+- [x] ~~Dashboard con círculo de 3 colores (gastos fijos, variables, ahorros)~~ - COMPLETED
+- [x] ~~Mejoras de estilos mobile en Import Records~~ - COMPLETED
 - [ ] Reemplazar dropdowns con grids clickeables para mejor UX (Parcialmente implementado)
 - [ ] Agregar animaciones de transición entre páginas
 - [ ] Implementar dark mode

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -17,8 +18,9 @@ import {
   ListItemText,
   IconButton,
   Chip,
+  Tooltip,
 } from '@mui/material';
-import { Plus, Trash2, Edit, CreditCard as CreditCardIcon } from 'lucide-react';
+import { Plus, Trash2, Edit, CreditCard as CreditCardIcon, FileUp } from 'lucide-react';
 import { useApp } from '../hooks';
 import type { CreditCard, Account } from '../types';
 import { CreditCardService } from '../services/CreditCardService';
@@ -38,6 +40,7 @@ interface FormData {
 const CreditCards: React.FC = () => {
   const { accountService, isInitialized } = useApp();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [creditCardService, setCreditCardService] = useState<CreditCardService | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -149,6 +152,11 @@ const CreditCards: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleAddStatement = (card: CreditCard) => {
+    // Navigate to import page with credit card pre-selected
+    navigate('/import', { state: { creditCardId: card.id, importSourceType: 'creditCard' } });
+  };
+
   const getAccountName = (accountId: number): string => {
     const account = accounts.find((a: Account) => a.id === accountId);
     return account ? account.name : t('creditCards.noAccount');
@@ -212,6 +220,11 @@ const CreditCards: React.FC = () => {
               }}
               secondaryAction={
                 <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Tooltip title={t('creditCards.addStatement')}>
+                    <IconButton edge="end" onClick={() => handleAddStatement(card)} size="small" color="primary">
+                      <FileUp size={18} />
+                    </IconButton>
+                  </Tooltip>
                   <IconButton edge="end" onClick={() => handleEdit(card)} size="small">
                     <Edit size={18} />
                   </IconButton>

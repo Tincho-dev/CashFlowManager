@@ -330,6 +330,33 @@ const runMigrations = async (db: Database): Promise<void> => {
     }
   }
 
+  // Add TransactionType column to Transaction table if it doesn't exist
+  if (!columnExists('[Transaction]', 'TransactionType')) {
+    try {
+      db.run(`ALTER TABLE [Transaction] ADD COLUMN TransactionType TEXT DEFAULT 'TRANSFER'`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add CreditCardId column to Transaction table if it doesn't exist
+  if (!columnExists('[Transaction]', 'CreditCardId')) {
+    try {
+      db.run(`ALTER TABLE [Transaction] ADD COLUMN CreditCardId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add Description column to Transaction table if it doesn't exist
+  if (!columnExists('[Transaction]', 'Description')) {
+    try {
+      db.run(`ALTER TABLE [Transaction] ADD COLUMN Description TEXT NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
   saveDatabase(db);
 };
 

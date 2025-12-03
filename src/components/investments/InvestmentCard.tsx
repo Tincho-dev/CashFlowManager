@@ -13,8 +13,10 @@ interface InvestmentCardProps {
 
 const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onDelete, onTransfer }) => {
   const { t } = useTranslation();
-  const gain = investment.currentValue - investment.amount;
-  const percentage = investment.amount > 0 ? (gain / investment.amount) * 100 : 0;
+  const currentValue = Number(investment.currentValue) || 0;
+  const amount = Number(investment.amount) || 0;
+  const gain = currentValue - amount;
+  const percentage = amount > 0 ? (gain / amount) * 100 : 0;
   const isPositive = gain >= 0;
 
   return (
@@ -92,19 +94,19 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({ investment, onEdit, onD
             />
           )}
         </Box>
-        {investment.quantity && investment.purchasePrice && (
+        {typeof investment.quantity === 'number' && typeof investment.purchasePrice === 'number' && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {investment.quantity.toFixed(2)} units @ {investment.currency} ${investment.purchasePrice.toFixed(2)}
+            {Number(investment.quantity).toFixed(2)} units @ {investment.currency} ${Number(investment.purchasePrice).toFixed(2)}
           </Typography>
         )}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Initial: {investment.currency} ${investment.amount.toFixed(2)}
-          {investment.commission && investment.commission > 0 && (
-            <span style={{ fontSize: '0.85em' }}> (+ {investment.commission.toFixed(2)} commission)</span>
+          Initial: {investment.currency} ${(Number(investment.amount) || 0).toFixed(2)}
+          {typeof investment.commission === 'number' && investment.commission > 0 && (
+            <span style={{ fontSize: '0.85em' }}> (+ {Number(investment.commission).toFixed(2)} commission)</span>
           )}
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
-          {investment.currency} ${investment.currentValue.toFixed(2)}
+          {investment.currency} ${(Number(investment.currentValue) || 0).toFixed(2)}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {isPositive ? (

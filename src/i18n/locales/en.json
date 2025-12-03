@@ -140,7 +140,8 @@
     "deleteConfirm": "Are you sure you want to delete this credit card?",
     "empty": "No credit cards yet. Add your first credit card!",
     "selectAccount": "Select an account",
-    "noAccount": "No linked account"
+    "noAccount": "No linked account",
+    "addStatement": "Add Statement"
   },
   "loans": {
     "title": "Loans",
@@ -202,16 +203,19 @@
     "includeTransfers": "Transfer records",
     "exportNote": "The exported file will be downloaded to your device and can be opened with Microsoft Excel, Google Sheets, or any compatible spreadsheet application.",
     "importData": "Import Data",
-    "importDescription": "Import transactions from a bank statement PDF. The system will analyze the document and extract transaction data.",
-    "selectFile": "Select PDF File",
+    "importDescription": "Import transactions from a bank statement. The system will analyze the document and extract transaction data.",
+    "selectFile": "Select File",
     "previewTitle": "Preview Transactions",
     "previewDescription": "Review the extracted transactions before importing them to the database.",
     "importButton": "Import Selected",
     "noFileSelected": "No file selected",
     "analyzing": "Analyzing document...",
-    "noTransactionsFound": "No transactions found in the document",
+    "noTransactionsFound": "No transactions found in the document. Try the Import Records page for more options.",
     "importSuccess": "Transactions imported successfully!",
-    "importError": "Error importing transactions"
+    "importError": "Error importing transactions",
+    "pdfParseError": "Could not extract text from PDF. Try using the Import Records page which supports OCR for images.",
+    "recommendImportPage": "For best results, use the Import Records page which supports more formats, OCR for images, and editing options.",
+    "goToImportPage": "Go to Import Records"
   },
   "importRecords": {
     "title": "Import Records",
@@ -255,7 +259,8 @@
     "selectCreditCard": "Select Credit Card",
     "associatedAccount": "Associated Account",
     "noAssociatedAccount": "No associated account",
-    "creditCardNoAccount": "Credit card has no associated account"
+    "creditCardNoAccount": "Credit card has no associated account",
+    "dragDropHint": "or drag and drop files here"
   },
   "common": {
     "save": "Save",

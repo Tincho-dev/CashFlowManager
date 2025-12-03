@@ -1,5 +1,6 @@
 import type { Database, SqlValue } from 'sql.js';
-import type { Transaction } from '../../types';
+import type { Transaction, TransactionType } from '../../types';
+import { isValidTransactionType } from '../../types';
 import { saveDatabase } from '../database';
 import DataAccessLayer from '../DataAccessLayer';
 
@@ -99,11 +100,31 @@ export class TransactionRepository {
     return results[0].values.map(row => this.mapRowToTransaction(row));
   }
 
+  getByTransactionType(transactionType: TransactionType): Transaction[] {
+    const results = this.db.exec(
+      'SELECT * FROM [Transaction] WHERE TransactionType = ? ORDER BY Date DESC, Id DESC',
+      [transactionType]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToTransaction(row));
+  }
+
+  getByCreditCard(creditCardId: number): Transaction[] {
+    const results = this.db.exec(
+      'SELECT * FROM [Transaction] WHERE CreditCardId = ? ORDER BY Date DESC, Id DESC',
+      [creditCardId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToTransaction(row));
+  }
+
   create(transaction: Omit<Transaction, 'id'>): Transaction {
     this.db.run(
       `INSERT INTO [Transaction] 
-       (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (FromAccountId, Amount, ToAccountId, Date, AuditDate, AssetId, CategoryId, TransactionType, CreditCardId, Description) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         transaction.fromAccountId,
         transaction.amount,
@@ -112,6 +133,9 @@ export class TransactionRepository {
         transaction.auditDate,
         transaction.assetId,
         transaction.categoryId,
+        transaction.transactionType || null,
+        transaction.creditCardId || null,
+        transaction.description || null,
       ]
     );
 
@@ -154,6 +178,18 @@ export class TransactionRepository {
       updates.push('CategoryId = ?');
       values.push(transaction.categoryId);
     }
+    if (transaction.transactionType !== undefined) {
+      updates.push('TransactionType = ?');
+      values.push(transaction.transactionType || null);
+    }
+    if (transaction.creditCardId !== undefined) {
+      updates.push('CreditCardId = ?');
+      values.push(transaction.creditCardId || null);
+    }
+    if (transaction.description !== undefined) {
+      updates.push('Description = ?');
+      values.push(transaction.description || null);
+    }
 
     if (updates.length === 0) {
       return this.getById(id);
@@ -177,6 +213,11 @@ export class TransactionRepository {
   }
 
   private mapRowToTransaction(row: SqlValue[]): Transaction {
+    const rawTransactionType = row[8];
+    const validatedTransactionType = isValidTransactionType(rawTransactionType) 
+      ? rawTransactionType 
+      : undefined;
+    
     return {
       id: row[0] as number,
       fromAccountId: row[1] as number,
@@ -186,6 +227,9 @@ export class TransactionRepository {
       auditDate: row[5] as string | null,
       assetId: row[6] as number | null,
       categoryId: row[7] as number | null,
+      transactionType: validatedTransactionType,
+      creditCardId: row[9] as number | null,
+      description: row[10] as string | null,
     };
   }
 }

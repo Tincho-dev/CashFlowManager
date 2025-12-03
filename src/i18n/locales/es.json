@@ -140,7 +140,8 @@
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta tarjeta de crédito?",
     "empty": "No hay tarjetas de crédito aún. ¡Agrega tu primera tarjeta!",
     "selectAccount": "Selecciona una cuenta",
-    "noAccount": "Sin cuenta asociada"
+    "noAccount": "Sin cuenta asociada",
+    "addStatement": "Agregar Resumen"
   },
   "loans": {
     "title": "Préstamos",
@@ -202,16 +203,19 @@
     "includeTransfers": "Registros de transferencias",
     "exportNote": "El archivo exportado se descargará a tu dispositivo y puede abrirse con Microsoft Excel, Google Sheets o cualquier aplicación de hojas de cálculo compatible.",
     "importData": "Importar Datos",
-    "importDescription": "Importa transacciones desde un resumen de cuenta en PDF. El sistema analizará el documento y extraerá los datos de las transacciones.",
-    "selectFile": "Seleccionar Archivo PDF",
+    "importDescription": "Importa transacciones desde un resumen de cuenta. El sistema analizará el documento y extraerá los datos de las transacciones.",
+    "selectFile": "Seleccionar Archivo",
     "previewTitle": "Vista Previa de Transacciones",
     "previewDescription": "Revisa las transacciones extraídas antes de importarlas a la base de datos.",
     "importButton": "Importar Seleccionadas",
     "noFileSelected": "Ningún archivo seleccionado",
     "analyzing": "Analizando documento...",
-    "noTransactionsFound": "No se encontraron transacciones en el documento",
+    "noTransactionsFound": "No se encontraron transacciones en el documento. Prueba con la página de Importar Registros para más opciones.",
     "importSuccess": "¡Transacciones importadas exitosamente!",
-    "importError": "Error al importar transacciones"
+    "importError": "Error al importar transacciones",
+    "pdfParseError": "No se pudo extraer texto del PDF. Intenta usar la página de Importar Registros que soporta OCR para imágenes.",
+    "recommendImportPage": "Para mejores resultados, usa la página de Importar Registros que soporta más formatos, OCR para imágenes, y opciones de edición.",
+    "goToImportPage": "Ir a Importar Registros"
   },
   "importRecords": {
     "title": "Importar Registros",
@@ -255,7 +259,8 @@
     "selectCreditCard": "Seleccionar Tarjeta de Crédito",
     "associatedAccount": "Cuenta Asociada",
     "noAssociatedAccount": "Sin cuenta asociada",
-    "creditCardNoAccount": "La tarjeta de crédito no tiene cuenta asociada"
+    "creditCardNoAccount": "La tarjeta de crédito no tiene cuenta asociada",
+    "dragDropHint": "o arrastra y suelta archivos aquí"
   },
   "common": {
     "save": "Guardar",
