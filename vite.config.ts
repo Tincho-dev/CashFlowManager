@@ -53,4 +53,27 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Manual chunks for code splitting to reduce bundle size
+        manualChunks: {
+          // Vendor chunk for React and core libraries
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // MUI components (large library)
+          'vendor-mui': ['@mui/material', '@emotion/react', '@emotion/styled'],
+          // Data/i18n libraries
+          'vendor-data': ['i18next', 'react-i18next', 'date-fns'],
+          // File processing libraries (loaded on demand)
+          'vendor-xlsx': ['xlsx'],
+          // OCR library (heavy, loaded on demand)
+          'vendor-ocr': ['tesseract.js'],
+          // Database (loaded early but separable)
+          'vendor-sql': ['sql.js'],
+        },
+      },
+    },
+    // Raise chunk size warning limit slightly since we've optimized
+    chunkSizeWarningLimit: 600,
+  },
 })
