@@ -10,7 +10,8 @@
     "investments": "Investments",
     "loans": "Loans",
     "transfers": "Transfers",
-    "export": "Export Data"
+    "export": "Export Data",
+    "currencyExchange": "Currency Exchange"
   },
   "dashboard": {
     "title": "Dashboard",

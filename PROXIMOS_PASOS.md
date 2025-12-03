@@ -31,20 +31,20 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [ ] Mejorar accesibilidad (ARIA labels, keyboard navigation)
 
 ### Funcionalidades Pendientes
-- [ ] Página de Inversiones (Investments) con integración API de cotizaciones
-  - [ ] Integrar API pública de cotizaciones de acciones (Alpha Vantage, Yahoo Finance, etc.)
-  - [ ] Campo para cantidad de nominales de cada activo
-  - [ ] Cache offline de precios (última cotización conocida)
-  - [ ] Actualización automática al conectarse a internet
+- [x] ~~Página de Inversiones (Investments) con integración API de cotizaciones~~ - COMPLETED
+  - [x] ~~Integrar API pública de cotizaciones de acciones (Alpha Vantage, Yahoo Finance, etc.)~~ - COMPLETED (Yahoo Finance)
+  - [x] ~~Campo para cantidad de nominales de cada activo~~ - COMPLETED
+  - [x] ~~Cache offline de precios (última cotización conocida)~~ - COMPLETED (SQLite)
+  - [x] ~~Actualización automática al conectarse a internet~~ - COMPLETED
 - [ ] Página de Préstamos (Loans)
-- [ ] Página de Transferencias (Transfers) con conversión de monedas
-  - [ ] Soporte para transferencias entre cuentas de diferentes monedas
-  - [ ] Integración API de tipos de cambio
-  - [ ] Cache offline de tasas de cambio
-- [ ] Sistema de monedas multi-divisa
-  - [ ] Store global para tasas de cambio (React Context o Zustand)
-  - [ ] API pública de tipos de cambio en tiempo real
-  - [ ] Persistencia en base de datos o React store
+- [x] ~~Página de Transferencias (Transfers) con conversión de monedas~~ - COMPLETED
+  - [x] ~~Soporte para transferencias entre cuentas de diferentes monedas~~ - COMPLETED
+  - [x] ~~Integración API de tipos de cambio~~ - COMPLETED (Frankfurter API)
+  - [x] ~~Cache offline de tasas de cambio~~ - COMPLETED (SQLite)
+- [x] ~~Sistema de monedas multi-divisa~~ - COMPLETED
+  - [x] ~~Store global para tasas de cambio (React Context o Zustand)~~ - COMPLETED (QuotationService)
+  - [x] ~~API pública de tipos de cambio en tiempo real~~ - COMPLETED (Frankfurter API)
+  - [x] ~~Persistencia en base de datos o React store~~ - COMPLETED (SQLite quotations table)
 - [x] ~~Store de moneda predeterminada~~ - COMPLETED
   - [x] ~~Configuración global de moneda preferida del usuario~~ - COMPLETED
   - [x] ~~Usar moneda predeterminada en formularios nuevos~~ - COMPLETED

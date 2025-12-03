@@ -62,9 +62,12 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
   const handleQuantityOrPriceChange = (field: 'quantity' | 'purchasePrice', value: number) => {
     const updates: Partial<typeof formData> = { [field]: value };
     
-    if (formData.quantity && formData.purchasePrice) {
-      const quantity = field === 'quantity' ? value : formData.quantity;
-      const price = field === 'purchasePrice' ? value : formData.purchasePrice;
+    // Get the values including the newly updated one
+    const quantity = field === 'quantity' ? value : formData.quantity;
+    const price = field === 'purchasePrice' ? value : formData.purchasePrice;
+    
+    // Only calculate if both quantity and price are valid
+    if (quantity && price) {
       const baseAmount = quantity * price;
       
       // Get commission from selected account
@@ -77,7 +80,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
       updates.currentValue = baseAmount; // Default current value to purchase amount
     }
     
-    setFormData({ ...formData, ...updates });
+    setFormData(prev => ({ ...prev, ...updates }));
   };
 
   // Calculate quantity and price from total amount
@@ -86,10 +89,11 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
     
     if (formData.quantity && formData.purchasePrice) {
       const baseAmount = formData.quantity * formData.purchasePrice;
-      updates.commission = value - baseAmount;
+      // Ensure commission is not negative
+      updates.commission = Math.max(0, value - baseAmount);
     }
     
-    setFormData({ ...formData, ...updates });
+    setFormData(prev => ({ ...prev, ...updates }));
   };
 
   return (

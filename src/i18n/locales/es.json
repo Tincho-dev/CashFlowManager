@@ -8,9 +8,10 @@
     "income": "Ingresos",
     "expenses": "Gastos",
     "investments": "Inversiones",
-    "loans": "Préstamos",
+    "loans": "Pr\u00e9stamos",
     "transfers": "Transferencias",
-    "export": "Exportar Datos"
+    "export": "Exportar Datos",
+    "currencyExchange": "Cambio de Moneda"
   },
   "dashboard": {
     "title": "Inicio",
@@ -27,14 +28,14 @@
     "addSavings": "Agregar Ahorro",
     "accounts": "Cuentas",
     "recentTransactions": "Transacciones Recientes",
-    "noAccounts": "No hay cuentas aún. ¡Crea tu primera cuenta!",
-    "noTransactions": "No hay transacciones aún. ¡Agrega tu primera transacción!",
+    "noAccounts": "No hay cuentas a\u00fan. \u00a1Crea tu primera cuenta!",
+    "noTransactions": "No hay transacciones a\u00fan. \u00a1Agrega tu primera transacci\u00f3n!",
     "loading": "Cargando..."
   },
   "transactions": {
     "date": "Fecha",
-    "description": "Descripción",
-    "category": "Categoría",
+    "description": "Descripci\u00f3n",
+    "category": "Categor\u00eda",
     "amount": "Monto",
     "paymentType": "Tipo de Pago",
     "actions": "Acciones",
@@ -46,19 +47,19 @@
     "selectAccount": "Selecciona una cuenta",
     "currency": "Moneda",
     "recurring": "Recurrente",
-    "recurringInterval": "Intervalo de Recurrencia (días)",
+    "recurringInterval": "Intervalo de Recurrencia (d\u00edas)",
     "cancel": "Cancelar",
     "create": "Crear",
     "update": "Actualizar",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta transacción?",
-    "empty": "aún. ¡Agrega el primero para comenzar!",
-    "convertToInvestment": "Convertir a Inversión",
-    "convertDescription": "Esto convertirá el gasto en una inversión. La transacción original será eliminada y se creará una nueva inversión.",
-    "investmentType": "Tipo de Inversión",
+    "deleteConfirm": "\u00bfEst\u00e1s seguro de que quieres eliminar esta transacci\u00f3n?",
+    "empty": "a\u00fan. \u00a1Agrega el primero para comenzar!",
+    "convertToInvestment": "Convertir a Inversi\u00f3n",
+    "convertDescription": "Esto convertir\u00e1 el gasto en una inversi\u00f3n. La transacci\u00f3n original ser\u00e1 eliminada y se crear\u00e1 una nueva inversi\u00f3n.",
+    "investmentType": "Tipo de Inversi\u00f3n",
     "convert": "Convertir",
     "paymentTypes": {
-      "CREDIT_CARD": "Tarjeta de Crédito",
-      "DEBIT_CARD": "Tarjeta de Débito",
+      "CREDIT_CARD": "Tarjeta de Cr\u00e9dito",
+      "DEBIT_CARD": "Tarjeta de D\u00e9bito",
       "CASH": "Efectivo",
       "BANK_TRANSFER": "Transferencia Bancaria",
       "CHECK": "Cheque"
@@ -78,8 +79,8 @@
     "cancel": "Cancelar",
     "create": "Crear",
     "update": "Actualizar",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta cuenta?",
-    "empty": "No hay cuentas aún. ¡Crea tu primera cuenta!"
+    "deleteConfirm": "\u00bfEst\u00e1s seguro de que quieres eliminar esta cuenta?",
+    "empty": "No hay cuentas a\u00fan. \u00a1Crea tu primera cuenta!"
   },
   "common": {
     "save": "Guardar",
@@ -89,7 +90,7 @@
     "add": "Agregar",
     "close": "Cerrar",
     "confirm": "Confirmar",
-    "yes": "Sí",
+    "yes": "S\u00ed",
     "no": "No",
     "create": "Crear",
     "update": "Actualizar"
@@ -98,31 +99,31 @@
     "types": {
       "stocks": "Acciones",
       "bonds": "Bonos",
-      "real_estate": "Bienes Raíces",
+      "real_estate": "Bienes Ra\u00edces",
       "crypto": "Criptomonedas",
       "mutual_funds": "Fondos Mutuos"
     }
   },
   "placeholder": {
-    "investments": "Página de inversiones próximamente...",
-    "loans": "Página de préstamos próximamente...",
-    "transfers": "Página de transferencias próximamente..."
+    "investments": "P\u00e1gina de inversiones pr\u00f3ximamente...",
+    "loans": "P\u00e1gina de pr\u00e9stamos pr\u00f3ximamente...",
+    "transfers": "P\u00e1gina de transferencias pr\u00f3ximamente..."
   },
   "tooltips": {
     "accountTypes": {
       "checking": "Cuenta corriente para transacciones diarias y pago de facturas",
       "savings": "Cuenta de ahorros para guardar dinero y ganar intereses",
-      "creditCard": "Cuenta de tarjeta de crédito para rastrear gastos y pagos",
-      "cash": "Efectivo físico que tienes disponible",
-      "investment": "Cuentas de inversión como acciones, bonos o cuentas de retiro"
+      "creditCard": "Cuenta de tarjeta de cr\u00e9dito para rastrear gastos y pagos",
+      "cash": "Efectivo f\u00edsico que tienes disponible",
+      "investment": "Cuentas de inversi\u00f3n como acciones, bonos o cuentas de retiro"
     },
     "expenseTypes": {
       "fixed": "Gastos recurrentes regulares que no cambian mucho (alquiler, suscripciones, seguros)",
-      "variable": "Gastos que varían de mes a mes (supermercado, entretenimiento, compras)"
+      "variable": "Gastos que var\u00edan de mes a mes (supermercado, entretenimiento, compras)"
     },
-    "currency": "Elige la moneda para esta cuenta. Todas las transacciones usarán esta moneda.",
-    "paymentType": "Cómo pagaste esta transacción (efectivo, tarjeta de crédito, débito, etc.)",
-    "recurring": "Habilita si esta transacción se repite regularmente (ej: suscripción mensual)",
-    "category": "Categoriza tu transacción para mejor organización y reportes"
+    "currency": "Elige la moneda para esta cuenta. Todas las transacciones usar\u00e1n esta moneda.",
+    "paymentType": "C\u00f3mo pagaste esta transacci\u00f3n (efectivo, tarjeta de cr\u00e9dito, d\u00e9bito, etc.)",
+    "recurring": "Habilita si esta transacci\u00f3n se repite regularmente (ej: suscripci\u00f3n mensual)",
+    "category": "Categoriza tu transacci\u00f3n para mejor organizaci\u00f3n y reportes"
   }
 }

@@ -101,6 +101,7 @@ export class DataAccessLayer {
   private static instance: DataAccessLayer | null = null;
   private db: Database | null = null;
   private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
 
   /**
    * Singleton pattern to ensure single instance
@@ -123,14 +124,30 @@ export class DataAccessLayer {
   /**
    * Initialize the data access layer
    * MUST be called before any data operations
+   * Uses a promise to prevent race conditions with concurrent calls
    * 
    * Future: Add backend connection check here
    */
   public async initialize(): Promise<void> {
+    // If already initialized, return immediately
     if (this.isInitialized) {
       return;
     }
 
+    // If initialization is in progress, wait for it
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    // Start initialization
+    this.initPromise = this._initialize();
+    return this.initPromise;
+  }
+
+  /**
+   * Internal initialization logic
+   */
+  private async _initialize(): Promise<void> {
     try {
       // Get database instance (already initialized by AppContext)
       this.db = getDatabase();
@@ -138,6 +155,7 @@ export class DataAccessLayer {
       console.log('[DataAccessLayer] Initialized successfully');
     } catch (error) {
       console.error('[DataAccessLayer] Initialization failed:', error);
+      this.initPromise = null; // Reset to allow retry
       throw error;
     }
   }

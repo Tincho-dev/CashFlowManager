@@ -15,7 +15,6 @@ import DataAccessLayer from '../data/DataAccessLayer';
  */
 export class InvestmentService {
   private investmentRepo: InvestmentRepository | null = null;
-  private isInitialized = false;
 
   constructor() {
     // Don't initialize repository in constructor to prevent database access
@@ -32,7 +31,6 @@ export class InvestmentService {
         throw new Error('InvestmentService: DataAccessLayer not ready. Ensure app is initialized.');
       }
       this.investmentRepo = new InvestmentRepository();
-      this.isInitialized = true;
     }
     return this.investmentRepo;
   }
