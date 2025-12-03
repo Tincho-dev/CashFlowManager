@@ -33,6 +33,7 @@ import { Plus, Trash2, Edit, Search, List as ListIcon, TableIcon, Filter, Chevro
 import { useApp } from '../hooks';
 import type { Transaction, Asset, Category, TransactionType } from '../types';
 import { TransactionType as TxType } from '../types';
+import InfoTooltip from '../components/common/InfoTooltip';
 import styles from './Transactions.module.scss';
 
 interface TransactionsProps {
@@ -661,150 +662,185 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
         <form onSubmit={handleSubmit}>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-              <TextField
-                select
-                label={t('transactions.transactionType')}
-                value={formData.transactionType}
-                onChange={(e) => setFormData({ ...formData, transactionType: e.target.value as TransactionType | '' })}
-                fullWidth
-              >
-                <MenuItem value="">{t('transactions.noType')}</MenuItem>
-                <MenuItem value={TxType.INCOME}>{t('transactions.types.income')}</MenuItem>
-                <MenuItem value={TxType.FIXED_EXPENSE}>{t('transactions.types.fixedExpense')}</MenuItem>
-                <MenuItem value={TxType.VARIABLE_EXPENSE}>{t('transactions.types.variableExpense')}</MenuItem>
-                <MenuItem value={TxType.SAVINGS}>{t('transactions.types.savings')}</MenuItem>
-                <MenuItem value={TxType.TRANSFER}>{t('transactions.types.transfer')}</MenuItem>
-                <MenuItem value={TxType.CREDIT_CARD_EXPENSE}>{t('transactions.types.creditCardExpense')}</MenuItem>
-              </TextField>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  select
+                  label={t('transactions.transactionType')}
+                  value={formData.transactionType}
+                  onChange={(e) => setFormData({ ...formData, transactionType: e.target.value as TransactionType | '' })}
+                  fullWidth
+                >
+                  <MenuItem value="">{t('transactions.noType')}</MenuItem>
+                  <MenuItem value={TxType.INCOME}>{t('transactions.types.income')}</MenuItem>
+                  <MenuItem value={TxType.FIXED_EXPENSE}>{t('transactions.types.fixedExpense')}</MenuItem>
+                  <MenuItem value={TxType.VARIABLE_EXPENSE}>{t('transactions.types.variableExpense')}</MenuItem>
+                  <MenuItem value={TxType.SAVINGS}>{t('transactions.types.savings')}</MenuItem>
+                  <MenuItem value={TxType.TRANSFER}>{t('transactions.types.transfer')}</MenuItem>
+                  <MenuItem value={TxType.CREDIT_CARD_EXPENSE}>{t('transactions.types.creditCardExpense')}</MenuItem>
+                </TextField>
+                <InfoTooltip title={
+                  formData.transactionType === TxType.INCOME ? t('tooltips.transactionTypes.income') :
+                  formData.transactionType === TxType.FIXED_EXPENSE ? t('tooltips.transactionTypes.fixedExpense') :
+                  formData.transactionType === TxType.VARIABLE_EXPENSE ? t('tooltips.transactionTypes.variableExpense') :
+                  formData.transactionType === TxType.SAVINGS ? t('tooltips.transactionTypes.savings') :
+                  formData.transactionType === TxType.TRANSFER ? t('tooltips.transactionTypes.transfer') :
+                  formData.transactionType === TxType.CREDIT_CARD_EXPENSE ? t('tooltips.transactionTypes.creditCardExpense') :
+                  t('tooltips.transactionTypes.income')
+                } />
+              </Box>
 
-              <TextField
-                select
-                label={t('transactions.fromAccount')}
-                value={formData.fromAccountId}
-                onChange={(e) => setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })}
-                required
-                fullWidth
-              >
-                {accounts.length === 0 && (
-                  <MenuItem value={0} disabled>
-                    {t('transactions.selectAccount')}
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  select
+                  label={t('transactions.fromAccount')}
+                  value={formData.fromAccountId}
+                  onChange={(e) => setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })}
+                  required
+                  fullWidth
+                >
+                  {accounts.length === 0 && (
+                    <MenuItem value={0} disabled>
+                      {t('transactions.selectAccount')}
+                    </MenuItem>
+                  )}
+                  {accounts.map((account) => (
+                    <MenuItem key={account.id} value={account.id}>
+                      {account.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <InfoTooltip title={t('tooltips.transactions.fromAccount')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  select
+                  label={t('transactions.toAccount')}
+                  value={formData.toAccountId}
+                  onChange={(e) => setFormData({ ...formData, toAccountId: parseInt(e.target.value) })}
+                  required
+                  fullWidth
+                >
+                  {accounts.length === 0 && (
+                    <MenuItem value={0} disabled>
+                      {t('transactions.selectAccount')}
+                    </MenuItem>
+                  )}
+                  {accounts.map((account) => (
+                    <MenuItem key={account.id} value={account.id}>
+                      {account.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <InfoTooltip title={t('tooltips.transactions.toAccount')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  label={t('transactions.amount')}
+                  type="number"
+                  value={formData.amount || ''}
+                  onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+                  required
+                  fullWidth
+                  slotProps={{
+                    htmlInput: { step: '0.01', min: '0' }
+                  }}
+                />
+                <InfoTooltip title={t('tooltips.transactions.amount')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  label={t('transactions.description')}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  placeholder={t('transactions.descriptionPlaceholder') || 'Enter a description...'}
+                />
+                <InfoTooltip title={t('tooltips.transactions.description')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  label={t('transactions.date')}
+                  type="datetime-local"
+                  value={formData.date ? formData.date.slice(0, 16) : ''}
+                  onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value).toISOString() })}
+                  required
+                  fullWidth
+                  slotProps={{
+                    inputLabel: { shrink: true }
+                  }}
+                />
+                <InfoTooltip title={t('tooltips.transactions.date')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  select
+                  label={t('transactions.category')}
+                  value={formData.categoryId || ''}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value ? parseInt(e.target.value) : null })}
+                  fullWidth
+                >
+                  <MenuItem value="">
+                    {t('transactions.noCategory')}
                   </MenuItem>
-                )}
-                {accounts.map((account) => (
-                  <MenuItem key={account.id} value={account.id}>
-                    {account.name}
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: category.color || '#9E9E9E',
+                          }}
+                        />
+                        {category.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <InfoTooltip title={t('tooltips.category')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  label={t('transactions.auditDate')}
+                  type="datetime-local"
+                  value={formData.auditDate ? formData.auditDate.slice(0, 16) : ''}
+                  onChange={(e) => setFormData({ ...formData, auditDate: e.target.value ? new Date(e.target.value).toISOString() : '' })}
+                  fullWidth
+                  slotProps={{
+                    inputLabel: { shrink: true }
+                  }}
+                />
+                <InfoTooltip title={t('tooltips.transactions.auditDate')} />
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  select
+                  label={t('transactions.asset')}
+                  value={formData.assetId || ''}
+                  onChange={(e) => setFormData({ ...formData, assetId: e.target.value ? parseInt(e.target.value) : null })}
+                  fullWidth
+                >
+                  <MenuItem value="">
+                    {t('transactions.noAsset')}
                   </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                label={t('transactions.toAccount')}
-                value={formData.toAccountId}
-                onChange={(e) => setFormData({ ...formData, toAccountId: parseInt(e.target.value) })}
-                required
-                fullWidth
-              >
-                {accounts.length === 0 && (
-                  <MenuItem value={0} disabled>
-                    {t('transactions.selectAccount')}
-                  </MenuItem>
-                )}
-                {accounts.map((account) => (
-                  <MenuItem key={account.id} value={account.id}>
-                    {account.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                label={t('transactions.amount')}
-                type="number"
-                value={formData.amount || ''}
-                onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
-                required
-                fullWidth
-                slotProps={{
-                  htmlInput: { step: '0.01', min: '0' }
-                }}
-              />
-
-              <TextField
-                label={t('transactions.description')}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                fullWidth
-                multiline
-                rows={2}
-                placeholder={t('transactions.descriptionPlaceholder') || 'Enter a description...'}
-              />
-
-              <TextField
-                label={t('transactions.date')}
-                type="datetime-local"
-                value={formData.date ? formData.date.slice(0, 16) : ''}
-                onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value).toISOString() })}
-                required
-                fullWidth
-                slotProps={{
-                  inputLabel: { shrink: true }
-                }}
-              />
-
-              <TextField
-                select
-                label={t('transactions.category')}
-                value={formData.categoryId || ''}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value ? parseInt(e.target.value) : null })}
-                fullWidth
-              >
-                <MenuItem value="">
-                  {t('transactions.noCategory')}
-                </MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          backgroundColor: category.color || '#9E9E9E',
-                        }}
-                      />
-                      {category.name}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                label={t('transactions.auditDate')}
-                type="datetime-local"
-                value={formData.auditDate ? formData.auditDate.slice(0, 16) : ''}
-                onChange={(e) => setFormData({ ...formData, auditDate: e.target.value ? new Date(e.target.value).toISOString() : '' })}
-                fullWidth
-                slotProps={{
-                  inputLabel: { shrink: true }
-                }}
-              />
-
-              <TextField
-                select
-                label={t('transactions.asset')}
-                value={formData.assetId || ''}
-                onChange={(e) => setFormData({ ...formData, assetId: e.target.value ? parseInt(e.target.value) : null })}
-                fullWidth
-              >
-                <MenuItem value="">
-                  {t('transactions.noAsset')}
-                </MenuItem>
-                {assets.map((asset) => (
-                  <MenuItem key={asset.id} value={asset.id}>
-                    {asset.ticket || `Asset ${asset.id}`}
-                  </MenuItem>
-                ))}
-              </TextField>
+                  {assets.map((asset) => (
+                    <MenuItem key={asset.id} value={asset.id}>
+                      {asset.ticket || `Asset ${asset.id}`}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <InfoTooltip title={t('tooltips.transactions.asset')} />
+              </Box>
             </Box>
           </DialogContent>
           <DialogActions>
