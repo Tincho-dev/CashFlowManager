@@ -39,6 +39,7 @@
     "title": "Transacciones",
     "date": "Fecha",
     "description": "Descripción",
+    "descriptionPlaceholder": "Ingresa una descripción...",
     "category": "Categoría",
     "selectCategory": "Selecciona una categoría",
     "noCategory": "Sin Categoría",

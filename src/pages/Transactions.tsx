@@ -35,6 +35,7 @@ interface FormData {
   auditDate: string;
   assetId: number | null;
   categoryId: number | null;
+  description: string;
 }
 
 const Transactions: React.FC<TransactionsProps> = ({ title }) => {
@@ -59,6 +60,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
     auditDate: '',
     assetId: null,
     categoryId: null,
+    description: '',
   });
 
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
@@ -103,6 +105,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
         auditDate: formData.auditDate || null,
         assetId: formData.assetId,
         categoryId: formData.categoryId,
+        description: formData.description || null,
       });
     } else {
       transactionService.createTransaction(
@@ -112,7 +115,10 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
         formData.date,
         formData.auditDate || null,
         formData.assetId,
-        formData.categoryId
+        formData.categoryId,
+        undefined,  // transactionType
+        undefined,  // creditCardId
+        formData.description || null
       );
     }
 
@@ -130,6 +136,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
       auditDate: transaction.auditDate || '',
       assetId: transaction.assetId,
       categoryId: transaction.categoryId,
+      description: transaction.description || '',
     });
     setShowModal(true);
   };
@@ -249,6 +256,11 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
                     <Typography variant="body1" fontWeight="bold">
                       {getAccountName(transaction.fromAccountId)} → {getAccountName(transaction.toAccountId)}
                     </Typography>
+                    {transaction.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {transaction.description}
+                      </Typography>
+                    )}
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip
                         label={new Date(transaction.date).toLocaleDateString()}
@@ -355,6 +367,16 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
                 required
                 fullWidth
                 inputProps={{ step: '0.01', min: '0' }}
+              />
+
+              <TextField
+                label={t('transactions.description')}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                fullWidth
+                multiline
+                rows={2}
+                placeholder={t('transactions.descriptionPlaceholder') || 'Enter a description...'}
               />
 
               <TextField
