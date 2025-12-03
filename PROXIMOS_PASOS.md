@@ -13,8 +13,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Error en Inversiones: investment.quantity.toFixed is not a function~~ - FIXED: Agregadas validaciones de tipo en InvestmentCard
 
 ### Media Prioridad
-- [ ] Warnings de ESLint sobre dependencias en useEffect
-- [ ] Warnings de TypeScript sobre tipos `any` en repositorios
+- [x] ~~Warnings de ESLint sobre dependencias en useEffect~~ - FIXED: Refactorizado ImportRecords.tsx con useCallback y useMemo
+- [ ] Warnings de TypeScript sobre tipos `any` en repositorios (no encontrados - todos los repositorios ya usan tipos adecuados)
 
 ### Baja Prioridad
 - [ ] Bundle size superior a 500KB después de minificación
@@ -88,9 +88,9 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 
 ### Refactoring Técnico
 - [x] ~~Migrar completamente de CSS a SCSS modules~~ - COMPLETED (parcialmente, falta Transactions)
-- [ ] Extraer lógica de negocio a custom hooks
+- [x] ~~Extraer lógica de negocio a custom hooks~~ - COMPLETED: Implementados useAccounts y useTransactions hooks
 - [ ] Implementar React Query para mejor manejo de estado (ya instalado)
-- [ ] Agregar tests unitarios
+- [x] ~~Agregar tests unitarios~~ - COMPLETED: 164 tests (incluidos hooks useAccounts y useTransactions)
 - [ ] Agregar tests de integración
 - [ ] Implementar CI/CD pipeline
 
@@ -253,6 +253,8 @@ SQLite Database (localStorage)
 14. **Feedback de Usuario**: Chatbot informa cuando usa valores predeterminados
 15. **Módulo de Préstamos (Loans)**: Gestión completa con cuotas, frecuencias de pago y tracking de estado
 16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
+17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
+18. **Tests Unitarios**: 164 tests para servicios, repositorios y hooks
 
 ### 🚧 En Progreso / En Curso
 - Refactoring de página Transactions (pendiente)
@@ -263,12 +265,12 @@ SQLite Database (localStorage)
 ### 📋 Pendiente / To Do
 - Mejoras de accesibilidad
 - Dark mode
-- Tests unitarios
+- Tests de integración
 - CI/CD pipeline
 - Deploy automático en Vercel
 - Store global de monedas y tasas de cambio
 
 ---
 
-*Última actualización: 2025-12-02*
-*Versión: 2.3.0 - Préstamos y agrupación de cuentas*
+*Última actualización: 2025-12-03*
+*Versión: 2.4.0 - Custom hooks y tests unitarios*
