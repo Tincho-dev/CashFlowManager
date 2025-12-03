@@ -26,8 +26,6 @@ import {
   Landmark,
   Upload,
   RefreshCw,
-  TrendingUp,
-  TrendingDown,
   PiggyBank
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
@@ -49,17 +47,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navItems = [
     { path: '/', icon: Home, label: t('nav.dashboard') },
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
-    // Kept HEAD nav items
     { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
-    { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
-    { path: '/loans', icon: Landmark, label: t('nav.loans') },
-    { path: '/import', icon: Upload, label: t('nav.import') },
-    // Kept origin/main nav items as additional entries (commented backups could be removed later)
-    { path: '/income', icon: TrendingUp, label: t('nav.income') },
-    { path: '/expenses', icon: TrendingDown, label: t('nav.expenses') },
     { path: '/investments', icon: PiggyBank, label: t('nav.investments') },
-    { path: '/transfers', icon: ArrowLeftRight, label: t('nav.transfers') },
+    { path: '/loans', icon: Landmark, label: t('nav.loans') },
     { path: '/currency-exchange', icon: RefreshCw, label: t('nav.currencyExchange') },
+    { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
+    { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];
 

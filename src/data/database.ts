@@ -249,6 +249,23 @@ const runMigrations = async (db: Database): Promise<void> => {
     );
   `);
 
+  // Create transfers table for tracking money transfers between accounts
+  db.run(`
+    CREATE TABLE IF NOT EXISTS transfers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_account_id INTEGER NOT NULL,
+      to_account_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'USD',
+      description TEXT,
+      date TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (from_account_id) REFERENCES accounts (id),
+      FOREIGN KEY (to_account_id) REFERENCES accounts (id)
+    );
+  `);
+
   // ========================================================================
   // COLUMN MIGRATIONS - Add new columns to existing tables if they don't exist
   // This allows schema evolution without losing data

@@ -46,7 +46,7 @@ const Investments: React.FC = () => {
     purchasePrice?: number;
     amount: number;
     commission?: number;
-    currency: Currency;
+    currency: AccountCurrency;
     purchaseDate: string;
     currentValue: number;
   }>({

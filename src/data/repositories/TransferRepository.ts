@@ -76,7 +76,7 @@ export class TransferRepository {
 
   update(id: number, transfer: Partial<Omit<Transfer, 'id' | 'createdAt' | 'updatedAt'>>): Transfer | null {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (transfer.fromAccountId !== undefined) {
       updates.push('from_account_id = ?');
@@ -125,7 +125,7 @@ export class TransferRepository {
     return true;
   }
 
-  private mapRowToTransfer(row: any[]): Transfer {
+  private mapRowToTransfer(row: (string | number | Uint8Array | null)[]): Transfer {
     return {
       id: row[0] as number,
       fromAccountId: row[1] as number,

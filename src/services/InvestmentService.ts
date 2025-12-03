@@ -1,5 +1,5 @@
 import type { Investment, Currency } from '../types';
-import { InvestmentType, AccountCurrency } from '../types';
+import { InvestmentType } from '../types';
 import { InvestmentRepository } from '../data/repositories/InvestmentRepository';
 import LoggingService, { LogCategory } from './LoggingService';
 import DataAccessLayer from '../data/DataAccessLayer';
