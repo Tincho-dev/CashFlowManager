@@ -1,136 +1,122 @@
 // Core types for the CashFlowManager application
 
-export const TransactionType = {
-  FIXED_EXPENSE: 'FIXED_EXPENSE',
-  VARIABLE_EXPENSE: 'VARIABLE_EXPENSE',
-  INCOME: 'INCOME',
-  TRANSFER: 'TRANSFER',
-  PAYMENT: 'PAYMENT',
-  INVESTMENT: 'INVESTMENT',
-  LOAN: 'LOAN',
-} as const;
+// Re-export TOON types
+export * from './toon';
 
-export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
-
-export const Currency = {
+export const AccountCurrency = {
   USD: 'USD',
-  EUR: 'EUR',
-  GBP: 'GBP',
   ARS: 'ARS',
-  BRL: 'BRL',
 } as const;
 
-export type Currency = (typeof Currency)[keyof typeof Currency];
+export type AccountCurrency = (typeof AccountCurrency)[keyof typeof AccountCurrency];
 
-export const PaymentType = {
-  CREDIT_CARD: 'CREDIT_CARD',
-  DEBIT_CARD: 'DEBIT_CARD',
-  CASH: 'CASH',
-  BANK_TRANSFER: 'BANK_TRANSFER',
-  CHECK: 'CHECK',
-} as const;
+// Generic Currency alias for backwards compatibility
+export type Currency = AccountCurrency;
 
-export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType];
-
-export const InvestmentType = {
-  STOCKS: 'STOCKS',
-  BONDS: 'BONDS',
-  REAL_ESTATE: 'REAL_ESTATE',
-  CRYPTO: 'CRYPTO',
-  MUTUAL_FUNDS: 'MUTUAL_FUNDS',
-} as const;
-
-export type InvestmentType = (typeof InvestmentType)[keyof typeof InvestmentType];
-
-export const LoanType = {
-  PERSONAL: 'PERSONAL',
-  MORTGAGE: 'MORTGAGE',
-  AUTO: 'AUTO',
-  CREDIT_CARD: 'CREDIT_CARD',
-  STUDENT: 'STUDENT',
-} as const;
-
-export type LoanType = (typeof LoanType)[keyof typeof LoanType];
-
-export interface Account {
+export interface Owner {
   id: number;
   name: string;
-  type: string;
-  balance: number;
-  currency: Currency;
-  commissionRate?: number; // Commission percentage for operations (e.g., 0.25 for 0.25%)
-  createdAt: string;
-  updatedAt: string;
+  description: string | null;
 }
 
-export interface Transaction {
+export interface Asset {
   id: number;
-  accountId: number;
-  type: TransactionType;
-  amount: number;
-  currency: Currency;
-  description: string;
-  category?: string;
-  date: string;
-  paymentType?: PaymentType;
-  recurring?: boolean;
-  recurringInterval?: number;
-  createdAt: string;
-  updatedAt: string;
+  ticket: string | null;
+  price: number | null;
 }
-
-export interface Investment {
-  id: number;
-  accountId: number;
-  type: InvestmentType;
-  name: string;
-  symbol?: string; // Stock ticker symbol (e.g., AAPL, GOOGL, GGAL, etc.)
-  quantity?: number; // Number of shares/units/nominales
-  purchasePrice?: number; // Price per unit at purchase
-  amount: number; // Total investment amount (quantity * purchasePrice + commission)
-  commission?: number; // Commission paid for the transaction
-  currency: Currency;
-  purchaseDate: string;
-  currentValue: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Loan {
-  id: number;
-  type: LoanType;
-  lender: string;
-  principal: number;
-  interestRate: number;
-  currency: Currency;
-  startDate: string;
-  endDate: string;
-  monthlyPayment: number;
-  balance: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Transfer {
-  id: number;
-  fromAccountId: number;
-  toAccountId: number;
-  amount: number;
-  currency: Currency;
-  description: string;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
-}
+ 
 
 export interface Category {
   id: number;
   name: string;
-  type: TransactionType;
-  color?: string;
-  icon?: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+}
+
+export interface Account {
+  id: number;
+  name: string;
+  description: string | null;
+  cbu: string | null;
+  accountNumber: string | null;
+  alias: string | null;
+  bank: string | null;
+  ownerId: number;
+  balance: string | null;
+  currency: AccountCurrency;
+}
+
+export interface Transaction {
+  id: number;
+  fromAccountId: number;
+  amount: number;
+  toAccountId: number;
+  date: string;
+  auditDate: string | null;
+  assetId: number | null;
+  categoryId: number | null;
+}
+
+export interface CreditCard {
+  id: number;
+  accountId: number;
+  name: string | null;
+  last4: string | null;
+  closingDay: number | null;
+  dueDay: number | null;
+  taxPercent: number;
+  fixedFees: number;
+  bank: string | null;
+}
+
+export const LoanStatus = {
+  ACTIVE: 'Active',
+  CLOSED: 'Closed',
+  DEFAULTED: 'Defaulted',
+} as const;
+
+export type LoanStatus = (typeof LoanStatus)[keyof typeof LoanStatus];
+
+export const PaymentFrequency = {
+  WEEKLY: 'Weekly',
+  BIWEEKLY: 'Biweekly',
+  MONTHLY: 'Monthly',
+  QUARTERLY: 'Quarterly',
+  YEARLY: 'Yearly',
+} as const;
+
+export type PaymentFrequency = (typeof PaymentFrequency)[keyof typeof PaymentFrequency];
+
+export interface Loan {
+  id: number;
+  borrowerAccountId: number;
+  lenderAccountId: number | null;
+  principal: number;
+  currency: AccountCurrency;
+  interestRate: number;
+  startDate: string;
+  endDate: string | null;
+  termMonths: number | null;
+  installmentCount: number | null;
+  paymentFrequency: PaymentFrequency;
+  status: LoanStatus;
   createdAt: string;
-  updatedAt: string;
+  notes: string | null;
+}
+
+export interface LoanInstallment {
+  id: number;
+  loanId: number;
+  sequence: number;
+  dueDate: string;
+  principalAmount: number;
+  interestAmount: number;
+  feesAmount: number;
+  totalAmount: number;
+  paid: boolean;
+  paidDate: string | null;
+  paymentAccountId: number | null;
 }
 
 export interface Quotation {

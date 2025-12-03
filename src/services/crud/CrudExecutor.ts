@@ -1,34 +1,30 @@
 import type { AccountService } from '../AccountService';
 import type { TransactionService } from '../TransactionService';
-import type { InvestmentService } from '../InvestmentService';
-import type { LoanService } from '../LoanService';
-import type { TransferService } from '../TransferService';
+import type { OwnerService } from '../OwnerService';
 import LoggingService, { LogCategory } from '../LoggingService';
 import type { ParsedCommand } from './CrudCommandParser';
-import { Currency, TransactionType } from '../../types';
 
 export interface CrudResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export class CrudExecutor {
   private accountService: AccountService | null = null;
   private transactionService: TransactionService | null = null;
+  private ownerService: OwnerService | null = null;
   private currentLanguage: string = 'en';
 
   initialize(
     accountService: AccountService,
     transactionService: TransactionService,
-    _investmentService: InvestmentService,
-    _loanService: LoanService,
-    _transferService: TransferService,
+    ownerService: OwnerService,
     language: string = 'en'
   ): void {
     this.accountService = accountService;
     this.transactionService = transactionService;
-    // Future: investmentService, loanService, transferService
+    this.ownerService = ownerService;
     this.currentLanguage = language;
   }
 
@@ -49,12 +45,10 @@ export class CrudExecutor {
           return this.executeAccountCommand(command);
         case 'transaction':
           return this.executeTransactionCommand(command);
-        case 'investment':
-          return this.executeInvestmentCommand(command);
-        case 'loan':
-          return this.executeLoanCommand(command);
-        case 'transfer':
-          return this.executeTransferCommand(command);
+        case 'owner':
+          return this.executeOwnerCommand(command);
+        case 'asset':
+          return this.executeAssetCommand(command);
         default:
           return {
             success: false,
@@ -128,9 +122,8 @@ export class CrudExecutor {
 
     accounts.forEach(account => {
       message += `🏦 **ID: ${account.id}** - ${account.name}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${account.type}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: ${account.currency} $${account.balance.toFixed(2)}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Creada' : 'Created'}: ${account.createdAt}\n\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'Banco' : 'Bank'}: ${account.bank || 'N/A'}\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: $${account.balance || '0'}\n\n`;
     });
 
     return {
@@ -166,11 +159,9 @@ export class CrudExecutor {
       : `🏦 **Account Details #${id}**\n\n`;
 
     message += `• ${this.currentLanguage === 'es' ? 'Nombre' : 'Name'}: ${account.name}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${account.type}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: ${account.currency} $${account.balance.toFixed(2)}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Moneda' : 'Currency'}: ${account.currency}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Creada' : 'Created'}: ${account.createdAt}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Actualizada' : 'Updated'}: ${account.updatedAt}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Banco' : 'Bank'}: ${account.bank || 'N/A'}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: $${account.balance || '0'}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Alias' : 'Alias'}: ${account.alias || 'N/A'}\n`;
 
     return {
       success: true,
@@ -179,21 +170,37 @@ export class CrudExecutor {
     };
   }
 
-  private createAccount(data: Record<string, any>): CrudResult {
-    if (!data.name || !data.type || data.balance === undefined) {
+  private createAccount(data: Record<string, string | number | null>): CrudResult {
+    if (!data.name) {
       return {
         success: false,
         message: this.currentLanguage === 'es'
-          ? 'Datos incompletos. Requerido: nombre, tipo y saldo'
-          : 'Incomplete data. Required: name, type, and balance',
+          ? 'Datos incompletos. Requerido: nombre'
+          : 'Incomplete data. Required: name',
       };
     }
 
+    // Get first owner for default or return error if no owners exist
+    const owners = this.ownerService?.getAllOwners() || [];
+    if (owners.length === 0) {
+      return {
+        success: false,
+        message: this.currentLanguage === 'es'
+          ? 'No hay propietarios. Cree un propietario primero.'
+          : 'No owners found. Please create an owner first.',
+      };
+    }
+    const ownerId = owners[0].id;
+
     const account = this.accountService!.createAccount(
-      data.name,
-      data.type,
-      data.balance,
-      data.currency || Currency.USD
+      data.name as string,
+      ownerId,
+      data.description as string | null,
+      data.cbu as string | null,
+      data.accountNumber as string | null,
+      data.alias as string | null,
+      data.bank as string | null,
+      data.balance as string | null
     );
 
     let message = this.currentLanguage === 'es'
@@ -202,8 +209,7 @@ export class CrudExecutor {
 
     message += `• ID: ${account.id}\n`;
     message += `• ${this.currentLanguage === 'es' ? 'Nombre' : 'Name'}: ${account.name}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${account.type}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: ${account.currency} $${account.balance.toFixed(2)}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: $${account.balance || '0'}\n`;
 
     return {
       success: true,
@@ -212,7 +218,7 @@ export class CrudExecutor {
     };
   }
 
-  private updateAccount(id: number, data: Record<string, any>): CrudResult {
+  private updateAccount(id: number, data: Record<string, string | number | null>): CrudResult {
     if (!id) {
       return {
         success: false,
@@ -239,8 +245,7 @@ export class CrudExecutor {
 
     message += `• ID: ${account.id}\n`;
     message += `• ${this.currentLanguage === 'es' ? 'Nombre' : 'Name'}: ${account.name}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${account.type}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: ${account.currency} $${account.balance.toFixed(2)}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Saldo' : 'Balance'}: $${account.balance || '0'}\n`;
 
     return {
       success: true,
@@ -295,8 +300,6 @@ export class CrudExecutor {
         return this.readTransaction(command.id!);
       case 'create':
         return this.createTransaction(command.data!);
-      case 'update':
-        return this.updateTransaction(command.id!, command.data!);
       case 'delete':
         return this.deleteTransaction(command.id!);
       default:
@@ -327,12 +330,11 @@ export class CrudExecutor {
       : `💸 **Transactions List** (${transactions.length} total)\n\n`;
 
     transactions.slice(0, 20).forEach(tx => {
-      const emoji = tx.type === TransactionType.INCOME ? '💰' : '💸';
-      message += `${emoji} **ID: ${tx.id}** - ${tx.description || (this.currentLanguage === 'es' ? 'Sin descripción' : 'No description')}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: ${tx.currency} $${tx.amount.toFixed(2)}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${tx.type}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Fecha' : 'Date'}: ${tx.date}\n`;
-      message += `   ${this.currentLanguage === 'es' ? 'Cuenta' : 'Account'}: ${tx.accountId}\n\n`;
+      message += `💰 **ID: ${tx.id}**\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: $${tx.amount.toFixed(2)}\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'De cuenta' : 'From account'}: ${tx.fromAccountId}\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'A cuenta' : 'To account'}: ${tx.toAccountId}\n`;
+      message += `   ${this.currentLanguage === 'es' ? 'Fecha' : 'Date'}: ${tx.date}\n\n`;
     });
 
     if (transactions.length > 20) {
@@ -369,18 +371,14 @@ export class CrudExecutor {
       };
     }
 
-    const emoji = transaction.type === TransactionType.INCOME ? '💰' : '💸';
     let message = this.currentLanguage === 'es'
-      ? `${emoji} **Detalles de Transacción #${id}**\n\n`
-      : `${emoji} **Transaction Details #${id}**\n\n`;
+      ? `💰 **Detalles de Transacción #${id}**\n\n`
+      : `💰 **Transaction Details #${id}**\n\n`;
 
-    message += `• ${this.currentLanguage === 'es' ? 'Descripción' : 'Description'}: ${transaction.description || (this.currentLanguage === 'es' ? 'Sin descripción' : 'No description')}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${transaction.type}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Categoría' : 'Category'}: ${transaction.category || 'N/A'}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: $${transaction.amount.toFixed(2)}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'De cuenta' : 'From account'}: ${transaction.fromAccountId}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'A cuenta' : 'To account'}: ${transaction.toAccountId}\n`;
     message += `• ${this.currentLanguage === 'es' ? 'Fecha' : 'Date'}: ${transaction.date}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Cuenta' : 'Account'}: ${transaction.accountId}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Creada' : 'Created'}: ${transaction.createdAt}\n`;
 
     return {
       success: true,
@@ -389,75 +387,40 @@ export class CrudExecutor {
     };
   }
 
-  private createTransaction(data: Record<string, any>): CrudResult {
-    if (!data.accountId || !data.amount || !data.type) {
+  private createTransaction(data: Record<string, string | number | null>): CrudResult {
+    if (!data.fromAccountId || !data.toAccountId || !data.amount) {
       return {
         success: false,
         message: this.currentLanguage === 'es'
-          ? 'Datos incompletos. Requerido: accountId, amount, type'
-          : 'Incomplete data. Required: accountId, amount, type',
+          ? 'Datos incompletos. Requerido: fromAccountId, toAccountId, amount'
+          : 'Incomplete data. Required: fromAccountId, toAccountId, amount',
       };
     }
 
     const transaction = this.transactionService!.createTransaction(
-      data.accountId,
-      data.type,
-      data.amount,
-      data.currency || Currency.USD,
-      data.description || '',
-      data.date || new Date().toISOString().split('T')[0],
-      data.category,
-      data.paymentType,
-      data.recurring,
-      data.recurringInterval
+      data.fromAccountId as number,
+      data.toAccountId as number,
+      data.amount as number,
+      (data.date as string) || new Date().toISOString(),
+      data.auditDate as string | null,
+      data.assetId as number | null
     );
-
-    const emoji = transaction.type === TransactionType.INCOME ? '💰' : '💸';
-    let message = this.currentLanguage === 'es'
-      ? `${emoji} **Transacción creada exitosamente!**\n\n`
-      : `${emoji} **Transaction created successfully!**\n\n`;
-
-    message += `• ID: ${transaction.id}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Tipo' : 'Type'}: ${transaction.type}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Descripción' : 'Description'}: ${transaction.description}\n`;
-
-    return {
-      success: true,
-      message,
-      data: transaction,
-    };
-  }
-
-  private updateTransaction(id: number, data: Record<string, any>): CrudResult {
-    if (!id) {
-      return {
-        success: false,
-        message: this.currentLanguage === 'es'
-          ? 'ID de transacción requerido'
-          : 'Transaction ID required',
-      };
-    }
-
-    const transaction = this.transactionService!.updateTransaction(id, data);
 
     if (!transaction) {
       return {
         success: false,
         message: this.currentLanguage === 'es'
-          ? `Transacción con ID ${id} no encontrada`
-          : `Transaction with ID ${id} not found`,
+          ? 'Error al crear la transacción'
+          : 'Error creating transaction',
       };
     }
 
-    const emoji = transaction.type === TransactionType.INCOME ? '💰' : '💸';
     let message = this.currentLanguage === 'es'
-      ? `${emoji} **Transacción actualizada exitosamente!**\n\n`
-      : `${emoji} **Transaction updated successfully!**\n\n`;
+      ? `💰 **Transacción creada exitosamente!**\n\n`
+      : `💰 **Transaction created successfully!**\n\n`;
 
     message += `• ID: ${transaction.id}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: ${transaction.currency} $${transaction.amount.toFixed(2)}\n`;
-    message += `• ${this.currentLanguage === 'es' ? 'Descripción' : 'Description'}: ${transaction.description}\n`;
+    message += `• ${this.currentLanguage === 'es' ? 'Monto' : 'Amount'}: $${transaction.amount.toFixed(2)}\n`;
 
     return {
       success: true,
@@ -495,31 +458,21 @@ export class CrudExecutor {
     };
   }
 
-  // Placeholder methods for other entities
-  private executeInvestmentCommand(_command: ParsedCommand): CrudResult {
+  private executeOwnerCommand(_command: ParsedCommand): CrudResult {
     return {
       success: false,
       message: this.currentLanguage === 'es'
-        ? 'Operaciones CRUD de inversiones en desarrollo'
-        : 'Investment CRUD operations under development',
+        ? 'Operaciones CRUD de propietarios en desarrollo'
+        : 'Owner CRUD operations under development',
     };
   }
 
-  private executeLoanCommand(_command: ParsedCommand): CrudResult {
+  private executeAssetCommand(_command: ParsedCommand): CrudResult {
     return {
       success: false,
       message: this.currentLanguage === 'es'
-        ? 'Operaciones CRUD de préstamos en desarrollo'
-        : 'Loan CRUD operations under development',
-    };
-  }
-
-  private executeTransferCommand(_command: ParsedCommand): CrudResult {
-    return {
-      success: false,
-      message: this.currentLanguage === 'es'
-        ? 'Operaciones CRUD de transferencias en desarrollo'
-        : 'Transfer CRUD operations under development',
+        ? 'Operaciones CRUD de activos en desarrollo'
+        : 'Asset CRUD operations under development',
     };
   }
 }

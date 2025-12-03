@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -17,93 +17,78 @@ import {
   ListItemText,
   IconButton,
   Chip,
-  ToggleButtonGroup,
-  ToggleButton,
 } from '@mui/material';
-import { Plus, Trash2, Edit, TrendingUp } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import type { Transaction } from '../types';
-import { TransactionType, Currency, PaymentType, InvestmentType } from '../types';
+import { Plus, Trash2, Edit } from 'lucide-react';
+import { useApp } from '../hooks';
+import type { Transaction, Asset, Category } from '../types';
 import './Transactions.css';
 
 interface TransactionsProps {
-  type: TransactionType;
-  title: string;
+  title?: string;
 }
 
 interface FormData {
-  accountId: number;
+  fromAccountId: number;
+  toAccountId: number;
   amount: number;
-  currency: Currency;
-  description: string;
-  category: string;
   date: string;
-  paymentType: PaymentType;
-  recurring: boolean;
-  recurringInterval: number;
-  type: TransactionType;
+  auditDate: string;
+  assetId: number | null;
+  categoryId: number | null;
 }
 
-const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
-  const { accountService, transactionService, investmentService, isInitialized } = useApp();
-  const { currency: defaultCurrency } = useLanguage();
+const Transactions: React.FC<TransactionsProps> = ({ title }) => {
+  const { accountService, transactionService, assetService, categoryService, isInitialized } = useApp();
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [transactionType, setTransactionType] = useState<TransactionType>(type);
-  const [showConvertDialog, setShowConvertDialog] = useState(false);
-  const [convertingTransaction, setConvertingTransaction] = useState<Transaction | null>(null);
-  const [selectedInvestmentType, setSelectedInvestmentType] = useState<InvestmentType>(InvestmentType.STOCKS);
 
-  const accounts = accountService?.getAllAccounts() || [];
+  const displayTitle = title || t('transactions.title');
+
+  const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
   const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
 
   const getDefaultFormData = (): FormData => ({
-    accountId: defaultAccountId,
+    fromAccountId: defaultAccountId,
+    toAccountId: accounts.length > 1 ? accounts[1].id : defaultAccountId,
     amount: 0,
-    currency: defaultCurrency,
-    description: '',
-    category: '',
-    date: new Date().toISOString().split('T')[0],
-    paymentType: PaymentType.CASH,
-    recurring: false,
-    recurringInterval: 30,
-    type: transactionType,
+    date: new Date().toISOString(),
+    auditDate: '',
+    assetId: null,
+    categoryId: null,
   });
 
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
 
+  const loadTransactions = useCallback(() => {
+    if (!transactionService) return;
+    setTransactions(transactionService.getAllTransactions());
+  }, [transactionService]);
+
   useEffect(() => {
     if (isInitialized && transactionService) {
       loadTransactions();
+      if (assetService) {
+        setAssets(assetService.getAllAssets());
+      }
+      if (categoryService) {
+        setCategories(categoryService.getAllCategories());
+      }
     }
-  }, [isInitialized, transactionService, type]);
+  }, [isInitialized, transactionService, assetService, categoryService, loadTransactions]);
 
   useEffect(() => {
-    setTransactionType(type);
-    setFormData((prev) => ({ ...prev, type }));
-  }, [type]);
-
-  useEffect(() => {
-    if (accounts.length > 0 && formData.accountId === 0) {
-      setFormData((prev) => ({ ...prev, accountId: accounts[0].id }));
+    if (accounts.length > 0 && formData.fromAccountId === 0) {
+      setFormData((prev) => ({ 
+        ...prev, 
+        fromAccountId: accounts[0].id,
+        toAccountId: accounts.length > 1 ? accounts[1].id : accounts[0].id,
+      }));
     }
-  }, [accounts]);
-
-  const loadTransactions = () => {
-    if (!transactionService) return;
-    const fixedExpenses = transactionService.getTransactionsByType(TransactionType.FIXED_EXPENSE);
-    const variableExpenses = transactionService.getTransactionsByType(TransactionType.VARIABLE_EXPENSE);
-    const incomeTransactions = transactionService.getTransactionsByType(TransactionType.INCOME);
-
-    if (type === TransactionType.VARIABLE_EXPENSE) {
-      setTransactions([...fixedExpenses, ...variableExpenses]);
-    } else {
-      setTransactions(incomeTransactions);
-    }
-  };
+  }, [accounts, formData.fromAccountId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,21 +96,23 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
 
     if (editingTransaction) {
       transactionService.updateTransaction(editingTransaction.id, {
-        ...formData,
-        type: formData.type,
+        fromAccountId: formData.fromAccountId,
+        toAccountId: formData.toAccountId,
+        amount: formData.amount,
+        date: formData.date,
+        auditDate: formData.auditDate || null,
+        assetId: formData.assetId,
+        categoryId: formData.categoryId,
       });
     } else {
       transactionService.createTransaction(
-        formData.accountId,
-        formData.type,
+        formData.fromAccountId,
+        formData.toAccountId,
         formData.amount,
-        formData.currency,
-        formData.description,
         formData.date,
-        formData.category,
-        formData.paymentType,
-        formData.recurring,
-        formData.recurringInterval
+        formData.auditDate || null,
+        formData.assetId,
+        formData.categoryId
       );
     }
 
@@ -136,18 +123,14 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setFormData({
-      accountId: transaction.accountId,
+      fromAccountId: transaction.fromAccountId,
+      toAccountId: transaction.toAccountId,
       amount: transaction.amount,
-      currency: transaction.currency,
-      description: transaction.description,
-      category: transaction.category || '',
       date: transaction.date,
-      paymentType: transaction.paymentType || PaymentType.CASH,
-      recurring: transaction.recurring || false,
-      recurringInterval: transaction.recurringInterval || 30,
-      type: transaction.type,
+      auditDate: transaction.auditDate || '',
+      assetId: transaction.assetId,
+      categoryId: transaction.categoryId,
     });
-    setTransactionType(transaction.type);
     setShowModal(true);
   };
 
@@ -159,50 +142,39 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
     }
   };
 
-  const handleConvertToInvestment = (transaction: Transaction) => {
-    setConvertingTransaction(transaction);
-    setShowConvertDialog(true);
-  };
-
-  const confirmConvertToInvestment = () => {
-    if (!transactionService || !investmentService || !convertingTransaction) return;
-    
-    const result = transactionService.convertExpenseToInvestment(convertingTransaction.id);
-    if (!result) return;
-
-    const { investmentData } = result;
-    
-    // Create the investment
-    investmentService.createInvestment({
-      accountId: investmentData.accountId,
-      type: selectedInvestmentType,
-      name: investmentData.name,
-      amount: investmentData.amount,
-      currency: investmentData.currency,
-      purchaseDate: investmentData.purchaseDate,
-      currentValue: investmentData.amount, // currentValue starts as the purchase amount
-    });
-
-    // Delete the original transaction
-    transactionService.deleteTransaction(convertingTransaction.id);
-    
-    // Close dialog and reload
-    setShowConvertDialog(false);
-    setConvertingTransaction(null);
-    loadTransactions();
-  };
-
+  
   const resetForm = () => {
     setFormData(getDefaultFormData());
-    setTransactionType(type);
     setEditingTransaction(null);
     setShowModal(false);
   };
 
   const handleOpenModal = () => {
     setFormData(getDefaultFormData());
-    setTransactionType(type);
     setShowModal(true);
+  };
+
+  const getAccountName = (accountId: number): string => {
+    const account = accounts.find(a => a.id === accountId);
+    return account ? account.name : `Account ${accountId}`;
+  };
+
+  const getAssetName = (assetId: number | null): string => {
+    if (!assetId) return '';
+    const asset = assets.find(a => a.id === assetId);
+    return asset ? (asset.ticket || `Asset ${assetId}`) : '';
+  };
+
+  const getCategoryName = (categoryId: number | null): string => {
+    if (!categoryId) return '';
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.name : '';
+  };
+
+  const getCategoryColor = (categoryId: number | null): string => {
+    if (!categoryId) return '#9E9E9E';
+    const category = categories.find(c => c.id === categoryId);
+    return category?.color || '#9E9E9E';
   };
 
   if (!isInitialized) {
@@ -217,13 +189,14 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-          {title}
+          {displayTitle}
         </Typography>
         <Fab
           color="primary"
           size="medium"
           onClick={handleOpenModal}
           sx={{ display: { xs: 'flex', sm: 'none' } }}
+          disabled={accounts.length < 2}
         >
           <Plus size={20} />
         </Fab>
@@ -232,14 +205,19 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
           startIcon={<Plus size={20} />}
           onClick={handleOpenModal}
           sx={{ display: { xs: 'none', sm: 'flex' } }}
+          disabled={accounts.length < 2}
         >
-          {t('transactions.add')} {title}
+          {t('transactions.add')}
         </Button>
       </Box>
 
-      {transactions.length === 0 ? (
+      {accounts.length < 2 ? (
         <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
-          <Typography>{title.toLowerCase()} {t('transactions.empty')}</Typography>
+          <Typography>{t('transactions.needTwoAccounts')}</Typography>
+        </Box>
+      ) : transactions.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
+          <Typography>{t('transactions.empty')}</Typography>
         </Box>
       ) : (
         <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
@@ -256,17 +234,6 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
               }}
               secondaryAction={
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  {(transaction.type === TransactionType.FIXED_EXPENSE || transaction.type === TransactionType.VARIABLE_EXPENSE) && (
-                    <IconButton 
-                      edge="end" 
-                      onClick={() => handleConvertToInvestment(transaction)} 
-                      size="small"
-                      color="primary"
-                      title={t('transactions.convertToInvestment')}
-                    >
-                      <TrendingUp size={18} />
-                    </IconButton>
-                  )}
                   <IconButton edge="end" onClick={() => handleEdit(transaction)} size="small">
                     <Edit size={18} />
                   </IconButton>
@@ -280,27 +247,32 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
                 primary={
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="body1" fontWeight="bold">
-                      {transaction.description}
+                      {getAccountName(transaction.fromAccountId)} → {getAccountName(transaction.toAccountId)}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip
-                        label={transaction.date}
+                        label={new Date(transaction.date).toLocaleDateString()}
                         size="small"
                         variant="outlined"
                       />
-                      {transaction.category && (
+                      {transaction.categoryId && (
                         <Chip
-                          label={transaction.category}
+                          label={getCategoryName(transaction.categoryId)}
+                          size="small"
+                          sx={{ 
+                            backgroundColor: getCategoryColor(transaction.categoryId),
+                            color: 'white',
+                          }}
+                        />
+                      )}
+                      {transaction.assetId && (
+                        <Chip
+                          label={getAssetName(transaction.assetId)}
                           size="small"
                           color="primary"
                           variant="outlined"
                         />
                       )}
-                      <Chip
-                        label={transaction.type === TransactionType.FIXED_EXPENSE ? 'Fixed' : transaction.type === TransactionType.VARIABLE_EXPENSE ? 'Variable' : 'Income'}
-                        size="small"
-                        color={transaction.type === TransactionType.INCOME ? 'success' : transaction.type === TransactionType.FIXED_EXPENSE ? 'error' : 'warning'}
-                      />
                     </Box>
                   </Box>
                 }
@@ -308,13 +280,12 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
                   <Typography
                     variant="h6"
                     sx={{
-                      color: transaction.type === TransactionType.INCOME ? 'success.main' : 'error.main',
+                      color: 'primary.main',
                       fontWeight: 'bold',
                       mt: 1,
                     }}
                   >
-                    {transaction.type === TransactionType.INCOME ? '+' : '-'}
-                    {transaction.currency} ${transaction.amount.toFixed(2)}
+                    ${transaction.amount.toFixed(2)}
                   </Typography>
                 }
               />
@@ -331,38 +302,36 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
         fullScreen={window.innerWidth < 600}
       >
         <DialogTitle>
-          {editingTransaction ? `${t('transactions.edit')} ${title}` : `${t('transactions.new')} ${title}`}
+          {editingTransaction ? t('transactions.edit') : t('transactions.new')}
         </DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-              {type === TransactionType.VARIABLE_EXPENSE && (
-                <ToggleButtonGroup
-                  value={transactionType}
-                  exclusive
-                  onChange={(_, value) => {
-                    if (value) {
-                      setTransactionType(value);
-                      setFormData({ ...formData, type: value });
-                    }
-                  }}
-                  fullWidth
-                  size="small"
-                >
-                  <ToggleButton value={TransactionType.FIXED_EXPENSE} color="error">
-                    {t('dashboard.fixedExpenses')}
-                  </ToggleButton>
-                  <ToggleButton value={TransactionType.VARIABLE_EXPENSE} color="warning">
-                    {t('dashboard.variableExpenses')}
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              )}
+              <TextField
+                select
+                label={t('transactions.fromAccount')}
+                value={formData.fromAccountId}
+                onChange={(e) => setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })}
+                required
+                fullWidth
+              >
+                {accounts.length === 0 && (
+                  <MenuItem value={0} disabled>
+                    {t('transactions.selectAccount')}
+                  </MenuItem>
+                )}
+                {accounts.map((account) => (
+                  <MenuItem key={account.id} value={account.id}>
+                    {account.name}
+                  </MenuItem>
+                ))}
+              </TextField>
 
               <TextField
                 select
-                label={t('transactions.account')}
-                value={formData.accountId}
-                onChange={(e) => setFormData({ ...formData, accountId: parseInt(e.target.value) })}
+                label={t('transactions.toAccount')}
+                value={formData.toAccountId}
+                onChange={(e) => setFormData({ ...formData, toAccountId: parseInt(e.target.value) })}
                 required
                 fullWidth
               >
@@ -389,25 +358,10 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
               />
 
               <TextField
-                label={t('transactions.description')}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-                fullWidth
-              />
-
-              <TextField
-                label={t('transactions.category')}
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                fullWidth
-              />
-
-              <TextField
                 label={t('transactions.date')}
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                type="datetime-local"
+                value={formData.date ? formData.date.slice(0, 16) : ''}
+                onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value).toISOString() })}
                 required
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -415,28 +369,53 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
 
               <TextField
                 select
-                label={t('transactions.currency')}
-                value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value as Currency })}
+                label={t('transactions.category')}
+                value={formData.categoryId || ''}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value ? parseInt(e.target.value) : null })}
                 fullWidth
               >
-                {Object.values(Currency).map((curr) => (
-                  <MenuItem key={curr} value={curr}>
-                    {curr}
+                <MenuItem value="">
+                  {t('transactions.noCategory')}
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          backgroundColor: category.color || '#9E9E9E',
+                        }}
+                      />
+                      {category.name}
+                    </Box>
                   </MenuItem>
                 ))}
               </TextField>
 
               <TextField
+                label={t('transactions.auditDate')}
+                type="datetime-local"
+                value={formData.auditDate ? formData.auditDate.slice(0, 16) : ''}
+                onChange={(e) => setFormData({ ...formData, auditDate: e.target.value ? new Date(e.target.value).toISOString() : '' })}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+
+              <TextField
                 select
-                label={t('transactions.paymentType')}
-                value={formData.paymentType}
-                onChange={(e) => setFormData({ ...formData, paymentType: e.target.value as PaymentType })}
+                label={t('transactions.asset')}
+                value={formData.assetId || ''}
+                onChange={(e) => setFormData({ ...formData, assetId: e.target.value ? parseInt(e.target.value) : null })}
                 fullWidth
               >
-                {Object.values(PaymentType).map((pt) => (
-                  <MenuItem key={pt} value={pt}>
-                    {t(`transactions.paymentTypes.${pt}`)}
+                <MenuItem value="">
+                  {t('transactions.noAsset')}
+                </MenuItem>
+                {assets.map((asset) => (
+                  <MenuItem key={asset.id} value={asset.id}>
+                    {asset.ticket || `Asset ${asset.id}`}
                   </MenuItem>
                 ))}
               </TextField>
@@ -449,52 +428,6 @@ const Transactions: React.FC<TransactionsProps> = ({ type, title }) => {
             </Button>
           </DialogActions>
         </form>
-      </Dialog>
-
-      {/* Convert to Investment Dialog */}
-      <Dialog 
-        open={showConvertDialog} 
-        onClose={() => setShowConvertDialog(false)} 
-        maxWidth="sm" 
-        fullWidth
-      >
-        <DialogTitle>
-          {t('transactions.convertToInvestment')}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t('transactions.convertDescription')}
-            </Typography>
-            {convertingTransaction && (
-              <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-                <Typography variant="subtitle2">{convertingTransaction.description}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {convertingTransaction.currency} ${convertingTransaction.amount.toFixed(2)}
-                </Typography>
-              </Box>
-            )}
-            <TextField
-              select
-              label={t('transactions.investmentType')}
-              value={selectedInvestmentType}
-              onChange={(e) => setSelectedInvestmentType(e.target.value as InvestmentType)}
-              fullWidth
-            >
-              {Object.values(InvestmentType).map((invType) => (
-                <MenuItem key={invType} value={invType}>
-                  {t(`investments.types.${invType.toLowerCase()}`)}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowConvertDialog(false)}>{t('transactions.cancel')}</Button>
-          <Button onClick={confirmConvertToInvestment} variant="contained" color="primary">
-            {t('transactions.convert')}
-          </Button>
-        </DialogActions>
       </Dialog>
     </Container>
   );

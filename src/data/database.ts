@@ -14,15 +14,22 @@ export const initDatabase = async (): Promise<Database> => {
 
   // Try to load existing database from localStorage
   const savedDb = localStorage.getItem('cashflow_db');
-  
+  let shouldSeed = false;
+
   if (savedDb) {
     const buffer = Uint8Array.from(atob(savedDb), c => c.charCodeAt(0));
     dbInstance = new SQL.Database(buffer);
   } else {
     dbInstance = new SQL.Database();
-    await runMigrations(dbInstance);
-    
-    // Seed the database with initial data only if it's a fresh database
+    // mark to seed after running migrations for a fresh DB
+    shouldSeed = true;
+  }
+
+  // Always run migrations on startup to keep DB schema up-to-date
+  await runMigrations(dbInstance);
+
+  // Seed only when the DB was just created
+  if (shouldSeed) {
     const { seedDatabase } = await import('./seedData');
     seedDatabase(dbInstance);
   }
@@ -44,7 +51,7 @@ export const getDatabase = (): Database => {
 };
 
 const runMigrations = async (db: Database): Promise<void> => {
-  // Create accounts table
+  // Create Owner table
   db.run(`
     CREATE TABLE IF NOT EXISTS accounts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,30 +62,23 @@ const runMigrations = async (db: Database): Promise<void> => {
       commission_rate REAL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    CREATE TABLE IF NOT EXISTS Owner (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL
     );
   `);
 
-  // Create transactions table
+  // Create Assets table
   db.run(`
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      account_id INTEGER NOT NULL,
-      type TEXT NOT NULL,
-      amount REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      description TEXT,
-      category TEXT,
-      date TEXT NOT NULL,
-      payment_type TEXT,
-      recurring INTEGER DEFAULT 0,
-      recurring_interval INTEGER,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (account_id) REFERENCES accounts (id)
+    CREATE TABLE IF NOT EXISTS Assets (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Ticket TEXT NULL,
+      Price REAL NULL
     );
   `);
 
-  // Create investments table
+  // Create Category table
   db.run(`
     CREATE TABLE IF NOT EXISTS investments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,54 +96,63 @@ const runMigrations = async (db: Database): Promise<void> => {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (account_id) REFERENCES accounts (id)
+    CREATE TABLE IF NOT EXISTS Category (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL,
+      Color TEXT NULL,
+      Icon TEXT NULL
     );
   `);
 
-  // Create loans table
+  // Create Account table
   db.run(`
-    CREATE TABLE IF NOT EXISTS loans (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      lender TEXT NOT NULL,
-      principal REAL NOT NULL,
-      interest_rate REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      start_date TEXT NOT NULL,
-      end_date TEXT NOT NULL,
-      monthly_payment REAL NOT NULL,
-      balance REAL NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    CREATE TABLE IF NOT EXISTS Account (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NULL,
+      Cbu TEXT NULL,
+      AccountNumber TEXT NULL,
+      Alias TEXT NULL,
+      Bank TEXT NULL,
+      OwnerId INTEGER NOT NULL,
+      Balance TEXT NULL,
+      Currency TEXT NOT NULL DEFAULT 'USD',
+      FOREIGN KEY (OwnerId) REFERENCES Owner (Id)
     );
   `);
 
-  // Create transfers table
+  // Create Transaction table
   db.run(`
-    CREATE TABLE IF NOT EXISTS transfers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      from_account_id INTEGER NOT NULL,
-      to_account_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
-      description TEXT,
-      date TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (from_account_id) REFERENCES accounts (id),
-      FOREIGN KEY (to_account_id) REFERENCES accounts (id)
+    CREATE TABLE IF NOT EXISTS [Transaction] (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      FromAccountId INTEGER NOT NULL,
+      Amount REAL NOT NULL,
+      ToAccountId INTEGER NOT NULL,
+      Date TEXT NOT NULL,
+      AuditDate TEXT NULL,
+      AssetId INTEGER NULL,
+      CategoryId INTEGER NULL,
+      FOREIGN KEY (FromAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (ToAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (AssetId) REFERENCES Assets (Id),
+      FOREIGN KEY (CategoryId) REFERENCES Category (Id)
     );
   `);
 
-  // Create categories table
+  // Create CreditCard table
   db.run(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
-      type TEXT NOT NULL,
-      color TEXT,
-      icon TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    CREATE TABLE IF NOT EXISTS CreditCard (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      AccountId INTEGER NOT NULL,
+      Name TEXT NULL,
+      Last4 TEXT NULL,
+      ClosingDay INTEGER NULL,
+      DueDay INTEGER NULL,
+      TaxPercent REAL NOT NULL DEFAULT 0.00,
+      FixedFees REAL NOT NULL DEFAULT 0.00,
+      Bank TEXT NULL,
+      FOREIGN KEY (AccountId) REFERENCES Account (Id)
     );
   `);
 
@@ -187,12 +196,46 @@ const runMigrations = async (db: Database): Promise<void> => {
     { name: 'Salary', type: 'INCOME', color: '#8BC34A' },
     { name: 'Freelance', type: 'INCOME', color: '#00BCD4' },
   ];
+  // Create Loan table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS Loan (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      BorrowerAccountId INTEGER NOT NULL,
+      LenderAccountId INTEGER NULL,
+      Principal REAL NOT NULL,
+      Currency TEXT NOT NULL DEFAULT 'ARS',
+      InterestRate REAL NOT NULL DEFAULT 0.0,
+      StartDate TEXT NOT NULL,
+      EndDate TEXT NULL,
+      TermMonths INTEGER NULL,
+      InstallmentCount INTEGER NULL,
+      PaymentFrequency TEXT NULL DEFAULT 'Monthly',
+      Status TEXT NOT NULL DEFAULT 'Active',
+      CreatedAt TEXT NOT NULL,
+      Notes TEXT NULL,
+      FOREIGN KEY (BorrowerAccountId) REFERENCES Account (Id),
+      FOREIGN KEY (LenderAccountId) REFERENCES Account (Id)
+    );
+  `);
 
-  const stmt = db.prepare('INSERT INTO categories (name, type, color) VALUES (?, ?, ?)');
-  defaultCategories.forEach(cat => {
-    stmt.run([cat.name, cat.type, cat.color]);
-  });
-  stmt.free();
+  // Create LoanInstallment table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS LoanInstallment (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      LoanId INTEGER NOT NULL,
+      Sequence INTEGER NOT NULL,
+      DueDate TEXT NOT NULL,
+      PrincipalAmount REAL NOT NULL DEFAULT 0.00,
+      InterestAmount REAL NOT NULL DEFAULT 0.00,
+      FeesAmount REAL NOT NULL DEFAULT 0.00,
+      TotalAmount REAL NOT NULL DEFAULT 0.00,
+      Paid INTEGER NOT NULL DEFAULT 0,
+      PaidDate TEXT NULL,
+      PaymentAccountId INTEGER NULL,
+      FOREIGN KEY (LoanId) REFERENCES Loan (Id),
+      FOREIGN KEY (PaymentAccountId) REFERENCES Account (Id)
+    );
+  `);
 
   saveDatabase(db);
 };

@@ -1,47 +1,45 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Currency } from '../types';
+import { AccountCurrency } from '../types';
 
-interface LanguageContextType {
+export interface LanguageContextType {
   language: string;
-  currency: Currency;
+  currency: AccountCurrency;
   setLanguage: (lang: string) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType>({
+export const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
-  currency: Currency.USD,
+  currency: AccountCurrency.USD,
   setLanguage: () => {},
 });
-
-export const useLanguage = () => useContext(LanguageContext);
 
 interface LanguageProviderProps {
   children: ReactNode;
 }
 
-const languageToCurrency: Record<string, Currency> = {
-  en: Currency.USD,
-  es: Currency.ARS,
+const languageToCurrency: Record<string, AccountCurrency> = {
+  en: AccountCurrency.USD,
+  es: AccountCurrency.ARS,
 };
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const { i18n } = useTranslation();
   const [language, setLanguageState] = useState(i18n.language);
-  const [currency, setCurrency] = useState<Currency>(
-    languageToCurrency[i18n.language] || Currency.USD
+  const [currency, setCurrency] = useState<AccountCurrency>(
+    languageToCurrency[i18n.language] || AccountCurrency.USD
   );
 
   const setLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
     localStorage.setItem('language', lang);
     setLanguageState(lang);
-    setCurrency(languageToCurrency[lang] || Currency.USD);
+    setCurrency(languageToCurrency[lang] || AccountCurrency.USD);
   };
 
   useEffect(() => {
-    setCurrency(languageToCurrency[language] || Currency.USD);
+    setCurrency(languageToCurrency[language] || AccountCurrency.USD);
   }, [language]);
 
   return (

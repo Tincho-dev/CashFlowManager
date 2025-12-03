@@ -36,7 +36,10 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
   - [ ] Campo para cantidad de nominales de cada activo
   - [ ] Cache offline de precios (última cotización conocida)
   - [ ] Actualización automática al conectarse a internet
-- [ ] Página de Préstamos (Loans)
+- [x] ~~Página de Préstamos (Loans)~~ - COMPLETED
+  - [x] ~~Gestión de préstamos con cuotas~~ - COMPLETED
+  - [x] ~~Múltiples frecuencias de pago~~ - COMPLETED
+  - [x] ~~Tracking de estado y pagos~~ - COMPLETED
 - [ ] Página de Transferencias (Transfers) con conversión de monedas
   - [ ] Soporte para transferencias entre cuentas de diferentes monedas
   - [ ] Integración API de tipos de cambio
@@ -185,6 +188,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 12. **Reconocimiento de Monedas**: Chatbot reconoce USD, ARS, EUR, GBP, BRL
 13. **Sistema de Seed Data**: Datos iniciales precargados en nueva instalación
 14. **Feedback de Usuario**: Chatbot informa cuando usa valores predeterminados
+15. **Módulo de Préstamos (Loans)**: Gestión completa con cuotas, frecuencias de pago y tracking de estado
+16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
 
 ### 🚧 En Progreso / En Curso
 - Refactoring de página Transactions (pendiente)
@@ -202,5 +207,5 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 
 ---
 
-*Última actualización: 2025-10-15*
-*Versión: 2.2.0 - Store de configuración y seed data*
+*Última actualización: 2025-12-02*
+*Versión: 2.3.0 - Préstamos y agrupación de cuentas*

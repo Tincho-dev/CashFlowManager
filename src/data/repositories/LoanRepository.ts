@@ -1,6 +1,6 @@
-import type { Database } from 'sql.js';
-import type { Loan } from '../../types';
-import { LoanType, Currency } from '../../types';
+import type { Database, SqlValue } from 'sql.js';
+import type { Loan, LoanInstallment } from '../../types';
+import { AccountCurrency, LoanStatus, PaymentFrequency } from '../../types';
 import { getDatabase, saveDatabase } from '../database';
 
 export class LoanRepository {
@@ -11,44 +11,59 @@ export class LoanRepository {
   }
 
   getAll(): Loan[] {
-    const results = this.db.exec('SELECT * FROM loans ORDER BY created_at DESC');
+    const results = this.db.exec('SELECT * FROM Loan ORDER BY Id DESC');
     if (results.length === 0) return [];
 
     return results[0].values.map(row => this.mapRowToLoan(row));
   }
 
   getById(id: number): Loan | null {
-    const results = this.db.exec('SELECT * FROM loans WHERE id = ?', [id]);
+    const results = this.db.exec('SELECT * FROM Loan WHERE Id = ?', [id]);
     if (results.length === 0 || results[0].values.length === 0) return null;
 
     return this.mapRowToLoan(results[0].values[0]);
   }
 
-  getByType(type: LoanType): Loan[] {
+  getByBorrowerAccountId(accountId: number): Loan[] {
     const results = this.db.exec(
-      'SELECT * FROM loans WHERE type = ? ORDER BY created_at DESC',
-      [type]
+      'SELECT * FROM Loan WHERE BorrowerAccountId = ? ORDER BY Id DESC',
+      [accountId]
     );
     if (results.length === 0) return [];
 
     return results[0].values.map(row => this.mapRowToLoan(row));
   }
 
-  create(loan: Omit<Loan, 'id' | 'createdAt' | 'updatedAt'>): Loan {
+  getByStatus(status: LoanStatus): Loan[] {
+    const results = this.db.exec(
+      'SELECT * FROM Loan WHERE Status = ? ORDER BY Id DESC',
+      [status]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToLoan(row));
+  }
+
+  create(loan: Omit<Loan, 'id'>): Loan {
+    const createdAt = loan.createdAt || new Date().toISOString();
+    
     this.db.run(
-      `INSERT INTO loans 
-       (type, lender, principal, interest_rate, currency, start_date, end_date, monthly_payment, balance) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO Loan (BorrowerAccountId, LenderAccountId, Principal, Currency, InterestRate, StartDate, EndDate, TermMonths, InstallmentCount, PaymentFrequency, Status, CreatedAt, Notes) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        loan.type,
-        loan.lender,
+        loan.borrowerAccountId,
+        loan.lenderAccountId,
         loan.principal,
-        loan.interestRate,
         loan.currency,
+        loan.interestRate,
         loan.startDate,
         loan.endDate,
-        loan.monthlyPayment,
-        loan.balance,
+        loan.termMonths,
+        loan.installmentCount,
+        loan.paymentFrequency,
+        loan.status,
+        createdAt,
+        loan.notes,
       ]
     );
 
@@ -59,56 +74,67 @@ export class LoanRepository {
     return this.getById(id)!;
   }
 
-  update(id: number, loan: Partial<Omit<Loan, 'id' | 'createdAt' | 'updatedAt'>>): Loan | null {
+  update(id: number, loan: Partial<Omit<Loan, 'id'>>): Loan | null {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
-    if (loan.type !== undefined) {
-      updates.push('type = ?');
-      values.push(loan.type);
+    if (loan.borrowerAccountId !== undefined) {
+      updates.push('BorrowerAccountId = ?');
+      values.push(loan.borrowerAccountId);
     }
-    if (loan.lender !== undefined) {
-      updates.push('lender = ?');
-      values.push(loan.lender);
+    if (loan.lenderAccountId !== undefined) {
+      updates.push('LenderAccountId = ?');
+      values.push(loan.lenderAccountId);
     }
     if (loan.principal !== undefined) {
-      updates.push('principal = ?');
+      updates.push('Principal = ?');
       values.push(loan.principal);
     }
-    if (loan.interestRate !== undefined) {
-      updates.push('interest_rate = ?');
-      values.push(loan.interestRate);
-    }
     if (loan.currency !== undefined) {
-      updates.push('currency = ?');
+      updates.push('Currency = ?');
       values.push(loan.currency);
     }
+    if (loan.interestRate !== undefined) {
+      updates.push('InterestRate = ?');
+      values.push(loan.interestRate);
+    }
     if (loan.startDate !== undefined) {
-      updates.push('start_date = ?');
+      updates.push('StartDate = ?');
       values.push(loan.startDate);
     }
     if (loan.endDate !== undefined) {
-      updates.push('end_date = ?');
+      updates.push('EndDate = ?');
       values.push(loan.endDate);
     }
-    if (loan.monthlyPayment !== undefined) {
-      updates.push('monthly_payment = ?');
-      values.push(loan.monthlyPayment);
+    if (loan.termMonths !== undefined) {
+      updates.push('TermMonths = ?');
+      values.push(loan.termMonths);
     }
-    if (loan.balance !== undefined) {
-      updates.push('balance = ?');
-      values.push(loan.balance);
+    if (loan.installmentCount !== undefined) {
+      updates.push('InstallmentCount = ?');
+      values.push(loan.installmentCount);
+    }
+    if (loan.paymentFrequency !== undefined) {
+      updates.push('PaymentFrequency = ?');
+      values.push(loan.paymentFrequency);
+    }
+    if (loan.status !== undefined) {
+      updates.push('Status = ?');
+      values.push(loan.status);
+    }
+    if (loan.notes !== undefined) {
+      updates.push('Notes = ?');
+      values.push(loan.notes);
     }
 
     if (updates.length === 0) {
       return this.getById(id);
     }
 
-    updates.push('updated_at = datetime("now")');
     values.push(id);
 
     this.db.run(
-      `UPDATE loans SET ${updates.join(', ')} WHERE id = ?`,
+      `UPDATE Loan SET ${updates.join(', ')} WHERE Id = ?`,
       values
     );
 
@@ -117,25 +143,116 @@ export class LoanRepository {
   }
 
   delete(id: number): boolean {
-    this.db.run('DELETE FROM loans WHERE id = ?', [id]);
+    // First delete all installments for this loan
+    this.db.run('DELETE FROM LoanInstallment WHERE LoanId = ?', [id]);
+    this.db.run('DELETE FROM Loan WHERE Id = ?', [id]);
     saveDatabase(this.db);
     return true;
   }
 
-  private mapRowToLoan(row: any[]): Loan {
+  private mapRowToLoan(row: SqlValue[]): Loan {
     return {
       id: row[0] as number,
-      type: row[1] as LoanType,
-      lender: row[2] as string,
-      principal: row[3] as number,
-      interestRate: row[4] as number,
-      currency: row[5] as Currency,
+      borrowerAccountId: row[1] as number,
+      lenderAccountId: row[2] as number | null,
+      principal: (row[3] as number) || 0,
+      currency: (row[4] as AccountCurrency) || AccountCurrency.ARS,
+      interestRate: (row[5] as number) || 0,
       startDate: row[6] as string,
-      endDate: row[7] as string,
-      monthlyPayment: row[8] as number,
-      balance: row[9] as number,
-      createdAt: row[10] as string,
-      updatedAt: row[11] as string,
+      endDate: row[7] as string | null,
+      termMonths: row[8] as number | null,
+      installmentCount: row[9] as number | null,
+      paymentFrequency: (row[10] as PaymentFrequency) || PaymentFrequency.MONTHLY,
+      status: (row[11] as LoanStatus) || LoanStatus.ACTIVE,
+      createdAt: row[12] as string,
+      notes: row[13] as string | null,
+    };
+  }
+}
+
+export class LoanInstallmentRepository {
+  private db: Database;
+
+  constructor(db?: Database) {
+    this.db = db || getDatabase();
+  }
+
+  getByLoanId(loanId: number): LoanInstallment[] {
+    const results = this.db.exec(
+      'SELECT * FROM LoanInstallment WHERE LoanId = ? ORDER BY Sequence ASC',
+      [loanId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToInstallment(row));
+  }
+
+  getById(id: number): LoanInstallment | null {
+    const results = this.db.exec('SELECT * FROM LoanInstallment WHERE Id = ?', [id]);
+    if (results.length === 0 || results[0].values.length === 0) return null;
+
+    return this.mapRowToInstallment(results[0].values[0]);
+  }
+
+  create(installment: Omit<LoanInstallment, 'id'>): LoanInstallment {
+    // Always calculate totalAmount from components for consistency
+    const calculatedTotal = installment.principalAmount + installment.interestAmount + installment.feesAmount;
+    
+    this.db.run(
+      `INSERT INTO LoanInstallment (LoanId, Sequence, DueDate, PrincipalAmount, InterestAmount, FeesAmount, TotalAmount, Paid, PaidDate, PaymentAccountId) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        installment.loanId,
+        installment.sequence,
+        installment.dueDate,
+        installment.principalAmount,
+        installment.interestAmount,
+        installment.feesAmount,
+        calculatedTotal,
+        installment.paid ? 1 : 0,
+        installment.paidDate,
+        installment.paymentAccountId,
+      ]
+    );
+
+    const results = this.db.exec('SELECT last_insert_rowid()');
+    const id = results[0].values[0][0] as number;
+
+    saveDatabase(this.db);
+    return this.getById(id)!;
+  }
+
+  markAsPaid(id: number, paymentAccountId: number): LoanInstallment | null {
+    const paidDate = new Date().toISOString();
+    
+    this.db.run(
+      'UPDATE LoanInstallment SET Paid = 1, PaidDate = ?, PaymentAccountId = ? WHERE Id = ?',
+      [paidDate, paymentAccountId, id]
+    );
+
+    saveDatabase(this.db);
+    return this.getById(id);
+  }
+
+  delete(id: number): boolean {
+    this.db.run('DELETE FROM LoanInstallment WHERE Id = ?', [id]);
+    saveDatabase(this.db);
+    return true;
+  }
+
+  private mapRowToInstallment(row: SqlValue[]): LoanInstallment {
+    return {
+      id: row[0] as number,
+      loanId: row[1] as number,
+      sequence: row[2] as number,
+      dueDate: row[3] as string,
+      principalAmount: (row[4] as number) || 0,
+      interestAmount: (row[5] as number) || 0,
+      feesAmount: (row[6] as number) || 0,
+      totalAmount: (row[7] as number) || 0,
+      paid: (row[8] as number) === 1,
+      paidDate: row[9] as string | null,
+      paymentAccountId: row[10] as number | null,
     };
   }
 }

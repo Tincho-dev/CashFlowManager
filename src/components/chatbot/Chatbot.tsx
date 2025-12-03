@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Drawer,
   Box,
@@ -16,9 +16,7 @@ import {
 } from '@mui/material';
 import { MessageCircle, Send, X, Image as ImageIcon, Bot, User } from 'lucide-react';
 import ChatbotService, { type ChatMessage } from '../../services/ChatbotService';
-import { useApp } from '../../contexts/AppContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import { useApp, useLanguage } from '../../hooks';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,54 +27,26 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { accountService, transactionService, isInitialized, settings } = useApp();
+  const { accountService, transactionService, isInitialized } = useApp();
   const { language } = useLanguage();
-  const { defaultCurrency } = useCurrency();
 
-  useEffect(() => {
-    if (isInitialized && accountService && transactionService) {
-      initializeChatbot();
-    }
-  }, [isInitialized, accountService, transactionService]);
+  const addMessage = useCallback((message: ChatMessage) => {
+    setMessages(prev => [...prev, message]);
+  }, []);
 
-  useEffect(() => {
-    ChatbotService.setLanguage(language);
-  }, [language]);
-
-  useEffect(() => {
-    ChatbotService.setDefaultCurrency(defaultCurrency);
-  }, [defaultCurrency]);
-
-  useEffect(() => {
-    ChatbotService.setDefaultAccount(settings.defaultAccountId);
-  }, [settings.defaultAccountId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const initializeChatbot = async () => {
+  const initializeChatbot = useCallback(async () => {
     try {
       if (accountService && transactionService) {
         await ChatbotService.initialize(
           accountService, 
           transactionService, 
-          language,
-          defaultCurrency,
-          settings.defaultAccountId
+          language
         );
         setIsInitializing(false);
         
-        // Add welcome message
-        const defaultAccMsg = settings.defaultAccountId 
-          ? (language === 'es' 
-            ? `\n\n💡 Tu cuenta predeterminada está configurada y usaré ${defaultCurrency} como moneda por defecto.`
-            : `\n\n💡 Your default account is set and I'll use ${defaultCurrency} as default currency.`)
-          : '';
-        
         const welcomeMessage = language === 'es' 
-          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Aprender sobre tipos de cuentas y categorías\n- Guiarte para crear cuentas y transacciones${defaultAccMsg}\n\n¿Cómo puedo ayudarte hoy?`
-          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Learn about account types and categories\n- Guide you to create accounts and transactions${defaultAccMsg}\n\nHow can I help you today?`;
+          ? `¡Hola! 👋 Soy tu asistente de CashFlow Manager. Puedo ayudarte a:\n\n- Verificar tu saldo\n- Ver tus cuentas\n- Ver transacciones recientes\n- Guiarte para crear cuentas y transacciones\n\n¿Cómo puedo ayudarte hoy?`
+          : `Hello! 👋 I'm your CashFlow Manager assistant. I can help you:\n\n- Check your balance\n- View your accounts\n- See recent transactions\n- Guide you to create accounts and transactions\n\nHow can I help you today?`;
         
         addMessage({
           id: '0',
@@ -98,14 +68,24 @@ const Chatbot: React.FC = () => {
         timestamp: new Date(),
       });
     }
-  };
+  }, [accountService, transactionService, language, addMessage]);
+
+  useEffect(() => {
+    if (isInitialized && accountService && transactionService) {
+      initializeChatbot();
+    }
+  }, [isInitialized, accountService, transactionService, initializeChatbot]);
+
+  useEffect(() => {
+    ChatbotService.setLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const addMessage = (message: ChatMessage) => {
-    setMessages(prev => [...prev, message]);
   };
 
   const handleSendMessage = async () => {

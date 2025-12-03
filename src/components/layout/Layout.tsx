@@ -18,14 +18,13 @@ import {
 import { 
   Home, 
   Wallet, 
-  TrendingUp, 
-  TrendingDown, 
-  CreditCard, 
   ArrowLeftRight,
-  PiggyBank,
   FileSpreadsheet,
+  CreditCard,
   Menu,
-  X
+  X,
+  Landmark,
+  Upload
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
@@ -46,11 +45,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navItems = [
     { path: '/', icon: Home, label: t('nav.dashboard') },
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
-    { path: '/income', icon: TrendingUp, label: t('nav.income') },
-    { path: '/expenses', icon: TrendingDown, label: t('nav.expenses') },
-    { path: '/investments', icon: PiggyBank, label: t('nav.investments') },
-    { path: '/loans', icon: CreditCard, label: t('nav.loans') },
-    { path: '/transfers', icon: ArrowLeftRight, label: t('nav.transfers') },
+    { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
+    { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
+    { path: '/loans', icon: Landmark, label: t('nav.loans') },
+    { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];
 

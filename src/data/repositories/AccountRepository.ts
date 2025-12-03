@@ -1,6 +1,6 @@
-import type { Database } from 'sql.js';
+import type { Database, SqlValue } from 'sql.js';
 import type { Account } from '../../types';
-import { Currency } from '../../types';
+import { AccountCurrency } from '../../types';
 import { getDatabase, saveDatabase } from '../database';
 
 export class AccountRepository {
@@ -11,23 +11,43 @@ export class AccountRepository {
   }
 
   getAll(): Account[] {
-    const results = this.db.exec('SELECT * FROM accounts ORDER BY created_at DESC');
+    const results = this.db.exec('SELECT * FROM Account ORDER BY Id DESC');
     if (results.length === 0) return [];
 
     return results[0].values.map(row => this.mapRowToAccount(row));
   }
 
   getById(id: number): Account | null {
-    const results = this.db.exec('SELECT * FROM accounts WHERE id = ?', [id]);
+    const results = this.db.exec('SELECT * FROM Account WHERE Id = ?', [id]);
     if (results.length === 0 || results[0].values.length === 0) return null;
 
     return this.mapRowToAccount(results[0].values[0]);
   }
 
-  create(account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'>): Account {
+  getByOwnerId(ownerId: number): Account[] {
+    const results = this.db.exec(
+      'SELECT * FROM Account WHERE OwnerId = ? ORDER BY Id DESC',
+      [ownerId]
+    );
+    if (results.length === 0) return [];
+
+    return results[0].values.map(row => this.mapRowToAccount(row));
+  }
+
+  create(account: Omit<Account, 'id'>): Account {
     this.db.run(
-      'INSERT INTO accounts (name, type, balance, currency, commission_rate) VALUES (?, ?, ?, ?, ?)',
-      [account.name, account.type, account.balance, account.currency, account.commissionRate || 0]
+      'INSERT INTO Account (Name, Description, Cbu, AccountNumber, Alias, Bank, OwnerId, Balance, Currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        account.name,
+        account.description,
+        account.cbu,
+        account.accountNumber,
+        account.alias,
+        account.bank,
+        account.ownerId,
+        account.balance,
+        account.currency,
+      ]
     );
 
     const results = this.db.exec('SELECT last_insert_rowid()');
@@ -37,40 +57,55 @@ export class AccountRepository {
     return this.getById(id)!;
   }
 
-  update(id: number, account: Partial<Omit<Account, 'id' | 'createdAt' | 'updatedAt'>>): Account | null {
+  update(id: number, account: Partial<Omit<Account, 'id'>>): Account | null {
     const updates: string[] = [];
-    const values: (string | number)[] = [];
+    const values: (string | number | null)[] = [];
 
     if (account.name !== undefined) {
-      updates.push('name = ?');
+      updates.push('Name = ?');
       values.push(account.name);
     }
-    if (account.type !== undefined) {
-      updates.push('type = ?');
-      values.push(account.type);
+    if (account.description !== undefined) {
+      updates.push('Description = ?');
+      values.push(account.description);
+    }
+    if (account.cbu !== undefined) {
+      updates.push('Cbu = ?');
+      values.push(account.cbu);
+    }
+    if (account.accountNumber !== undefined) {
+      updates.push('AccountNumber = ?');
+      values.push(account.accountNumber);
+    }
+    if (account.alias !== undefined) {
+      updates.push('Alias = ?');
+      values.push(account.alias);
+    }
+    if (account.bank !== undefined) {
+      updates.push('Bank = ?');
+      values.push(account.bank);
+    }
+    if (account.ownerId !== undefined) {
+      updates.push('OwnerId = ?');
+      values.push(account.ownerId);
     }
     if (account.balance !== undefined) {
-      updates.push('balance = ?');
-      values.push(account.balance);
+      updates.push('Balance = ?');
+      values.push(account.balance as string | null);
     }
     if (account.currency !== undefined) {
-      updates.push('currency = ?');
+      updates.push('Currency = ?');
       values.push(account.currency);
-    }
-    if (account.commissionRate !== undefined) {
-      updates.push('commission_rate = ?');
-      values.push(account.commissionRate);
     }
 
     if (updates.length === 0) {
       return this.getById(id);
     }
 
-    updates.push('updated_at = datetime("now")');
     values.push(id);
 
     this.db.run(
-      `UPDATE accounts SET ${updates.join(', ')} WHERE id = ?`,
+      `UPDATE Account SET ${updates.join(', ')} WHERE Id = ?`,
       values
     );
 
@@ -79,30 +114,32 @@ export class AccountRepository {
   }
 
   delete(id: number): boolean {
-    this.db.run('DELETE FROM accounts WHERE id = ?', [id]);
+    this.db.run('DELETE FROM Account WHERE Id = ?', [id]);
     saveDatabase(this.db);
     return true;
   }
 
-  updateBalance(id: number, amount: number): Account | null {
+  updateBalance(id: number, newBalance: string): Account | null {
     this.db.run(
-      'UPDATE accounts SET balance = balance + ?, updated_at = datetime("now") WHERE id = ?',
-      [amount, id]
+      'UPDATE Account SET Balance = ? WHERE Id = ?',
+      [newBalance, id]
     );
     saveDatabase(this.db);
     return this.getById(id);
   }
 
-  private mapRowToAccount(row: (string | number | Uint8Array | null)[]): Account {
+  private mapRowToAccount(row: SqlValue[]): Account {
     return {
       id: row[0] as number,
       name: row[1] as string,
-      type: row[2] as string,
-      balance: row[3] as number,
-      currency: row[4] as Currency,
-      commissionRate: row[5] as number | undefined,
-      createdAt: row[6] as string,
-      updatedAt: row[7] as string,
+      description: row[2] as string | null,
+      cbu: row[3] as string | null,
+      accountNumber: row[4] as string | null,
+      alias: row[5] as string | null,
+      bank: row[6] as string | null,
+      ownerId: row[7] as number,
+      balance: row[8] as string | null,
+      currency: (row[9] as AccountCurrency) || AccountCurrency.USD,
     };
   }
 }

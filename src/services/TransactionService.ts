@@ -1,5 +1,4 @@
 import type { Transaction } from '../types';
-import { TransactionType, Currency, PaymentType } from '../types';
 import { TransactionRepository } from '../data/repositories/TransactionRepository';
 import { AccountRepository } from '../data/repositories/AccountRepository';
 import LoggingService, { LogCategory } from './LoggingService';
@@ -25,69 +24,118 @@ export class TransactionService {
     return this.transactionRepo.getByAccount(accountId);
   }
 
-  getTransactionsByType(type: TransactionType): Transaction[] {
-    return this.transactionRepo.getByType(type);
+  getTransactionsByFromAccount(accountId: number): Transaction[] {
+    return this.transactionRepo.getByFromAccount(accountId);
+  }
+
+  getTransactionsByToAccount(accountId: number): Transaction[] {
+    return this.transactionRepo.getByToAccount(accountId);
   }
 
   getTransactionsByDateRange(startDate: string, endDate: string): Transaction[] {
     return this.transactionRepo.getByDateRange(startDate, endDate);
   }
 
+  getTransactionsByAsset(assetId: number): Transaction[] {
+    return this.transactionRepo.getByAsset(assetId);
+  }
+
+  getTransactionsByCategory(categoryId: number): Transaction[] {
+    return this.transactionRepo.getByCategory(categoryId);
+  }
+
   createTransaction(
-    accountId: number,
-    type: TransactionType,
+    fromAccountId: number,
+    toAccountId: number,
     amount: number,
-    currency: Currency,
-    description: string,
     date: string,
-    category?: string,
-    paymentType?: PaymentType,
-    recurring?: boolean,
-    recurringInterval?: number
-  ): Transaction {
+    auditDate?: string | null,
+    assetId?: number | null,
+    categoryId?: number | null
+  ): Transaction | null {
+    // Validate that from and to accounts are different
+    if (fromAccountId === toAccountId) {
+      console.error('Cannot transfer to the same account');
+      return null;
+    }
+
+    // Validate that from account exists
+    const fromAccount = this.accountRepo.getById(fromAccountId);
+    if (!fromAccount) {
+      console.error('From account not found');
+      return null;
+    }
+
+    // Validate that to account exists
+    const toAccount = this.accountRepo.getById(toAccountId);
+    if (!toAccount) {
+      console.error('To account not found');
+      return null;
+    }
+
     const transaction = this.transactionRepo.create({
-      accountId,
-      type,
+      fromAccountId,
       amount,
-      currency,
-      description,
-      category,
+      toAccountId,
       date,
-      paymentType,
-      recurring,
-      recurringInterval,
+      auditDate: auditDate ?? null,
+      assetId: assetId ?? null,
+      categoryId: categoryId ?? null,
     });
 
-    // Update account balance
-    const multiplier = type === TransactionType.INCOME ? 1 : -1;
-    this.accountRepo.updateBalance(accountId, amount * multiplier);
+    // Update account balances
+    const fromBalance = fromAccount.balance ? parseFloat(fromAccount.balance) : 0;
+    const toBalance = toAccount.balance ? parseFloat(toAccount.balance) : 0;
+    
+    this.accountRepo.updateBalance(fromAccountId, (fromBalance - amount).toString());
+    this.accountRepo.updateBalance(toAccountId, (toBalance + amount).toString());
 
     LoggingService.info(LogCategory.TRANSACTION, 'CREATE_TRANSACTION', {
       transactionId: transaction.id,
-      accountId,
-      type,
+      fromAccountId,
+      toAccountId,
       amount,
-      currency,
-      description,
+      date,
+      categoryId,
     });
 
     return transaction;
   }
 
-  updateTransaction(id: number, updates: Partial<Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>>): Transaction | null {
+  updateTransaction(id: number, updates: Partial<Omit<Transaction, 'id'>>): Transaction | null {
     const oldTransaction = this.transactionRepo.getById(id);
     if (!oldTransaction) return null;
 
-    // Revert old balance change
-    const oldMultiplier = oldTransaction.type === TransactionType.INCOME ? -1 : 1;
-    this.accountRepo.updateBalance(oldTransaction.accountId, oldTransaction.amount * oldMultiplier);
+    // Revert old balance changes
+    const oldFromAccount = this.accountRepo.getById(oldTransaction.fromAccountId);
+    const oldToAccount = this.accountRepo.getById(oldTransaction.toAccountId);
+    
+    if (oldFromAccount) {
+      const oldFromBalance = oldFromAccount.balance ? parseFloat(oldFromAccount.balance) : 0;
+      this.accountRepo.updateBalance(oldTransaction.fromAccountId, (oldFromBalance + oldTransaction.amount).toString());
+    }
+    
+    if (oldToAccount) {
+      const oldToBalance = oldToAccount.balance ? parseFloat(oldToAccount.balance) : 0;
+      this.accountRepo.updateBalance(oldTransaction.toAccountId, (oldToBalance - oldTransaction.amount).toString());
+    }
 
     const updated = this.transactionRepo.update(id, updates);
     if (!updated) return null;
 
-    // Apply new balance change
-    const newMultiplier = updated.type === TransactionType.INCOME ? 1 : -1;
-    this.accountRepo.updateBalance(updated.accountId, updated.amount * newMultiplier);
+    // Apply new balance changes
+    const newFromAccount = this.accountRepo.getById(updated.fromAccountId);
+    const newToAccount = this.accountRepo.getById(updated.toAccountId);
+    
+    if (newFromAccount) {
+      const newFromBalance = newFromAccount.balance ? parseFloat(newFromAccount.balance) : 0;
+      this.accountRepo.updateBalance(updated.fromAccountId, (newFromBalance - updated.amount).toString());
+    }
+    
+    if (newToAccount) {
+      const newToBalance = newToAccount.balance ? parseFloat(newToAccount.balance) : 0;
+      this.accountRepo.updateBalance(updated.toAccountId, (newToBalance + updated.amount).toString());
+    }
 
     LoggingService.info(LogCategory.TRANSACTION, 'UPDATE_TRANSACTION', {
       transactionId: id,
@@ -103,65 +151,36 @@ export class TransactionService {
     const transaction = this.transactionRepo.getById(id);
     if (!transaction) return false;
 
-    // Revert balance change
-    const multiplier = transaction.type === TransactionType.INCOME ? -1 : 1;
-    this.accountRepo.updateBalance(transaction.accountId, transaction.amount * multiplier);
+    // Revert balance changes
+    const fromAccount = this.accountRepo.getById(transaction.fromAccountId);
+    const toAccount = this.accountRepo.getById(transaction.toAccountId);
+    
+    if (fromAccount) {
+      const fromBalance = fromAccount.balance ? parseFloat(fromAccount.balance) : 0;
+      this.accountRepo.updateBalance(transaction.fromAccountId, (fromBalance + transaction.amount).toString());
+    }
+    
+    if (toAccount) {
+      const toBalance = toAccount.balance ? parseFloat(toAccount.balance) : 0;
+      this.accountRepo.updateBalance(transaction.toAccountId, (toBalance - transaction.amount).toString());
+    }
 
     const success = this.transactionRepo.delete(id);
     
     if (success) {
       LoggingService.info(LogCategory.TRANSACTION, 'DELETE_TRANSACTION', {
         transactionId: id,
-        accountId: transaction.accountId,
+        fromAccountId: transaction.fromAccountId,
+        toAccountId: transaction.toAccountId,
         amount: transaction.amount,
-        type: transaction.type,
       });
     }
 
     return success;
   }
 
-  getIncomeForPeriod(startDate: string, endDate: string): number {
+  getTotalAmountForPeriod(startDate: string, endDate: string): number {
     const transactions = this.transactionRepo.getByDateRange(startDate, endDate);
-    return transactions
-      .filter(t => t.type === TransactionType.INCOME)
-      .reduce((sum, t) => sum + t.amount, 0);
-  }
-
-  getExpensesForPeriod(startDate: string, endDate: string): number {
-    const transactions = this.transactionRepo.getByDateRange(startDate, endDate);
-    return transactions
-      .filter(t => t.type === TransactionType.FIXED_EXPENSE || t.type === TransactionType.VARIABLE_EXPENSE)
-      .reduce((sum, t) => sum + t.amount, 0);
-  }
-
-  getNetIncomeForPeriod(startDate: string, endDate: string): number {
-    return this.getIncomeForPeriod(startDate, endDate) - this.getExpensesForPeriod(startDate, endDate);
-  }
-
-  convertExpenseToInvestment(transactionId: number): { transaction: Transaction; investmentData: { accountId: number; name: string; amount: number; currency: Currency; purchaseDate: string } } | null {
-    const transaction = this.transactionRepo.getById(transactionId);
-    if (!transaction) return null;
-    
-    // Only allow conversion of expenses
-    if (transaction.type !== TransactionType.FIXED_EXPENSE && transaction.type !== TransactionType.VARIABLE_EXPENSE) {
-      return null;
-    }
-
-    const investmentData = {
-      accountId: transaction.accountId,
-      name: transaction.description,
-      amount: transaction.amount,
-      currency: transaction.currency,
-      purchaseDate: transaction.date,
-    };
-
-    LoggingService.info(LogCategory.TRANSACTION, 'CONVERT_TO_INVESTMENT', {
-      transactionId,
-      description: transaction.description,
-      amount: transaction.amount,
-    });
-
-    return { transaction, investmentData };
+    return transactions.reduce((sum, t) => sum + t.amount, 0);
   }
 }

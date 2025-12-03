@@ -8,13 +8,10 @@ import {
   TextField,
   MenuItem,
   Box,
-  InputLabel,
-  Tooltip,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Currency } from '../../types';
 import type { Account } from '../../types';
-import InfoTooltip from '../common/InfoTooltip';
+import { AccountCurrency } from '../../types';
 
 interface AccountDialogProps {
   open: boolean;
@@ -33,11 +30,28 @@ interface AccountDialogProps {
     balance: number;
     currency: Currency;
     commissionRate?: number;
+    description: string;
+    cbu: string;
+    accountNumber: string;
+    alias: string;
+    bank: string;
+    ownerId: number;
+    balance: string;
+    currency: AccountCurrency;
+  };
+  setFormData: React.Dispatch<React.SetStateAction<{
+    name: string;
+    description: string;
+    cbu: string;
+    accountNumber: string;
+    alias: string;
+    bank: string;
+    ownerId: number;
+    balance: string;
+    currency: AccountCurrency;
   }>>;
   editingAccount: Account | null;
 }
-
-const accountTypes = ['Checking', 'Savings', 'Credit Card', 'Cash', 'Investment'];
 
 const AccountDialog: React.FC<AccountDialogProps> = ({
   open,
@@ -64,51 +78,13 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
               required
               fullWidth
             />
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                <InputLabel sx={{ fontSize: '0.75rem' }}>{t('accounts.type')}</InputLabel>
-                <Tooltip 
-                  title={
-                    <Box sx={{ p: 1 }}>
-                      <strong>Checking:</strong> {t('tooltips.accountTypes.checking')}<br/><br/>
-                      <strong>Savings:</strong> {t('tooltips.accountTypes.savings')}<br/><br/>
-                      <strong>Credit Card:</strong> {t('tooltips.accountTypes.creditCard')}<br/><br/>
-                      <strong>Cash:</strong> {t('tooltips.accountTypes.cash')}<br/><br/>
-                      <strong>Investment:</strong> {t('tooltips.accountTypes.investment')}
-                    </Box>
-                  }
-                  arrow
-                  placement="right"
-                >
-                  <Box sx={{ display: 'inline-flex', ml: 0.5 }}>
-                    <InfoTooltip title="" size={16} />
-                  </Box>
-                </Tooltip>
-              </Box>
-              <TextField
-                select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                fullWidth
-                size="small"
-              >
-                {accountTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
             <TextField
-              type="number"
-              label={editingAccount ? t('accounts.balance') : 'Initial Balance'}
-              value={formData.balance}
-              onChange={(e) =>
-                setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })
-              }
-              required
+              label={t('accounts.description')}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               fullWidth
-              inputProps={{ step: '0.01' }}
+              multiline
+              rows={2}
             />
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
@@ -142,6 +118,49 @@ const AccountDialog: React.FC<AccountDialogProps> = ({
               inputProps={{ step: '0.01', min: '0' }}
               helperText="Commission percentage for operations (e.g., 0.25 for 0.25%)"
             />
+            <TextField
+              label={t('accounts.bank')}
+              value={formData.bank}
+              onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label={t('accounts.cbu')}
+              value={formData.cbu}
+              onChange={(e) => setFormData({ ...formData, cbu: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label={t('accounts.accountNumber')}
+              value={formData.accountNumber}
+              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label={t('accounts.alias')}
+              value={formData.alias}
+              onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label={t('accounts.balance')}
+              value={formData.balance}
+              onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              select
+              label={t('accounts.currency')}
+              value={formData.currency}
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value as AccountCurrency })}
+              fullWidth
+            >
+              {Object.values(AccountCurrency).map((curr) => (
+                <MenuItem key={curr} value={curr}>
+                  {curr}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
         </DialogContent>
         <DialogActions>
