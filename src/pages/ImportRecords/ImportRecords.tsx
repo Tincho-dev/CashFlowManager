@@ -23,6 +23,9 @@ import {
   TextField,
   IconButton,
   Tooltip,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from '@mui/material';
 import {
   Upload,
@@ -35,14 +38,18 @@ import {
   Trash2,
   FileSpreadsheet,
   FileImage,
+  CreditCard,
+  Wallet,
 } from 'lucide-react';
 import { useApp } from '../../hooks';
 import ImportService, { type ImportedTransaction } from '../../services/ImportService';
-import type { Account } from '../../types';
+import type { Account, CreditCard as CreditCardType } from '../../types';
 import styles from './ImportRecords.module.scss';
 
+type ImportSourceType = 'account' | 'creditCard';
+
 const ImportRecords: React.FC = () => {
-  const { accountService, transactionService, isInitialized } = useApp();
+  const { accountService, transactionService, creditCardService, isInitialized } = useApp();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -55,8 +62,20 @@ const ImportRecords: React.FC = () => {
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [fromAccountId, setFromAccountId] = useState<number | ''>('');
   const [toAccountId, setToAccountId] = useState<number | ''>('');
+  const [importSourceType, setImportSourceType] = useState<ImportSourceType>('creditCard');
+  const [selectedCreditCardId, setSelectedCreditCardId] = useState<number | ''>('');
 
   const accounts = accountService?.getAllAccounts() || [];
+  const creditCards = creditCardService?.getAllCreditCards() || [];
+
+  // Get the associated account for a credit card
+  const getAccountForCreditCard = (creditCardId: number): Account | null => {
+    const card = creditCards.find(c => c.id === creditCardId);
+    if (card && card.accountId) {
+      return accounts.find(a => a.id === card.accountId) || null;
+    }
+    return null;
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -145,14 +164,26 @@ const ImportRecords: React.FC = () => {
       return;
     }
 
-    if (!fromAccountId || !toAccountId) {
-      setError(t('importRecords.selectAccounts'));
-      return;
-    }
-
-    if (fromAccountId === toAccountId) {
-      setError(t('importRecords.sameAccountError'));
-      return;
+    // Validate based on import source type
+    if (importSourceType === 'creditCard') {
+      if (!selectedCreditCardId) {
+        setError(t('importRecords.selectCreditCard'));
+        return;
+      }
+      const associatedAccount = getAccountForCreditCard(Number(selectedCreditCardId));
+      if (!associatedAccount) {
+        setError(t('importRecords.creditCardNoAccount'));
+        return;
+      }
+    } else {
+      if (!fromAccountId || !toAccountId) {
+        setError(t('importRecords.selectAccounts'));
+        return;
+      }
+      if (fromAccountId === toAccountId) {
+        setError(t('importRecords.sameAccountError'));
+        return;
+      }
     }
 
     const selectedTransactions = transactions.filter(tx => tx.selected);
@@ -166,15 +197,31 @@ const ImportRecords: React.FC = () => {
       let successCount = 0;
       
       for (const tx of selectedTransactions) {
-        // Determine from/to based on transaction type
-        let from = Number(fromAccountId);
-        let to = Number(toAccountId);
+        let from: number;
+        let to: number;
         
-        // For expenses, money goes out of the "from" account
-        // For income, money comes into the "to" account
-        if (tx.type === 'income') {
-          // Swap for income - money comes from external to our account
-          [from, to] = [to, from];
+        if (importSourceType === 'creditCard') {
+          // For credit card imports, the credit card's account is the source
+          // and we need a destination account for expenses
+          const creditCardAccount = getAccountForCreditCard(Number(selectedCreditCardId));
+          if (!creditCardAccount) continue;
+          
+          from = creditCardAccount.id;
+          to = Number(toAccountId) || from; // Use same account if no destination specified
+          
+          // For income (refunds), swap the accounts
+          if (tx.type === 'income') {
+            [from, to] = [to, from];
+          }
+        } else {
+          // Standard account-based import
+          from = Number(fromAccountId);
+          to = Number(toAccountId);
+          
+          // For income, swap - money comes from external to our account
+          if (tx.type === 'income') {
+            [from, to] = [to, from];
+          }
         }
 
         const result = transactionService.createTransaction(
@@ -202,7 +249,7 @@ const ImportRecords: React.FC = () => {
       setError(t('importRecords.importError'));
       console.error('Import error:', err);
     }
-  }, [transactionService, accountService, fromAccountId, toAccountId, transactions, t]);
+  }, [transactionService, accountService, fromAccountId, toAccountId, transactions, t, importSourceType, selectedCreditCardId, getAccountForCreditCard]);
 
   const handleClearAll = () => {
     setTransactions([]);
@@ -302,7 +349,7 @@ const ImportRecords: React.FC = () => {
           </Typography>
           <input
             type="file"
-            accept=".csv,.txt,.pdf,.jpg,.jpeg,.png,.gif,.webp"
+            accept=".csv,.txt,.pdf,.jpg,.jpeg,.png,.gif,.webp,.xlsx,.xls"
             onChange={handleFileSelect}
             ref={fileInputRef}
             className={styles.fileInput}
@@ -325,6 +372,7 @@ const ImportRecords: React.FC = () => {
             {t('importRecords.supportedFormats')}
           </Typography>
           <Box className={styles.formatsList}>
+            <Chip icon={<FileSpreadsheet size={16} />} label="XLSX" variant="outlined" color="primary" />
             <Chip icon={<FileSpreadsheet size={16} />} label="CSV" variant="outlined" />
             <Chip icon={<FileText size={16} />} label="TXT" variant="outlined" />
             <Chip icon={<FileText size={16} />} label="PDF" variant="outlined" />
@@ -375,37 +423,112 @@ const ImportRecords: React.FC = () => {
             {t('importRecords.previewDescription')}
           </Typography>
 
-          {/* Account Selection */}
-          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-            <FormControl size="small" className={styles.accountSelect}>
-              <InputLabel>{t('importRecords.fromAccount')}</InputLabel>
-              <Select
-                value={fromAccountId}
-                label={t('importRecords.fromAccount')}
-                onChange={(e) => setFromAccountId(e.target.value as number)}
-              >
-                {accounts.map((account: Account) => (
-                  <MenuItem key={account.id} value={account.id}>
-                    {account.name} ({account.currency})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          {/* Import Source Selection */}
+          <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.default' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              {t('importRecords.importSourceType')}
+            </Typography>
+            <RadioGroup
+              row
+              value={importSourceType}
+              onChange={(e) => setImportSourceType(e.target.value as ImportSourceType)}
+            >
+              <FormControlLabel
+                value="creditCard"
+                control={<Radio />}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <CreditCard size={16} />
+                    {t('importRecords.creditCardStatement')}
+                  </Box>
+                }
+              />
+              <FormControlLabel
+                value="account"
+                control={<Radio />}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Wallet size={16} />
+                    {t('importRecords.accountStatement')}
+                  </Box>
+                }
+              />
+            </RadioGroup>
+          </Paper>
 
-            <FormControl size="small" className={styles.accountSelect}>
-              <InputLabel>{t('importRecords.toAccount')}</InputLabel>
-              <Select
-                value={toAccountId}
-                label={t('importRecords.toAccount')}
-                onChange={(e) => setToAccountId(e.target.value as number)}
-              >
-                {accounts.map((account: Account) => (
-                  <MenuItem key={account.id} value={account.id}>
-                    {account.name} ({account.currency})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          {/* Account/Credit Card Selection */}
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+            {importSourceType === 'creditCard' ? (
+              <>
+                <FormControl size="small" className={styles.accountSelect}>
+                  <InputLabel>{t('importRecords.selectCreditCard')}</InputLabel>
+                  <Select
+                    value={selectedCreditCardId}
+                    label={t('importRecords.selectCreditCard')}
+                    onChange={(e) => setSelectedCreditCardId(e.target.value as number)}
+                  >
+                    {creditCards.map((card: CreditCardType) => {
+                      const account = accounts.find(a => a.id === card.accountId);
+                      return (
+                        <MenuItem key={card.id} value={card.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CreditCard size={16} />
+                            {card.name || `${card.bank} *${card.last4}`}
+                            {account && <Chip size="small" label={account.currency} sx={{ ml: 1 }} />}
+                          </Box>
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+                
+                {selectedCreditCardId && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('importRecords.associatedAccount')}:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {(() => {
+                        const account = getAccountForCreditCard(Number(selectedCreditCardId));
+                        return account ? `${account.name} (${account.currency})` : t('importRecords.noAssociatedAccount');
+                      })()}
+                    </Typography>
+                  </Box>
+                )}
+              </>
+            ) : (
+              <>
+                <FormControl size="small" className={styles.accountSelect}>
+                  <InputLabel>{t('importRecords.fromAccount')}</InputLabel>
+                  <Select
+                    value={fromAccountId}
+                    label={t('importRecords.fromAccount')}
+                    onChange={(e) => setFromAccountId(e.target.value as number)}
+                  >
+                    {accounts.map((account: Account) => (
+                      <MenuItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl size="small" className={styles.accountSelect}>
+                  <InputLabel>{t('importRecords.toAccount')}</InputLabel>
+                  <Select
+                    value={toAccountId}
+                    label={t('importRecords.toAccount')}
+                    onChange={(e) => setToAccountId(e.target.value as number)}
+                  >
+                    {accounts.map((account: Account) => (
+                      <MenuItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </>
+            )}
           </Box>
 
           {/* Data Grid */}
@@ -426,6 +549,7 @@ const ImportRecords: React.FC = () => {
                   <TableCell>{t('transactions.date')}</TableCell>
                   <TableCell>{t('transactions.description')}</TableCell>
                   <TableCell align="right">{t('transactions.amount')}</TableCell>
+                  <TableCell>{t('transactions.currency')}</TableCell>
                   <TableCell>{t('importRecords.type')}</TableCell>
                   <TableCell align="center">{t('transactions.actions')}</TableCell>
                 </TableRow>
@@ -458,9 +582,17 @@ const ImportRecords: React.FC = () => {
                           tx.type === 'expense' ? styles.expenseAmount :
                           styles.transferAmount
                         }`}>
-                          ${tx.amount.toFixed(2)}
+                          {tx.currency === 'USD' ? 'US$' : '$'}{tx.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        label={tx.currency || 'ARS'}
+                        variant="outlined"
+                        color={tx.currency === 'USD' ? 'success' : 'default'}
+                      />
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
@@ -535,7 +667,10 @@ const ImportRecords: React.FC = () => {
                 color="primary"
                 startIcon={<Check size={18} />}
                 onClick={handleImport}
-                disabled={selectedCount === 0 || !fromAccountId || !toAccountId}
+                disabled={
+                  selectedCount === 0 || 
+                  (importSourceType === 'creditCard' ? !selectedCreditCardId : (!fromAccountId || !toAccountId))
+                }
               >
                 {t('importRecords.importButton')} ({selectedCount})
               </Button>

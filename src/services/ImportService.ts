@@ -3,10 +3,12 @@ import { createWorker } from 'tesseract.js';
 import type { Worker } from 'tesseract.js';
 import { llmService, isLLMEnabled } from './LLMService';
 import LoggingService, { LogCategory } from './LoggingService';
+import * as XLSX from 'xlsx';
 
 // Configuration constants
 const LLM_MAX_TEXT_LENGTH = 4000;
 const TWO_DIGIT_YEAR_PIVOT = 50; // Years < 50 become 20xx, >= 50 become 19xx
+const EXCEL_EPOCH = new Date(1899, 11, 30); // Excel epoch date
 
 export interface ImportedTransaction {
   id: string;
@@ -15,9 +17,10 @@ export interface ImportedTransaction {
   amount: number;
   type: 'income' | 'expense' | 'transfer';
   category?: string;
-  currency?: string;
+  currency?: 'ARS' | 'USD';
   selected: boolean;
   isEditing?: boolean;
+  couponNumber?: string;
 }
 
 export interface ImportResult {
@@ -50,6 +53,10 @@ class ImportService {
         case 'csv':
           rawText = await this.readTextFile(file);
           return await this.parseCSV(rawText, fileExtension);
+        
+        case 'xlsx':
+        case 'xls':
+          return await this.parseExcel(file, fileExtension);
         
         case 'txt':
           rawText = await this.readTextFile(file);
@@ -158,6 +165,205 @@ class ImportService {
       rawText: content,
       fileType,
     };
+  }
+
+  /**
+   * Parse Excel file (XLSX/XLS) into transactions
+   * Supports credit card statements with format: FECHA, DESCRIPCIÓN, NRO. CUPÓN, PESOS, DÓLARES
+   */
+  private async parseExcel(file: File, fileType: string): Promise<ImportResult> {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    
+    const transactions: ImportedTransaction[] = [];
+    let rawTextParts: string[] = [];
+    
+    // Look for transaction data in all sheets
+    for (const sheetName of workbook.SheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
+      
+      // Add to raw text for debugging
+      rawTextParts.push(`=== Sheet: ${sheetName} ===`);
+      
+      // Check if this looks like a transaction sheet (has numeric dates and amounts)
+      const transactionsFromSheet = this.extractTransactionsFromExcelSheet(data, sheetName);
+      transactions.push(...transactionsFromSheet);
+      
+      // Add raw text representation
+      data.slice(0, 20).forEach((row: unknown[]) => {
+        rawTextParts.push(row.filter(cell => cell !== null && cell !== undefined).join(' | '));
+      });
+    }
+    
+    LoggingService.info(LogCategory.USER, 'IMPORT_EXCEL_COMPLETE', {
+      sheetCount: workbook.SheetNames.length,
+      transactionCount: transactions.length,
+    });
+    
+    return {
+      success: transactions.length > 0,
+      transactions,
+      rawText: rawTextParts.join('\n'),
+      fileType,
+    };
+  }
+  
+  /**
+   * Extract transactions from an Excel sheet
+   * Handles credit card statement format with Excel serial dates
+   */
+  private extractTransactionsFromExcelSheet(data: unknown[][], _sheetName: string): ImportedTransaction[] {
+    const transactions: ImportedTransaction[] = [];
+    
+    // Find header row (contains FECHA, DESCRIPCIÓN, PESOS, DÓLARES)
+    let headerRow = -1;
+    let dateCol = -1;
+    let descCol = -1;
+    let pesosCol = -1;
+    let dolaresCol = -1;
+    let couponCol = -1;
+    
+    for (let i = 0; i < Math.min(data.length, 10); i++) {
+      const row = data[i];
+      if (!row) continue;
+      
+      for (let j = 0; j < row.length; j++) {
+        const cell = String(row[j] || '').toUpperCase();
+        if (cell === 'FECHA' || cell.includes('FECHA')) {
+          headerRow = i;
+          dateCol = j;
+        }
+        if (cell === 'DESCRIPCIÓN' || cell.includes('DESCRIPCION')) {
+          descCol = j;
+        }
+        if (cell === 'PESOS' || cell.includes('PESOS')) {
+          pesosCol = j;
+        }
+        if (cell === 'DÓLARES' || cell.includes('DOLARES')) {
+          dolaresCol = j;
+        }
+        if (cell.includes('CUPÓN') || cell.includes('CUPON') || cell.includes('NRO')) {
+          couponCol = j;
+        }
+      }
+      
+      if (headerRow >= 0 && dateCol >= 0) break;
+    }
+    
+    // If no header found, try to detect transaction rows by pattern
+    if (headerRow < 0) {
+      // Look for rows that start with a numeric value (Excel date serial)
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        if (!row || row.length < 3) continue;
+        
+        const firstCell = row[0];
+        // Excel date serials are typically 5-digit numbers around 40000-50000
+        if (typeof firstCell === 'number' && firstCell > 40000 && firstCell < 60000) {
+          headerRow = i - 1; // Set header as previous row
+          dateCol = 0;
+          descCol = 1;
+          
+          // Find amount columns
+          for (let j = 2; j < row.length; j++) {
+            const cell = row[j];
+            if (typeof cell === 'number') {
+              if (pesosCol < 0) pesosCol = j;
+              else if (dolaresCol < 0) dolaresCol = j;
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    // Process data rows
+    const startRow = headerRow + 1;
+    for (let i = startRow; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      
+      // Get date (Excel serial number)
+      const dateValue = row[dateCol >= 0 ? dateCol : 0];
+      let dateStr = '';
+      
+      if (typeof dateValue === 'number' && dateValue > 40000 && dateValue < 60000) {
+        // Convert Excel serial date to ISO string
+        dateStr = this.excelSerialToDate(dateValue);
+      } else if (typeof dateValue === 'string') {
+        dateStr = this.parseDate(dateValue);
+      } else {
+        continue; // Skip rows without valid dates
+      }
+      
+      // Get description
+      const description = String(row[descCol >= 0 ? descCol : 1] || '').trim();
+      if (!description || description.includes('TOTAL') || description.includes('SALDO')) {
+        continue; // Skip summary rows
+      }
+      
+      // Get amounts (PESOS and DÓLARES)
+      const pesosAmount = pesosCol >= 0 ? this.parseExcelAmount(row[pesosCol]) : 0;
+      const dolaresAmount = dolaresCol >= 0 ? this.parseExcelAmount(row[dolaresCol]) : 0;
+      
+      // Get coupon number if available
+      const couponNumber = couponCol >= 0 ? String(row[couponCol] || '') : undefined;
+      
+      // Create transaction for pesos amount
+      if (pesosAmount !== 0) {
+        transactions.push({
+          id: `import-excel-${Date.now()}-${i}-ars`,
+          date: dateStr,
+          description: description,
+          amount: Math.abs(pesosAmount),
+          type: pesosAmount < 0 ? 'income' : 'expense', // Negative amounts in statements are refunds/credits
+          currency: 'ARS',
+          selected: true,
+          couponNumber,
+        });
+      }
+      
+      // Create transaction for dollars amount
+      if (dolaresAmount !== 0) {
+        transactions.push({
+          id: `import-excel-${Date.now()}-${i}-usd`,
+          date: dateStr,
+          description: description,
+          amount: Math.abs(dolaresAmount),
+          type: dolaresAmount < 0 ? 'income' : 'expense',
+          currency: 'USD',
+          selected: true,
+          couponNumber,
+        });
+      }
+    }
+    
+    return transactions;
+  }
+  
+  /**
+   * Convert Excel serial date to ISO date string (YYYY-MM-DD)
+   */
+  private excelSerialToDate(serial: number): string {
+    // Excel's epoch is December 30, 1899
+    // But Excel incorrectly considers 1900 as a leap year
+    const daysSinceEpoch = serial - (serial > 59 ? 1 : 0); // Adjust for Excel's leap year bug
+    const date = new Date(EXCEL_EPOCH.getTime() + daysSinceEpoch * 24 * 60 * 60 * 1000);
+    return date.toISOString().split('T')[0];
+  }
+  
+  /**
+   * Parse amount from Excel cell
+   */
+  private parseExcelAmount(value: unknown): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return this.parseAmount(value);
+    }
+    return 0;
   }
 
   /**
