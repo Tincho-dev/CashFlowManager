@@ -1,0 +1,13 @@
+lista de imputs a validar en tests:
+
+agrega una cuenta llamada uala, con la descripcion de 'alta tasa remunedara'
+
+agrega una cuenta en pesos llamada bbva
+
+agrega en el banco galicia una cuenta llamada fima
+
+agrega un gasto de 2000 pesos en concepto de 'merienda familiar'
+
+compre 50usd con pesos de uala, 1450 cada dolar
+
+crea la tarjeta de credito del banco galicia terminada en 4045 
