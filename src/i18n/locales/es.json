@@ -14,7 +14,8 @@
     "export": "Exportar Datos",
     "import": "Importar Registros",
     "creditCards": "Tarjetas de Crédito",
-    "currencyExchange": "Cambio de Moneda"
+    "currencyExchange": "Cambio de Moneda",
+    "logs": "Registros del Sistema"
   },
   "dashboard": {
     "title": "Inicio",
@@ -373,5 +374,41 @@
     "paymentType": "Cómo pagaste esta transacción (efectivo, tarjeta de crédito, débito, etc.)",
     "recurring": "Habilita si esta transacción se repite regularmente (ej: suscripción mensual)",
     "category": "Categoriza tu transacción para mejor organización y reportes"
+  },
+  "logs": {
+    "title": "Registros del Sistema",
+    "search": "Buscar registros...",
+    "clearSearch": "Limpiar búsqueda",
+    "filters": "Filtros",
+    "filterLevel": "Filtrar por Nivel",
+    "filterCategory": "Filtrar por Categoría",
+    "allLevels": "Todos los Niveles",
+    "allCategories": "Todas las Categorías",
+    "dateFrom": "Fecha Desde",
+    "dateTo": "Fecha Hasta",
+    "clearFilters": "Limpiar Filtros",
+    "showingResults": "Mostrando {{count}} de {{total}} registros",
+    "noMatchingResults": "Ningún registro coincide con los filtros",
+    "empty": "No hay registros aún",
+    "total": "Total",
+    "clearAll": "Limpiar Todo",
+    "clearConfirm": "¿Estás seguro de que quieres limpiar todos los registros? Esta acción no se puede deshacer.",
+    "exportJSON": "Exportar como JSON",
+    "exportCSV": "Exportar como CSV",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "pageInfo": "Página {{current}} de {{total}}",
+    "levels": {
+      "info": "Info",
+      "warning": "Advertencia",
+      "error": "Error",
+      "debug": "Debug"
+    },
+    "categories": {
+      "account": "Cuenta",
+      "transaction": "Transacción",
+      "system": "Sistema",
+      "user": "Usuario"
+    }
   }
 }

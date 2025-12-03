@@ -14,7 +14,8 @@
     "export": "Export Data",
     "import": "Import Records",
     "creditCards": "Credit Cards",
-    "currencyExchange": "Currency Exchange"
+    "currencyExchange": "Currency Exchange",
+    "logs": "System Logs"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -373,5 +374,41 @@
     "paymentType": "How you paid for this transaction (cash, credit card, debit card, etc.)",
     "recurring": "Enable if this transaction repeats regularly (e.g., monthly subscription)",
     "category": "Categorize your transaction for better organization and reporting"
+  },
+  "logs": {
+    "title": "System Logs",
+    "search": "Search logs...",
+    "clearSearch": "Clear search",
+    "filters": "Filters",
+    "filterLevel": "Filter by Level",
+    "filterCategory": "Filter by Category",
+    "allLevels": "All Levels",
+    "allCategories": "All Categories",
+    "dateFrom": "Date From",
+    "dateTo": "Date To",
+    "clearFilters": "Clear Filters",
+    "showingResults": "Showing {{count}} of {{total}} logs",
+    "noMatchingResults": "No logs match your filters",
+    "empty": "No logs recorded yet",
+    "total": "Total",
+    "clearAll": "Clear All",
+    "clearConfirm": "Are you sure you want to clear all logs? This action cannot be undone.",
+    "exportJSON": "Export as JSON",
+    "exportCSV": "Export as CSV",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "pageInfo": "Page {{current}} of {{total}}",
+    "levels": {
+      "info": "Info",
+      "warning": "Warning",
+      "error": "Error",
+      "debug": "Debug"
+    },
+    "categories": {
+      "account": "Account",
+      "transaction": "Transaction",
+      "system": "System",
+      "user": "User"
+    }
   }
 }

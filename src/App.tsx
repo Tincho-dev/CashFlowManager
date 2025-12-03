@@ -15,6 +15,7 @@ import ExportData from './pages/ExportData';
 import CreditCards from './pages/CreditCards';
 import Loans from './pages/Loans';
 import ImportRecords from './pages/ImportRecords';
+import LogViewer from './pages/LogViewer';
 import './App.css';
 
 const theme = createTheme({
@@ -73,6 +74,7 @@ function App() {
                       <Route path="/loans" element={<Loans />} />
                       <Route path="/import" element={<ImportRecords />} />
                       <Route path="/export" element={<ExportData />} />
+                      <Route path="/logs" element={<LogViewer />} />
                     </Routes>
                   </ErrorBoundary>
                 </Layout>
