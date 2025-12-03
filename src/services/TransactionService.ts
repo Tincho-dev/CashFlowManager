@@ -40,13 +40,18 @@ export class TransactionService {
     return this.transactionRepo.getByAsset(assetId);
   }
 
+  getTransactionsByCategory(categoryId: number): Transaction[] {
+    return this.transactionRepo.getByCategory(categoryId);
+  }
+
   createTransaction(
     fromAccountId: number,
     toAccountId: number,
     amount: number,
     date: string,
     auditDate?: string | null,
-    assetId?: number | null
+    assetId?: number | null,
+    categoryId?: number | null
   ): Transaction | null {
     // Validate that from and to accounts are different
     if (fromAccountId === toAccountId) {
@@ -75,6 +80,7 @@ export class TransactionService {
       date,
       auditDate: auditDate ?? null,
       assetId: assetId ?? null,
+      categoryId: categoryId ?? null,
     });
 
     // Update account balances
@@ -90,6 +96,7 @@ export class TransactionService {
       toAccountId,
       amount,
       date,
+      categoryId,
     });
 
     return transaction;

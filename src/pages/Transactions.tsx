@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { Plus, Trash2, Edit } from 'lucide-react';
 import { useApp } from '../hooks';
-import type { Transaction, Asset } from '../types';
+import type { Transaction, Asset, Category } from '../types';
 import './Transactions.css';
 
 interface TransactionsProps {
@@ -34,13 +34,15 @@ interface FormData {
   date: string;
   auditDate: string;
   assetId: number | null;
+  categoryId: number | null;
 }
 
 const Transactions: React.FC<TransactionsProps> = ({ title }) => {
-  const { accountService, transactionService, assetService, isInitialized } = useApp();
+  const { accountService, transactionService, assetService, categoryService, isInitialized } = useApp();
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
@@ -56,6 +58,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
     date: new Date().toISOString(),
     auditDate: '',
     assetId: null,
+    categoryId: null,
   });
 
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
@@ -71,8 +74,11 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
       if (assetService) {
         setAssets(assetService.getAllAssets());
       }
+      if (categoryService) {
+        setCategories(categoryService.getAllCategories());
+      }
     }
-  }, [isInitialized, transactionService, assetService, loadTransactions]);
+  }, [isInitialized, transactionService, assetService, categoryService, loadTransactions]);
 
   useEffect(() => {
     if (accounts.length > 0 && formData.fromAccountId === 0) {
@@ -96,6 +102,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
         date: formData.date,
         auditDate: formData.auditDate || null,
         assetId: formData.assetId,
+        categoryId: formData.categoryId,
       });
     } else {
       transactionService.createTransaction(
@@ -104,7 +111,8 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
         formData.amount,
         formData.date,
         formData.auditDate || null,
-        formData.assetId
+        formData.assetId,
+        formData.categoryId
       );
     }
 
@@ -121,6 +129,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
       date: transaction.date,
       auditDate: transaction.auditDate || '',
       assetId: transaction.assetId,
+      categoryId: transaction.categoryId,
     });
     setShowModal(true);
   };
@@ -153,6 +162,18 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
     if (!assetId) return '';
     const asset = assets.find(a => a.id === assetId);
     return asset ? (asset.ticket || `Asset ${assetId}`) : '';
+  };
+
+  const getCategoryName = (categoryId: number | null): string => {
+    if (!categoryId) return '';
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.name : '';
+  };
+
+  const getCategoryColor = (categoryId: number | null): string => {
+    if (!categoryId) return '#9E9E9E';
+    const category = categories.find(c => c.id === categoryId);
+    return category?.color || '#9E9E9E';
   };
 
   if (!isInitialized) {
@@ -233,6 +254,16 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
                         size="small"
                         variant="outlined"
                       />
+                      {transaction.categoryId && (
+                        <Chip
+                          label={getCategoryName(transaction.categoryId)}
+                          size="small"
+                          sx={{ 
+                            backgroundColor: getCategoryColor(transaction.categoryId),
+                            color: 'white',
+                          }}
+                        />
+                      )}
                       {transaction.assetId && (
                         <Chip
                           label={getAssetName(transaction.assetId)}
@@ -334,6 +365,33 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />
+
+              <TextField
+                select
+                label={t('transactions.category')}
+                value={formData.categoryId || ''}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value ? parseInt(e.target.value) : null })}
+                fullWidth
+              >
+                <MenuItem value="">
+                  {t('transactions.noCategory')}
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          backgroundColor: category.color || '#9E9E9E',
+                        }}
+                      />
+                      {category.name}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
 
               <TextField
                 label={t('transactions.auditDate')}
