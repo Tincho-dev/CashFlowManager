@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import {
@@ -76,8 +76,8 @@ const ImportRecords: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
-  const accounts = accountService?.getAllAccounts() || [];
-  const creditCards = creditCardService?.getAllCreditCards() || [];
+  const accounts = useMemo(() => accountService?.getAllAccounts() || [], [accountService]);
+  const creditCards = useMemo(() => creditCardService?.getAllCreditCards() || [], [creditCardService]);
 
   // Type guard function for location state validation
   const isValidLocationState = (state: unknown): state is LocationState => {
@@ -104,13 +104,13 @@ const ImportRecords: React.FC = () => {
   }, [location.state]);
 
   // Get the associated account for a credit card
-  const getAccountForCreditCard = (creditCardId: number): Account | null => {
+  const getAccountForCreditCard = useCallback((creditCardId: number): Account | null => {
     const card = creditCards.find(c => c.id === creditCardId);
     if (card && card.accountId) {
       return accounts.find(a => a.id === card.accountId) || null;
     }
     return null;
-  };
+  }, [creditCards, accounts]);
 
   const processFile = async (file: File) => {
     setIsAnalyzing(true);
