@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Container,
   Box,
@@ -33,26 +33,7 @@ const CurrencyExchange: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [exchangeService, setExchangeService] = useState<CurrencyExchangeService | null>(null);
 
-  useEffect(() => {
-    if (isInitialized && accountService) {
-      if (!exchangeService) {
-        setExchangeService(new CurrencyExchangeService());
-      }
-      loadAccounts();
-    }
-  }, [isInitialized, accountService, exchangeService]);
-
-  useEffect(() => {
-    if (fromAccountId && toAccountId && amount) {
-      calculateExchange();
-    } else {
-      setCalculatedAmount(null);
-      setExchangeRate(null);
-      setCommission(0);
-    }
-  }, [fromAccountId, toAccountId, amount, isFromAmount]);
-
-  const loadAccounts = () => {
+  const loadAccounts = useCallback(() => {
     if (!accountService) return;
     const allAccounts = accountService.getAllAccounts();
     setAccounts(allAccounts);
@@ -63,9 +44,9 @@ const CurrencyExchange: React.FC = () => {
     
     if (usdAccount) setFromAccountId(usdAccount.id);
     if (arsAccount && usdAccount?.id !== arsAccount.id) setToAccountId(arsAccount.id);
-  };
+  }, [accountService]);
 
-  const calculateExchange = async () => {
+  const calculateExchange = useCallback(async () => {
     if (!fromAccountId || !toAccountId || !amount || !exchangeService) return;
 
     setLoading(true);
@@ -91,7 +72,26 @@ const CurrencyExchange: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fromAccountId, toAccountId, amount, isFromAmount, exchangeService]);
+
+  useEffect(() => {
+    if (isInitialized && accountService) {
+      if (!exchangeService) {
+        setExchangeService(new CurrencyExchangeService());
+      }
+      loadAccounts();
+    }
+  }, [isInitialized, accountService, exchangeService, loadAccounts]);
+
+  useEffect(() => {
+    if (fromAccountId && toAccountId && amount) {
+      calculateExchange();
+    } else {
+      setCalculatedAmount(null);
+      setExchangeRate(null);
+      setCommission(0);
+    }
+  }, [fromAccountId, toAccountId, amount, isFromAmount, calculateExchange]);
 
   const handleSwapAccounts = () => {
     const temp = fromAccountId;

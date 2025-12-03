@@ -108,7 +108,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               select
               label="Account"
               value={formData.accountId}
-              onChange={(e) => setFormData({ ...formData, accountId: parseInt(e.target.value) })}
+              onChange={(e) => setFormData(prev => ({ ...prev, accountId: parseInt(e.target.value) }))}
               required
               fullWidth
             >
@@ -122,7 +122,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               select
               label="Type"
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as InvestmentType })}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as InvestmentType }))}
               required
               fullWidth
             >
@@ -135,14 +135,14 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
             <TextField
               label="Name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               required
               fullWidth
             />
             <TextField
               label="Symbol (Optional)"
               value={formData.symbol || ''}
-              onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))}
               fullWidth
               placeholder="e.g., AAPL, GGAL.BA"
               helperText="Stock ticker or asset identifier"
@@ -157,7 +157,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
                   if (value !== undefined) {
                     handleQuantityOrPriceChange('quantity', value);
                   } else {
-                    setFormData({ ...formData, quantity: undefined });
+                    setFormData(prev => ({ ...prev, quantity: undefined }));
                   }
                 }}
                 fullWidth
@@ -173,7 +173,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
                   if (value !== undefined) {
                     handleQuantityOrPriceChange('purchasePrice', value);
                   } else {
-                    setFormData({ ...formData, purchasePrice: undefined });
+                    setFormData(prev => ({ ...prev, purchasePrice: undefined }));
                   }
                 }}
                 fullWidth
@@ -199,7 +199,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               label={t('accounts.currency')}
               value={formData.currency}
               onChange={(e) =>
-                setFormData({ ...formData, currency: e.target.value as Currency })
+                setFormData(prev => ({ ...prev, currency: e.target.value as Currency }))
               }
               fullWidth
             >
@@ -213,7 +213,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               type="date"
               label="Purchase Date"
               value={formData.purchaseDate}
-              onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))}
               required
               fullWidth
               InputLabelProps={{ shrink: true }}
@@ -224,7 +224,7 @@ const InvestmentDialog: React.FC<InvestmentDialogProps> = ({
               value={formData.currentValue}
               onChange={(e) => {
                 const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                setFormData({ ...formData, currentValue: value });
+                setFormData(prev => ({ ...prev, currentValue: value }));
               }}
               required
               fullWidth

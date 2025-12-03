@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Container,
@@ -63,25 +63,25 @@ const Investments: React.FC = () => {
     currentValue: 0,
   });
 
+  const loadInvestments = useCallback(() => {
+    setInvestments(investmentService.getAllInvestments());
+  }, [investmentService]);
+
+  const loadAccounts = useCallback(() => {
+    if (!accountService) return;
+    const allAccounts = accountService.getAllAccounts();
+    setAccounts(allAccounts);
+    if (allAccounts.length > 0) {
+      setFormData(prev => prev.accountId === 0 ? { ...prev, accountId: allAccounts[0].id } : prev);
+    }
+  }, [accountService]);
+
   useEffect(() => {
     if (isInitialized && accountService) {
       loadInvestments();
       loadAccounts();
     }
-  }, [isInitialized, accountService]);
-
-  const loadInvestments = () => {
-    setInvestments(investmentService.getAllInvestments());
-  };
-
-  const loadAccounts = () => {
-    if (!accountService) return;
-    const allAccounts = accountService.getAllAccounts();
-    setAccounts(allAccounts);
-    if (allAccounts.length > 0 && formData.accountId === 0) {
-      setFormData(prev => ({ ...prev, accountId: allAccounts[0].id }));
-    }
-  };
+  }, [isInitialized, accountService, loadInvestments, loadAccounts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
