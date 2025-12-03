@@ -6,8 +6,15 @@ import { describe, it, expect } from 'vitest';
  */
 describe('TransactionService Business Logic', () => {
   describe('transaction validation', () => {
-    const validateTransaction = (fromId: number, toId: number): { valid: boolean; error?: string } => {
-      if (fromId === toId) {
+    // Validation now considers transaction type - only TRANSFER requires different accounts
+    const validateTransaction = (
+      fromId: number, 
+      toId: number, 
+      transactionType?: string
+    ): { valid: boolean; error?: string } => {
+      // Only enforce different accounts for TRANSFER type
+      const isTransfer = transactionType === 'TRANSFER';
+      if (isTransfer && fromId === toId) {
         return { valid: false, error: 'Cannot transfer to the same account' };
       }
       if (fromId <= 0 || toId <= 0) {
@@ -16,15 +23,25 @@ describe('TransactionService Business Logic', () => {
       return { valid: true };
     };
 
-    it('should reject same account transfer', () => {
-      const result = validateTransaction(1, 1);
+    it('should reject same account for TRANSFER type', () => {
+      const result = validateTransaction(1, 1, 'TRANSFER');
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe('Cannot transfer to the same account');
     });
 
+    it('should accept same account for non-TRANSFER types', () => {
+      const incomeResult = validateTransaction(1, 1, 'INCOME');
+      const expenseResult = validateTransaction(1, 1, 'CREDIT_CARD_EXPENSE');
+      const noTypeResult = validateTransaction(1, 1);
+
+      expect(incomeResult.valid).toBe(true);
+      expect(expenseResult.valid).toBe(true);
+      expect(noTypeResult.valid).toBe(true);
+    });
+
     it('should accept different account transfer', () => {
-      const result = validateTransaction(1, 2);
+      const result = validateTransaction(1, 2, 'TRANSFER');
 
       expect(result.valid).toBe(true);
     });

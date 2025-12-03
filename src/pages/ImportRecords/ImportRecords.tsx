@@ -46,6 +46,7 @@ import {
 import { useApp } from '../../hooks';
 import ImportService, { type ImportedTransaction } from '../../services/ImportService';
 import type { Account, CreditCard as CreditCardType } from '../../types';
+import { TransactionType } from '../../types';
 import styles from './ImportRecords.module.scss';
 
 type ImportSourceType = 'account' | 'creditCard';
@@ -244,10 +245,9 @@ const ImportRecords: React.FC = () => {
         setError(t('importRecords.selectAccounts'));
         return;
       }
-      if (fromAccountId === toAccountId) {
-        setError(t('importRecords.sameAccountError'));
-        return;
-      }
+      // Note: Same account is now allowed for income/expense transactions
+      // The TransactionService handles validation based on transaction type
+      // (only TRANSFER type requires different accounts)
     }
 
     const selectedTransactions = transactions.filter(tx => tx.selected);
@@ -263,6 +263,8 @@ const ImportRecords: React.FC = () => {
       for (const tx of selectedTransactions) {
         let from: number;
         let to: number;
+        let txType: typeof TransactionType[keyof typeof TransactionType];
+        let creditCardIdForTx: number | null = null;
         
         if (importSourceType === 'creditCard') {
           // For credit card imports, the credit card's account is the source
@@ -271,20 +273,29 @@ const ImportRecords: React.FC = () => {
           if (!creditCardAccount) continue;
           
           from = creditCardAccount.id;
-          to = Number(toAccountId) || from; // Use same account if no destination specified
+          to = creditCardAccount.id; // Use same account for credit card transactions
+          creditCardIdForTx = Number(selectedCreditCardId);
           
-          // For income (refunds), swap the accounts
+          // Determine transaction type based on whether it's income or expense
           if (tx.type === 'income') {
-            [from, to] = [to, from];
+            txType = TransactionType.INCOME;
+          } else {
+            txType = TransactionType.CREDIT_CARD_EXPENSE;
           }
         } else {
           // Standard account-based import
           from = Number(fromAccountId);
           to = Number(toAccountId);
           
-          // For income, swap - money comes from external to our account
+          // Determine transaction type
           if (tx.type === 'income') {
+            txType = TransactionType.INCOME;
+            // For income, swap - money comes from external to our account
             [from, to] = [to, from];
+          } else if (tx.type === 'transfer') {
+            txType = TransactionType.TRANSFER;
+          } else {
+            txType = TransactionType.VARIABLE_EXPENSE;
           }
         }
 
@@ -294,7 +305,11 @@ const ImportRecords: React.FC = () => {
           tx.amount,
           new Date(tx.date).toISOString(),
           null,
-          null
+          null,
+          null,
+          txType,
+          creditCardIdForTx,
+          tx.description || null
         );
 
         if (result) {
