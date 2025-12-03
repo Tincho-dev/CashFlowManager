@@ -7,6 +7,9 @@ import { useApp } from '../hooks';
 import { TransactionType } from '../types';
 import styles from './Dashboard.module.scss';
 
+// Configuration constants
+const CIRCLE_SEGMENTS = 3;
+
 interface ExpenseStats {
   fixedExpenses: number;
   variableExpenses: number;
@@ -37,12 +40,13 @@ const Dashboard: React.FC = () => {
 
     allTransactions.forEach((tx) => {
       const type = tx.transactionType;
+      // Use Math.abs to ensure positive values for display
       if (type === TransactionType.FIXED_EXPENSE) {
-        fixedExpenses += tx.amount;
+        fixedExpenses += Math.abs(tx.amount);
       } else if (type === TransactionType.VARIABLE_EXPENSE) {
-        variableExpenses += tx.amount;
+        variableExpenses += Math.abs(tx.amount);
       } else if (type === TransactionType.SAVINGS) {
-        savings += tx.amount;
+        savings += Math.abs(tx.amount);
       }
     });
 
@@ -67,13 +71,14 @@ const Dashboard: React.FC = () => {
     
     if (total === 0) {
       // Default display when no data - show equal thirds
+      const segmentLength = circumference / CIRCLE_SEGMENTS;
       return {
         fixedOffset: 0,
-        fixedLength: circumference / 3,
-        variableOffset: circumference / 3,
-        variableLength: circumference / 3,
-        savingsOffset: (circumference / 3) * 2,
-        savingsLength: circumference / 3,
+        fixedLength: segmentLength,
+        variableOffset: segmentLength,
+        variableLength: segmentLength,
+        savingsOffset: segmentLength * 2,
+        savingsLength: segmentLength,
       };
     }
 

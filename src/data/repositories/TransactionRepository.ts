@@ -1,5 +1,6 @@
 import type { Database, SqlValue } from 'sql.js';
 import type { Transaction, TransactionType } from '../../types';
+import { isValidTransactionType } from '../../types';
 import { saveDatabase } from '../database';
 import DataAccessLayer from '../DataAccessLayer';
 
@@ -212,6 +213,11 @@ export class TransactionRepository {
   }
 
   private mapRowToTransaction(row: SqlValue[]): Transaction {
+    const rawTransactionType = row[8];
+    const validatedTransactionType = isValidTransactionType(rawTransactionType) 
+      ? rawTransactionType 
+      : undefined;
+    
     return {
       id: row[0] as number,
       fromAccountId: row[1] as number,
@@ -221,7 +227,7 @@ export class TransactionRepository {
       auditDate: row[5] as string | null,
       assetId: row[6] as number | null,
       categoryId: row[7] as number | null,
-      transactionType: row[8] as TransactionType | undefined,
+      transactionType: validatedTransactionType,
       creditCardId: row[9] as number | null,
       description: row[10] as string | null,
     };

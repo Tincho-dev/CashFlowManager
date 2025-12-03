@@ -76,14 +76,23 @@ const ExportData: React.FC = () => {
       const result = await ImportService.analyzeFile(file);
       
       if (result.success && result.transactions.length > 0) {
-        const transactions: ParsedTransaction[] = result.transactions.map((tx) => ({
-          id: tx.id,
-          date: tx.date,
-          description: tx.description,
-          amount: tx.amount,
-          selected: tx.selected,
-          type: tx.type === 'income' ? 'income' : 'expense',
-        }));
+        const transactions: ParsedTransaction[] = result.transactions.map((tx) => {
+          // Explicit type mapping for all transaction types
+          let transactionType: 'income' | 'expense' = 'expense';
+          if (tx.type === 'income') {
+            transactionType = 'income';
+          }
+          // Note: 'transfer' and other types are treated as expenses in this context
+          
+          return {
+            id: tx.id,
+            date: tx.date,
+            description: tx.description,
+            amount: tx.amount,
+            selected: tx.selected,
+            type: transactionType,
+          };
+        });
         setParsedTransactions(transactions);
       } else if (result.error) {
         // Provide more descriptive error messages

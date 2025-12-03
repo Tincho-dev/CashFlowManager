@@ -78,15 +78,26 @@ const ImportRecords: React.FC = () => {
   const accounts = accountService?.getAllAccounts() || [];
   const creditCards = creditCardService?.getAllCreditCards() || [];
 
+  // Type guard function for location state validation
+  const isValidLocationState = (state: unknown): state is LocationState => {
+    if (state === null || typeof state !== 'object') return false;
+    const s = state as Record<string, unknown>;
+    const validSourceType = s.importSourceType === undefined || 
+      s.importSourceType === 'account' || 
+      s.importSourceType === 'creditCard';
+    const validCreditCardId = s.creditCardId === undefined || 
+      typeof s.creditCardId === 'number';
+    return validSourceType && validCreditCardId;
+  };
+
   // Handle pre-selected credit card from navigation state
   useEffect(() => {
-    const state = location.state as LocationState | null;
-    if (state) {
-      if (state.importSourceType) {
-        setImportSourceType(state.importSourceType);
+    if (isValidLocationState(location.state)) {
+      if (location.state.importSourceType) {
+        setImportSourceType(location.state.importSourceType);
       }
-      if (state.creditCardId) {
-        setSelectedCreditCardId(state.creditCardId);
+      if (location.state.creditCardId) {
+        setSelectedCreditCardId(location.state.creditCardId);
       }
     }
   }, [location.state]);

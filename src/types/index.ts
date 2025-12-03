@@ -25,6 +25,12 @@ export const TransactionType = {
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
 
+// Type guard function to validate TransactionType values
+export const isValidTransactionType = (value: unknown): value is TransactionType => {
+  return typeof value === 'string' && 
+    Object.values(TransactionType).includes(value as TransactionType);
+};
+
 export interface Owner {
   id: number;
   name: string;
