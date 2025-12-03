@@ -1,9 +1,11 @@
+import { useMemo, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AppProvider } from './contexts/AppContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
+import { ThemeProvider, ThemeContext } from './contexts/ThemeContext';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
@@ -18,8 +20,9 @@ import ImportRecords from './pages/ImportRecords';
 import LogViewer from './pages/LogViewer';
 import './App.css';
 
-const theme = createTheme({
+const getTheme = (mode: 'light' | 'dark') => createTheme({
   palette: {
+    mode,
     primary: {
       main: '#4a90e2',
     },
@@ -30,10 +33,14 @@ const theme = createTheme({
       main: '#f44336',
     },
     warning: {
-      main: '#ffeb3b',
+      main: mode === 'dark' ? '#ffc107' : '#ffeb3b',
     },
     success: {
       main: '#4caf50',
+    },
+    background: {
+      default: mode === 'dark' ? '#121212' : '#f5f5f5',
+      paper: mode === 'dark' ? '#1e1e1e' : '#ffffff',
     },
   },
   breakpoints: {
@@ -45,11 +52,25 @@ const theme = createTheme({
       xl: 1920,
     },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          transition: 'background-color 0.3s ease, color 0.3s ease',
+        },
+      },
+    },
+  },
 });
 
-function App() {
+// Inner component that uses theme context
+function AppContent() {
+  const { mode } = useContext(ThemeContext);
+  
+  const theme = useMemo(() => getTheme(mode), [mode]);
+
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <ErrorBoundary>
         <LanguageProvider>
@@ -83,6 +104,14 @@ function App() {
           </CurrencyProvider>
         </LanguageProvider>
       </ErrorBoundary>
+    </MuiThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }

@@ -15,7 +15,16 @@
     "import": "Importar Registros",
     "creditCards": "Tarjetas de Crédito",
     "currencyExchange": "Cambio de Moneda",
-    "logs": "Registros del Sistema"
+    "logs": "Registros del Sistema",
+    "mainNavigation": "Navegación principal",
+    "closeSidebar": "Cerrar menú lateral"
+  },
+  "theme": {
+    "light": "Modo Claro",
+    "dark": "Modo Oscuro",
+    "toggle": "Cambiar tema",
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
   },
   "dashboard": {
     "title": "Inicio",

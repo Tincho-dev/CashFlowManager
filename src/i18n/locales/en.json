@@ -15,7 +15,16 @@
     "import": "Import Records",
     "creditCards": "Credit Cards",
     "currencyExchange": "Currency Exchange",
-    "logs": "System Logs"
+    "logs": "System Logs",
+    "mainNavigation": "Main navigation",
+    "closeSidebar": "Close sidebar"
+  },
+  "theme": {
+    "light": "Light Mode",
+    "dark": "Dark Mode",
+    "toggle": "Toggle theme",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
   },
   "dashboard": {
     "title": "Dashboard",

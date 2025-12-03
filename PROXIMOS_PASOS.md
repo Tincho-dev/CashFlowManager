@@ -30,8 +30,8 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Mejoras de estilos mobile en Import Records~~ - COMPLETED
 - [ ] Reemplazar dropdowns con grids clickeables para mejor UX (Parcialmente implementado)
 - [ ] Agregar animaciones de transición entre páginas
-- [ ] Implementar dark mode
-- [ ] Mejorar accesibilidad (ARIA labels, keyboard navigation)
+- [x] ~~Implementar dark mode~~ - COMPLETED: ThemeContext con toggle, persiste en localStorage, respeta preferencia del sistema
+- [x] ~~Mejorar accesibilidad (ARIA labels, keyboard navigation)~~ - IMPROVED: Agregados ARIA labels en navegación, botones y controles
 
 ### Funcionalidades Pendientes
 
@@ -255,19 +255,19 @@ SQLite Database (localStorage)
 15. **Módulo de Préstamos (Loans)**: Gestión completa con cuotas, frecuencias de pago y tracking de estado
 16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
 17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
-18. **Tests Unitarios e Integración**: 249 tests para servicios, repositorios, hooks y componentes
+18. **Tests Unitarios e Integración**: 255 tests para servicios, repositorios, hooks y componentes
 19. **CI/CD Pipeline**: GitHub Actions con lint, test y deploy a Vercel
 20. **Bundle Size Optimization**: Code splitting implementado, chunk principal de 417KB
 21. **Utilidades de Moneda**: currencyUtils.ts con formateo, parsing y conversión
 22. **Visor de Logs (LogViewer)**: UI component completo con filtros, búsqueda, paginación y exportación
+23. **Dark Mode**: ThemeContext con toggle, persiste en localStorage, respeta preferencia del sistema
+24. **Accesibilidad Mejorada**: ARIA labels en navegación, botones y controles principales
 
 ### 🚧 En Progreso / En Curso
 - Integración con APIs externas (cotizaciones y tipos de cambio)
 - Sistema de sincronización con hojas de cálculo
 
 ### 📋 Pendiente / To Do
-- Mejoras de accesibilidad (parcialmente implementado, continuar mejorando)
-- Dark mode
 - Store global de monedas y tasas de cambio
 - Tutorial interactivo para nuevos usuarios
 - Sistema de onboarding
@@ -275,4 +275,4 @@ SQLite Database (localStorage)
 ---
 
 *Última actualización: 2025-12-03*
-*Versión: 2.7.0 - LogViewer UI, tooltips expandidos y 249 tests*
+*Versión: 2.8.0 - Dark Mode, accesibilidad mejorada y 255 tests*
