@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { AccountCurrency } from '../types';
 
@@ -31,9 +31,16 @@ interface CurrencyProviderProps {
 
 const STORAGE_KEY = 'cashflow_currency_settings';
 const RATES_STORAGE_KEY = 'cashflow_exchange_rates';
+const LAST_FETCH_ATTEMPT_KEY = 'cashflow_last_fetch_attempt';
+const FETCH_ERROR_COUNT_KEY = 'cashflow_fetch_error_count';
 
 // Free API for exchange rates (no API key required for basic usage)
 const EXCHANGE_API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+
+// Cooldown periods in milliseconds
+const MIN_FETCH_INTERVAL = 5 * 60 * 1000; // 5 minutes minimum between attempts
+const ERROR_BACKOFF_MULTIPLIER = 2; // Double the wait time after each failure
+const MAX_ERROR_BACKOFF = 60 * 60 * 1000; // Max 1 hour backoff after repeated failures
 
 export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) => {
   const [defaultCurrency, setDefaultCurrencyState] = useState<Currency>(() => {
@@ -63,6 +70,10 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   });
 
   const [isUpdatingRates, setIsUpdatingRates] = useState(false);
+  
+  // Use refs to track fetch state without causing re-renders
+  const isUpdatingRef = useRef(false);
+  const hasLoggedErrorRef = useRef(false);
 
   const setDefaultCurrency = (currency: Currency) => {
     setDefaultCurrencyState(currency);
@@ -113,24 +124,49 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   }, [getExchangeRate]);
 
   const updateExchangeRates = useCallback(async (): Promise<void> => {
-    if (isUpdatingRates) return;
+    // Use ref to prevent concurrent fetches
+    if (isUpdatingRef.current) return;
+
+    // Check if we should skip due to recent fetch attempt or backoff
+    const now = Date.now();
+    const lastAttempt = parseInt(localStorage.getItem(LAST_FETCH_ATTEMPT_KEY) || '0', 10);
+    const errorCount = parseInt(localStorage.getItem(FETCH_ERROR_COUNT_KEY) || '0', 10);
+    
+    // Calculate backoff time based on error count
+    const backoffTime = errorCount > 0 
+      ? Math.min(MIN_FETCH_INTERVAL * Math.pow(ERROR_BACKOFF_MULTIPLIER, errorCount - 1), MAX_ERROR_BACKOFF)
+      : MIN_FETCH_INTERVAL;
+    
+    if (now - lastAttempt < backoffTime) {
+      // Too soon since last attempt, skip
+      return;
+    }
 
     // If we already have rates and they were updated less than 1 hour ago, skip fetching.
-    if (exchangeRates && exchangeRates.size > 0) {
-      let mostRecent = 0;
-      exchangeRates.forEach(r => {
-        const t = r.lastUpdated.getTime();
-        if (t > mostRecent) mostRecent = t;
-      });
-      const now = Date.now();
-      const ONE_HOUR = 60 * 60 * 1000;
-      if (now - mostRecent < ONE_HOUR) {
-        // Rates are fresh, skip update
-        return;
+    const savedRates = localStorage.getItem(RATES_STORAGE_KEY);
+    if (savedRates) {
+      try {
+        const parsed = JSON.parse(savedRates);
+        let mostRecent = 0;
+        Object.values(parsed).forEach((r: unknown) => {
+          const rate = r as { lastUpdated: string };
+          const t = new Date(rate.lastUpdated).getTime();
+          if (t > mostRecent) mostRecent = t;
+        });
+        const ONE_HOUR = 60 * 60 * 1000;
+        if (now - mostRecent < ONE_HOUR) {
+          // Rates are fresh, skip update
+          return;
+        }
+      } catch {
+        // Ignore parse errors, proceed with fetch
       }
     }
 
+    isUpdatingRef.current = true;
     setIsUpdatingRates(true);
+    localStorage.setItem(LAST_FETCH_ATTEMPT_KEY, now.toString());
+    
     try {
       const response = await fetch(EXCHANGE_API_URL);
       if (!response.ok) {
@@ -177,14 +213,27 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       setExchangeRates(newRates);
       saveExchangeRates(newRates);
       
+      // Reset error count on success
+      localStorage.setItem(FETCH_ERROR_COUNT_KEY, '0');
+      hasLoggedErrorRef.current = false;
+      
       console.log('Exchange rates updated successfully');
-    } catch (error) {
-      console.error('Error updating exchange rates:', error);
+    } catch {
+      // Increment error count for backoff
+      const currentErrorCount = parseInt(localStorage.getItem(FETCH_ERROR_COUNT_KEY) || '0', 10);
+      localStorage.setItem(FETCH_ERROR_COUNT_KEY, (currentErrorCount + 1).toString());
+      
+      // Only log error once to avoid console spam
+      if (!hasLoggedErrorRef.current) {
+        console.warn('Exchange rate update failed. Using cached rates. Will retry later with backoff.');
+        hasLoggedErrorRef.current = true;
+      }
       // Keep using cached rates if update fails
     } finally {
+      isUpdatingRef.current = false;
       setIsUpdatingRates(false);
     }
-  }, [isUpdatingRates, setExchangeRates, exchangeRates]);
+  }, []);
 
   // Update rates on mount and when online
   useEffect(() => {

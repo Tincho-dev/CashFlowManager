@@ -245,10 +245,9 @@ const ImportRecords: React.FC = () => {
         setError(t('importRecords.selectAccounts'));
         return;
       }
-      if (fromAccountId === toAccountId) {
-        setError(t('importRecords.sameAccountError'));
-        return;
-      }
+      // Note: Same account is now allowed for income/expense transactions
+      // The TransactionService handles validation based on transaction type
+      // (only TRANSFER type requires different accounts)
     }
 
     const selectedTransactions = transactions.filter(tx => tx.selected);
