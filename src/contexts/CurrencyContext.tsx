@@ -114,7 +114,22 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
 
   const updateExchangeRates = useCallback(async (): Promise<void> => {
     if (isUpdatingRates) return;
-    
+
+    // If we already have rates and they were updated less than 1 hour ago, skip fetching.
+    if (exchangeRates && exchangeRates.size > 0) {
+      let mostRecent = 0;
+      exchangeRates.forEach(r => {
+        const t = r.lastUpdated.getTime();
+        if (t > mostRecent) mostRecent = t;
+      });
+      const now = Date.now();
+      const ONE_HOUR = 60 * 60 * 1000;
+      if (now - mostRecent < ONE_HOUR) {
+        // Rates are fresh, skip update
+        return;
+      }
+    }
+
     setIsUpdatingRates(true);
     try {
       const response = await fetch(EXCHANGE_API_URL);
@@ -169,7 +184,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     } finally {
       setIsUpdatingRates(false);
     }
-  }, [isUpdatingRates, setExchangeRates]);
+  }, [isUpdatingRates, setExchangeRates, exchangeRates]);
 
   // Update rates on mount and when online
   useEffect(() => {
