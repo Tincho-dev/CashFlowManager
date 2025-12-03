@@ -26,7 +26,8 @@ import {
   Landmark,
   Upload,
   RefreshCw,
-  PiggyBank
+  PiggyBank,
+  FileText
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
@@ -54,6 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
     { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
+    { path: '/logs', icon: FileText, label: t('nav.logs') },
   ];
 
   const handleNavClick = () => {

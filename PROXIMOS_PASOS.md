@@ -116,14 +116,14 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Documentación in-app~~ - COMPLETED (vía chatbot)
 - [ ] Tutorial interactivo para nuevos usuarios
 - [ ] Sistema de onboarding
-- [ ] Expandir tooltips a más páginas (Transactions, etc.)
+- [x] ~~Expandir tooltips a más páginas (Transactions, etc.)~~ - COMPLETED: Tooltips agregados a todos los campos del formulario de transacciones
 
 ### Logging y Auditoría
 - [x] ~~Sistema de logs completo para todas las operaciones~~ - COMPLETED
 - [x] ~~Exportación de logs~~ - COMPLETED (JSON y CSV)
-- [ ] Visor de logs en la aplicación (UI component)
+- [x] ~~Visor de logs en la aplicación (UI component)~~ - COMPLETED: LogViewer.tsx con filtros por nivel, categoría, fecha y búsqueda
 - [ ] Historial de cambios por entidad
-- [ ] Filtros avanzados de logs en UI
+- [x] ~~Filtros avanzados de logs en UI~~ - COMPLETED: Filtros por nivel, categoría, rango de fechas y búsqueda en LogViewer
 
 ### Avanzadas
 - [ ] Reconocimiento automático de patrones de gasto
@@ -244,7 +244,7 @@ SQLite Database (localStorage)
 4. **Chatbot con IA**: Sistema completo de asistente inteligente
 5. **OCR**: Procesamiento de imágenes funcional
 6. **Logging**: Sistema completo de auditoría
-7. **Tooltips**: Sistema de ayuda contextual
+7. **Tooltips**: Sistema de ayuda contextual (expandido a Transactions)
 8. **Traducciones**: Soporte completo bilingüe (incluyendo Investments page)
 9. **Mobile-First Styles**: Overflow y responsive design corregido
 10. **Chatbot Multilingüe**: Soporte completo en Español e Inglés
@@ -255,13 +255,13 @@ SQLite Database (localStorage)
 15. **Módulo de Préstamos (Loans)**: Gestión completa con cuotas, frecuencias de pago y tracking de estado
 16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
 17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
-18. **Tests Unitarios e Integración**: 239 tests para servicios, repositorios y hooks
+18. **Tests Unitarios e Integración**: 249 tests para servicios, repositorios, hooks y componentes
 19. **CI/CD Pipeline**: GitHub Actions con lint, test y deploy a Vercel
 20. **Bundle Size Optimization**: Code splitting implementado, chunk principal de 417KB
 21. **Utilidades de Moneda**: currencyUtils.ts con formateo, parsing y conversión
+22. **Visor de Logs (LogViewer)**: UI component completo con filtros, búsqueda, paginación y exportación
 
 ### 🚧 En Progreso / En Curso
-- Viewer de logs en UI (falta implementar)
 - Integración con APIs externas (cotizaciones y tipos de cambio)
 - Sistema de sincronización con hojas de cálculo
 
@@ -269,8 +269,10 @@ SQLite Database (localStorage)
 - Mejoras de accesibilidad (parcialmente implementado, continuar mejorando)
 - Dark mode
 - Store global de monedas y tasas de cambio
+- Tutorial interactivo para nuevos usuarios
+- Sistema de onboarding
 
 ---
 
 *Última actualización: 2025-12-03*
-*Versión: 2.6.0 - Bundle optimization, integration tests y currency utilities*
+*Versión: 2.7.0 - LogViewer UI, tooltips expandidos y 249 tests*

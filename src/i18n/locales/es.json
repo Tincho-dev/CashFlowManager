@@ -14,7 +14,8 @@
     "export": "Exportar Datos",
     "import": "Importar Registros",
     "creditCards": "Tarjetas de Crédito",
-    "currencyExchange": "Cambio de Moneda"
+    "currencyExchange": "Cambio de Moneda",
+    "logs": "Registros del Sistema"
   },
   "dashboard": {
     "title": "Inicio",
@@ -372,6 +373,59 @@
     "currency": "Elige la moneda para esta cuenta. Todas las transacciones usarán esta moneda.",
     "paymentType": "Cómo pagaste esta transacción (efectivo, tarjeta de crédito, débito, etc.)",
     "recurring": "Habilita si esta transacción se repite regularmente (ej: suscripción mensual)",
-    "category": "Categoriza tu transacción para mejor organización y reportes"
+    "category": "Categoriza tu transacción para mejor organización y reportes",
+    "transactionTypes": {
+      "income": "Dinero que recibes (salario, ventas, dividendos, reembolsos)",
+      "fixedExpense": "Gastos recurrentes regulares que no cambian mucho (alquiler, suscripciones, seguros)",
+      "variableExpense": "Gastos que varían de mes a mes (supermercado, entretenimiento, compras)",
+      "savings": "Dinero reservado para uso futuro o metas",
+      "transfer": "Mover dinero entre tus propias cuentas",
+      "creditCardExpense": "Compras realizadas con tarjeta de crédito"
+    },
+    "transactions": {
+      "fromAccount": "La cuenta de la cual se deducirá el dinero",
+      "toAccount": "La cuenta que recibirá el dinero",
+      "amount": "El monto de dinero para esta transacción",
+      "date": "Cuándo ocurrió la transacción",
+      "auditDate": "Fecha de verificación o auditoría de la transacción (opcional)",
+      "description": "Una breve descripción o nota sobre la transacción",
+      "asset": "Vincular esta transacción a un activo o inversión específica (opcional)"
+    }
+  },
+  "logs": {
+    "title": "Registros del Sistema",
+    "search": "Buscar registros...",
+    "clearSearch": "Limpiar búsqueda",
+    "filters": "Filtros",
+    "filterLevel": "Filtrar por Nivel",
+    "filterCategory": "Filtrar por Categoría",
+    "allLevels": "Todos los Niveles",
+    "allCategories": "Todas las Categorías",
+    "dateFrom": "Fecha Desde",
+    "dateTo": "Fecha Hasta",
+    "clearFilters": "Limpiar Filtros",
+    "showingResults": "Mostrando {{count}} de {{total}} registros",
+    "noMatchingResults": "Ningún registro coincide con los filtros",
+    "empty": "No hay registros aún",
+    "total": "Total",
+    "clearAll": "Limpiar Todo",
+    "clearConfirm": "¿Estás seguro de que quieres limpiar todos los registros? Esta acción no se puede deshacer.",
+    "exportJSON": "Exportar como JSON",
+    "exportCSV": "Exportar como CSV",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "pageInfo": "Página {{current}} de {{total}}",
+    "levels": {
+      "info": "Info",
+      "warning": "Advertencia",
+      "error": "Error",
+      "debug": "Debug"
+    },
+    "categories": {
+      "account": "Cuenta",
+      "transaction": "Transacción",
+      "system": "Sistema",
+      "user": "Usuario"
+    }
   }
 }
