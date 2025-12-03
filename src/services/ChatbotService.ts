@@ -492,7 +492,8 @@ class ChatbotService {
     const accounts = this.accountService.getAllAccounts();
     let fromAccount = accounts[0]; // Default to first account
     const { origen } = ToonParserUtils.extractSourceAccount(message);
-    if (origen !== 'Efectivo') {
+    const DEFAULT_CASH_ACCOUNT = 'Efectivo';
+    if (origen !== DEFAULT_CASH_ACCOUNT) {
       const matchingAccount = accounts.find(a => 
         a.name.toLowerCase().includes(origen.toLowerCase()) ||
         a.bank?.toLowerCase().includes(origen.toLowerCase())
@@ -521,15 +522,15 @@ class ChatbotService {
       // Infer category from description
       const category = ToonParserUtils.inferCategory(description || message);
       
-      // Create the transaction
+      // Create the transaction (same account for expense type transactions)
       const newTransaction = this.transactionService.createTransaction(
         fromAccount.id,
-        fromAccount.id, // Same account for expense
+        fromAccount.id, // Same account indicates an expense, not a transfer
         amount,
         new Date().toISOString(),
         null,
         null,
-        null, // Category will be null for now, could be enhanced
+        null, // Category ID - could be enhanced by mapping category string to ID
         undefined,
         undefined,
         description || category
@@ -800,7 +801,9 @@ class ChatbotService {
         null,
         undefined,
         undefined,
-        `Compra de ${usdAmount} USD a ${exchangeRate} ARS/USD`
+        this.currentLanguage === 'es' 
+          ? `Compra de ${usdAmount} USD a ${exchangeRate} ARS/USD`
+          : `Purchase of ${usdAmount} USD at ${exchangeRate} ARS/USD`
       );
       
       if (!newTransaction) {
