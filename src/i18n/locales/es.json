@@ -237,7 +237,7 @@
     "totalExpense": "Total Gastos",
     "importButton": "Importar Seleccionadas",
     "noFileSelected": "Ningún archivo seleccionado",
-    "selectFileHint": "Selecciona un archivo para importar transacciones desde CSV, PDF, TXT o imágenes.",
+    "selectFileHint": "Selecciona un archivo para importar transacciones desde CSV, XLSX, PDF, TXT o imágenes.",
     "noTransactionsFound": "No se pudieron extraer transacciones del archivo",
     "analyzeError": "Error al analizar el archivo",
     "importSuccess": "¡Transacciones importadas exitosamente!",
@@ -247,7 +247,14 @@
     "sameAccountError": "Las cuentas de origen y destino deben ser diferentes",
     "noTransactionsSelected": "No hay transacciones seleccionadas para importar",
     "servicesNotAvailable": "Servicios no disponibles",
-    "showRawText": "Mostrar texto extraído"
+    "showRawText": "Mostrar texto extraído",
+    "importSourceType": "Tipo de Resumen a Importar",
+    "creditCardStatement": "Resumen de Tarjeta de Crédito",
+    "accountStatement": "Resumen de Cuenta Bancaria",
+    "selectCreditCard": "Seleccionar Tarjeta de Crédito",
+    "associatedAccount": "Cuenta Asociada",
+    "noAssociatedAccount": "Sin cuenta asociada",
+    "creditCardNoAccount": "La tarjeta de crédito no tiene cuenta asociada"
   },
   "common": {
     "save": "Guardar",

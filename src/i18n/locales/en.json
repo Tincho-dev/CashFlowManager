@@ -237,7 +237,7 @@
     "totalExpense": "Total Expense",
     "importButton": "Import Selected",
     "noFileSelected": "No file selected",
-    "selectFileHint": "Select a file to import transactions from CSV, PDF, TXT, or image files.",
+    "selectFileHint": "Select a file to import transactions from CSV, XLSX, PDF, TXT, or image files.",
     "noTransactionsFound": "No transactions could be extracted from the file",
     "analyzeError": "Error analyzing the file",
     "importSuccess": "Transactions imported successfully!",
@@ -247,7 +247,14 @@
     "sameAccountError": "From and To accounts must be different",
     "noTransactionsSelected": "No transactions selected for import",
     "servicesNotAvailable": "Services not available",
-    "showRawText": "Show extracted text"
+    "showRawText": "Show extracted text",
+    "importSourceType": "Statement Type to Import",
+    "creditCardStatement": "Credit Card Statement",
+    "accountStatement": "Bank Account Statement",
+    "selectCreditCard": "Select Credit Card",
+    "associatedAccount": "Associated Account",
+    "noAssociatedAccount": "No associated account",
+    "creditCardNoAccount": "Credit card has no associated account"
   },
   "common": {
     "save": "Save",
