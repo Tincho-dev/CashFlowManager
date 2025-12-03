@@ -51,7 +51,49 @@
     "accumulated": "Acumulado",
     "previousMonth": "Mes Anterior",
     "nextMonth": "Mes Siguiente",
-    "upTo": "Hasta"
+    "upTo": "Hasta",
+    "showCharts": "Mostrar Gráficos",
+    "hideCharts": "Ocultar Gráficos"
+  },
+  "charts": {
+    "monthlyTrend": "Tendencia Mensual",
+    "expenseBreakdown": "Desglose de Gastos",
+    "categoryDistribution": "Gastos por Categoría",
+    "income": "Ingresos",
+    "fixedExpenses": "Gastos Fijos",
+    "variableExpenses": "Gastos Variables",
+    "savings": "Ahorros",
+    "netCashFlow": "Flujo de Caja Neto",
+    "total": "Total"
+  },
+  "reports": {
+    "title": "Reportes",
+    "monthlyReport": "Reporte Mensual",
+    "annualReport": "Reporte Anual",
+    "executiveSummary": "Resumen Ejecutivo",
+    "exportPDF": "Exportar PDF",
+    "exportCSV": "Exportar CSV",
+    "period": "Período",
+    "overview": "Resumen",
+    "totalIncome": "Ingresos Totales",
+    "totalExpenses": "Gastos Totales",
+    "totalSavings": "Ahorros Totales",
+    "netCashFlow": "Flujo de Caja Neto",
+    "savingsRate": "Tasa de Ahorro",
+    "highlights": "Aspectos Positivos",
+    "concerns": "Puntos de Atención",
+    "topExpenses": "Principales Gastos",
+    "monthlyTrend": "Tendencia Mensual",
+    "predictions": "Predicciones",
+    "recommendations": "Recomendaciones",
+    "categoryBreakdown": "Desglose por Categoría",
+    "yearOverYear": "Año vs Año",
+    "periodComparison": "Comparación de Períodos",
+    "trend": {
+      "increasing": "Aumentando",
+      "decreasing": "Disminuyendo",
+      "stable": "Estable"
+    }
   },
   "transactions": {
     "title": "Transacciones",

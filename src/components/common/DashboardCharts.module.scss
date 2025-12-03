@@ -1,0 +1,76 @@
+.chartsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.chartPaper {
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.chartTitle {
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.chartWrapper {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+}
+
+.customTooltip {
+  padding: 12px;
+  background-color: var(--mui-palette-background-paper, #fff);
+  border-radius: 8px;
+}
+
+.tooltipLabel {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.tooltipItem {
+  margin: 4px 0;
+}
+
+.pieCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+// Responsive adjustments
+@media (min-width: 900px) {
+  .chartsContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .chartPaper:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .chartPaper {
+    padding: 12px;
+  }
+
+  .chartTitle {
+    font-size: 1rem;
+  }
+
+  .chartWrapper {
+    min-height: 250px;
+  }
+}

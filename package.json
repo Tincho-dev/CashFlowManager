@@ -26,6 +26,7 @@
     "react-dom": "^19.1.1",
     "react-i18next": "^16.0.1",
     "react-router-dom": "^7.9.4",
+    "recharts": "^2.15.0",
     "sql.js": "^1.13.0",
     "tesseract.js": "^6.0.1",
     "xlsx": "^0.18.5"

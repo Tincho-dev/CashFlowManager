@@ -70,6 +70,8 @@ export default defineConfig({
           'vendor-ocr': ['tesseract.js'],
           // Database (loaded early but separable)
           'vendor-sql': ['sql.js'],
+          // Charts library
+          'vendor-charts': ['recharts'],
         },
       },
     },
