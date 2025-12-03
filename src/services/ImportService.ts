@@ -176,7 +176,7 @@ class ImportService {
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     
     const transactions: ImportedTransaction[] = [];
-    let rawTextParts: string[] = [];
+    const rawTextParts: string[] = [];
     
     // Look for transaction data in all sheets
     for (const sheetName of workbook.SheetNames) {
