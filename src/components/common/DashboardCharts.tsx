@@ -19,6 +19,9 @@ import {
 import { formatAmountUSD } from '../../utils/currencyUtils';
 import styles from './DashboardCharts.module.scss';
 
+// Helper function to format currency for chart displays
+const formatCurrencyValue = (value: number): string => formatAmountUSD(value, 0);
+
 interface MonthlyData {
   month: string;
   income: number;
@@ -80,7 +83,7 @@ export function DashboardCharts({ monthlyData, categoryData, selectedYear }: Das
               className={styles.tooltipItem}
               sx={{ color: entry.color }}
             >
-              {entry.name}: {formatCurrency(entry.value)}
+              {entry.name}: {formatCurrencyValue(entry.value)}
             </Typography>
           ))}
         </Paper>
@@ -99,7 +102,7 @@ export function DashboardCharts({ monthlyData, categoryData, selectedYear }: Das
       return (
         <Paper className={styles.customTooltip} elevation={3}>
           <Typography variant="body2" sx={{ color: data.payload.color }}>
-            {data.name}: {formatCurrency(data.value)}
+            {data.name}: {formatCurrencyValue(data.value)}
           </Typography>
         </Paper>
       );
@@ -252,7 +255,7 @@ export function DashboardCharts({ monthlyData, categoryData, selectedYear }: Das
               className={styles.pieCenter}
               sx={{ color: isDarkMode ? '#fff' : '#333' }}
             >
-              {t('charts.total', 'Total')}: {formatCurrency(totalExpenses)}
+              {t('charts.total', 'Total')}: {formatCurrencyValue(totalExpenses)}
             </Typography>
           </Box>
         </Paper>
