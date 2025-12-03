@@ -5,6 +5,7 @@ import { AppProvider } from './contexts/AppContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import Layout from './components/layout/Layout';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
@@ -49,33 +50,37 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <LanguageProvider>
-        <CurrencyProvider>
-          <AppProvider>
-            <Router>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/accounts" element={<Accounts />} />
-                  <Route
-                    path="/transactions"
-                    element={<Transactions />}
-                  />
-                  <Route path="/investments" element={<Investments />} />
-                  <Route
-                    path="/currency-exchange"
-                    element={<CurrencyExchange />}
-                  />
-                  <Route path="/credit-cards" element={<CreditCards />} />
-                  <Route path="/loans" element={<Loans />} />
-                  <Route path="/import" element={<ImportRecords />} />
-                  <Route path="/export" element={<ExportData />} />
-                </Routes>
-              </Layout>
-            </Router>
-          </AppProvider>
-        </CurrencyProvider>
-      </LanguageProvider>
+      <ErrorBoundary>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <AppProvider>
+              <Router>
+                <Layout>
+                  <ErrorBoundary>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/accounts" element={<Accounts />} />
+                      <Route
+                        path="/transactions"
+                        element={<Transactions />}
+                      />
+                      <Route path="/investments" element={<Investments />} />
+                      <Route
+                        path="/currency-exchange"
+                        element={<CurrencyExchange />}
+                      />
+                      <Route path="/credit-cards" element={<CreditCards />} />
+                      <Route path="/loans" element={<Loans />} />
+                      <Route path="/import" element={<ImportRecords />} />
+                      <Route path="/export" element={<ExportData />} />
+                    </Routes>
+                  </ErrorBoundary>
+                </Layout>
+              </Router>
+            </AppProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

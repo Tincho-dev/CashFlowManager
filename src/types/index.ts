@@ -13,6 +13,18 @@ export type AccountCurrency = (typeof AccountCurrency)[keyof typeof AccountCurre
 // Generic Currency alias for backwards compatibility
 export type Currency = AccountCurrency;
 
+// Transaction type for classifying transactions
+export const TransactionType = {
+  INCOME: 'INCOME',
+  FIXED_EXPENSE: 'FIXED_EXPENSE',
+  VARIABLE_EXPENSE: 'VARIABLE_EXPENSE',
+  SAVINGS: 'SAVINGS',
+  TRANSFER: 'TRANSFER',
+  CREDIT_CARD_EXPENSE: 'CREDIT_CARD_EXPENSE',
+} as const;
+
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
+
 export interface Owner {
   id: number;
   name: string;
@@ -57,6 +69,9 @@ export interface Transaction {
   auditDate: string | null;
   assetId: number | null;
   categoryId: number | null;
+  transactionType?: TransactionType;
+  creditCardId?: number | null;
+  description?: string | null;
 }
 
 export interface CreditCard {

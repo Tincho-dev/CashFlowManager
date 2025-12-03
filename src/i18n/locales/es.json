@@ -140,7 +140,8 @@
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta tarjeta de crédito?",
     "empty": "No hay tarjetas de crédito aún. ¡Agrega tu primera tarjeta!",
     "selectAccount": "Selecciona una cuenta",
-    "noAccount": "Sin cuenta asociada"
+    "noAccount": "Sin cuenta asociada",
+    "addStatement": "Agregar Resumen"
   },
   "loans": {
     "title": "Préstamos",
@@ -255,7 +256,8 @@
     "selectCreditCard": "Seleccionar Tarjeta de Crédito",
     "associatedAccount": "Cuenta Asociada",
     "noAssociatedAccount": "Sin cuenta asociada",
-    "creditCardNoAccount": "La tarjeta de crédito no tiene cuenta asociada"
+    "creditCardNoAccount": "La tarjeta de crédito no tiene cuenta asociada",
+    "dragDropHint": "o arrastra y suelta archivos aquí"
   },
   "common": {
     "save": "Guardar",

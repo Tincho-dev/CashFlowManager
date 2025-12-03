@@ -140,7 +140,8 @@
     "deleteConfirm": "Are you sure you want to delete this credit card?",
     "empty": "No credit cards yet. Add your first credit card!",
     "selectAccount": "Select an account",
-    "noAccount": "No linked account"
+    "noAccount": "No linked account",
+    "addStatement": "Add Statement"
   },
   "loans": {
     "title": "Loans",
@@ -255,7 +256,8 @@
     "selectCreditCard": "Select Credit Card",
     "associatedAccount": "Associated Account",
     "noAssociatedAccount": "No associated account",
-    "creditCardNoAccount": "Credit card has no associated account"
+    "creditCardNoAccount": "Credit card has no associated account",
+    "dragDropHint": "or drag and drop files here"
   },
   "common": {
     "save": "Save",

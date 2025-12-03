@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -26,6 +27,7 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Pagination,
 } from '@mui/material';
 import {
   Upload,
@@ -48,9 +50,15 @@ import styles from './ImportRecords.module.scss';
 
 type ImportSourceType = 'account' | 'creditCard';
 
+interface LocationState {
+  creditCardId?: number;
+  importSourceType?: ImportSourceType;
+}
+
 const ImportRecords: React.FC = () => {
   const { accountService, transactionService, creditCardService, isInitialized } = useApp();
   const { t } = useTranslation();
+  const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [transactions, setTransactions] = useState<ImportedTransaction[]>([]);
@@ -64,9 +72,24 @@ const ImportRecords: React.FC = () => {
   const [toAccountId, setToAccountId] = useState<number | ''>('');
   const [importSourceType, setImportSourceType] = useState<ImportSourceType>('creditCard');
   const [selectedCreditCardId, setSelectedCreditCardId] = useState<number | ''>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   const accounts = accountService?.getAllAccounts() || [];
   const creditCards = creditCardService?.getAllCreditCards() || [];
+
+  // Handle pre-selected credit card from navigation state
+  useEffect(() => {
+    const state = location.state as LocationState | null;
+    if (state) {
+      if (state.importSourceType) {
+        setImportSourceType(state.importSourceType);
+      }
+      if (state.creditCardId) {
+        setSelectedCreditCardId(state.creditCardId);
+      }
+    }
+  }, [location.state]);
 
   // Get the associated account for a credit card
   const getAccountForCreditCard = (creditCardId: number): Account | null => {
@@ -77,15 +100,13 @@ const ImportRecords: React.FC = () => {
     return null;
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const processFile = async (file: File) => {
     setIsAnalyzing(true);
     setError(null);
     setSuccess(false);
     setTransactions([]);
     setRawText('');
+    setCurrentPage(1);
 
     try {
       const result = await ImportService.analyzeFile(file);
@@ -107,6 +128,38 @@ const ImportRecords: React.FC = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await processFile(file);
+  };
+
+  // Drag and drop handlers
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      await processFile(files[0]);
     }
   };
 
@@ -256,6 +309,7 @@ const ImportRecords: React.FC = () => {
     setRawText('');
     setError(null);
     setSuccess(false);
+    setCurrentPage(1);
   };
 
   const selectedCount = transactions.filter(tx => tx.selected).length;
@@ -265,6 +319,17 @@ const ImportRecords: React.FC = () => {
   const totalExpense = transactions
     .filter(tx => tx.selected && tx.type === 'expense')
     .reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const paginatedTransactions = transactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
 
   const renderEditableCell = (
     tx: ImportedTransaction,
@@ -337,7 +402,12 @@ const ImportRecords: React.FC = () => {
 
       {/* Upload Section */}
       <Box className={styles.uploadSection}>
-        <Paper className={styles.uploadCard}>
+        <Paper 
+          className={`${styles.uploadCard} ${isDragging ? styles.dragging : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <Box className={styles.uploadIcon}>
             <FileText size={64} />
           </Box>
@@ -346,6 +416,9 @@ const ImportRecords: React.FC = () => {
           </Typography>
           <Typography color="text.secondary" className={styles.uploadDescription}>
             {t('importRecords.uploadDescription')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" className={styles.dragDropHint}>
+            {t('importRecords.dragDropHint')}
           </Typography>
           <input
             type="file"
@@ -555,7 +628,7 @@ const ImportRecords: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.map((tx) => (
+                {paginatedTransactions.map((tx) => (
                   <TableRow 
                     key={tx.id} 
                     hover
@@ -624,6 +697,20 @@ const ImportRecords: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Pagination 
+                count={totalPages} 
+                page={currentPage} 
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          )}
 
           {/* Summary */}
           <Box className={styles.summarySection}>
