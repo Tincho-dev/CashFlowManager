@@ -17,7 +17,7 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [ ] Warnings de TypeScript sobre tipos `any` en repositorios (no encontrados - todos los repositorios ya usan tipos adecuados)
 
 ### Baja Prioridad
-- [ ] Bundle size superior a 500KB después de minificación
+- [x] ~~Bundle size superior a 500KB después de minificación~~ - FIXED: Implementado code splitting en vite.config.ts, chunk principal reducido de 1333KB a 417KB
 
 ## ✨ Mejoras Planificadas / Planned Improvements
 
@@ -90,9 +90,10 @@ Este documento registra las mejoras futuras, reportes de bugs y propuestas de nu
 - [x] ~~Migrar completamente de CSS a SCSS modules~~ - COMPLETED: Todos los componentes usan SCSS modules o MUI sx props. Archivos CSS legacy eliminados (Accounts.css, Transactions.css, CreditCards.css, Dashboard.css, ExportData.css)
 - [x] ~~Extraer lógica de negocio a custom hooks~~ - COMPLETED: Implementados useAccounts y useTransactions hooks
 - [ ] Implementar React Query para mejor manejo de estado (ya instalado)
-- [x] ~~Agregar tests unitarios~~ - COMPLETED: 164 tests (incluidos hooks useAccounts y useTransactions)
-- [ ] Agregar tests de integración
+- [x] ~~Agregar tests unitarios~~ - COMPLETED: 239 tests (incluidos hooks useAccounts y useTransactions)
+- [x] ~~Agregar tests de integración~~ - COMPLETED: Tests de integración para AccountService y TransactionService con base de datos real en memoria
 - [x] ~~Implementar CI/CD pipeline~~ - COMPLETED: Workflow con jobs separados para test y deploy
+- [x] ~~Utilidades de conversión de monedas~~ - COMPLETED: currencyUtils.ts con funciones para formateo, parsing, conversión y validación
 
 ## 🚀 Nuevas Funcionalidades Propuestas / Proposed New Features
 
@@ -254,8 +255,10 @@ SQLite Database (localStorage)
 15. **Módulo de Préstamos (Loans)**: Gestión completa con cuotas, frecuencias de pago y tracking de estado
 16. **Agrupación de Cuentas**: Filtros por banco, moneda y rango de saldo
 17. **Custom Hooks**: useAccounts y useTransactions para lógica de negocio reutilizable
-18. **Tests Unitarios**: 164 tests para servicios, repositorios y hooks
+18. **Tests Unitarios e Integración**: 239 tests para servicios, repositorios y hooks
 19. **CI/CD Pipeline**: GitHub Actions con lint, test y deploy a Vercel
+20. **Bundle Size Optimization**: Code splitting implementado, chunk principal de 417KB
+21. **Utilidades de Moneda**: currencyUtils.ts con formateo, parsing y conversión
 
 ### 🚧 En Progreso / En Curso
 - Viewer de logs en UI (falta implementar)
@@ -265,10 +268,9 @@ SQLite Database (localStorage)
 ### 📋 Pendiente / To Do
 - Mejoras de accesibilidad (parcialmente implementado, continuar mejorando)
 - Dark mode
-- Tests de integración
 - Store global de monedas y tasas de cambio
 
 ---
 
 *Última actualización: 2025-12-03*
-*Versión: 2.5.0 - CI/CD pipeline y traducciones completas de Investments*
+*Versión: 2.6.0 - Bundle optimization, integration tests y currency utilities*
