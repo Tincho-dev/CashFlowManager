@@ -218,14 +218,15 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       hasLoggedErrorRef.current = false;
       
       console.log('Exchange rates updated successfully');
-    } catch {
+    } catch (err) {
       // Increment error count for backoff
       const currentErrorCount = parseInt(localStorage.getItem(FETCH_ERROR_COUNT_KEY) || '0', 10);
       localStorage.setItem(FETCH_ERROR_COUNT_KEY, (currentErrorCount + 1).toString());
       
       // Only log error once to avoid console spam
       if (!hasLoggedErrorRef.current) {
-        console.warn('Exchange rate update failed. Using cached rates. Will retry later with backoff.');
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.warn(`Exchange rate update failed (${errorMessage}). Using cached rates. Will retry later with backoff.`);
         hasLoggedErrorRef.current = true;
       }
       // Keep using cached rates if update fails

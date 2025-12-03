@@ -93,12 +93,10 @@ export class TransactionService {
     });
 
     // Update account balances
-    // For same-account transactions (income/expense), only update one account
-    if (fromAccountId === toAccountId) {
-      // For same account: income adds, expense subtracts
-      // The net effect is already handled by the sign of the amount
-      // We don't need to update balance twice for the same account
-    } else {
+    // For same-account transactions (credit card expenses/income), 
+    // the balance change nets to zero since we subtract and add the same amount
+    // to the same account. We can skip this update for efficiency.
+    if (fromAccountId !== toAccountId) {
       // For different accounts: standard transfer logic
       const fromBalance = fromAccount.balance ? parseFloat(fromAccount.balance) : 0;
       const toBalance = toAccount.balance ? parseFloat(toAccount.balance) : 0;
