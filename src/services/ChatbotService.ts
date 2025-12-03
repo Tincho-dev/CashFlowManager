@@ -2,7 +2,7 @@ import { createWorker } from 'tesseract.js';
 import type { AccountService } from './AccountService';
 import type { TransactionService } from './TransactionService';
 import LoggingService, { LogCategory } from './LoggingService';
-import ToonParserService from './ToonParserService';
+import { _testExports as ToonParserUtils } from './ToonParserService';
 import type { ToonTransaction } from '../types/toon';
 import { llmService, isLLMEnabled } from './LLMService';
 import { appConfig } from '../config/appConfig';
@@ -360,8 +360,13 @@ class ChatbotService {
    */
   private handleParseLog(message: string): ChatbotResponse {
     try {
-      // Parse the message using ToonParserService
-      const result = ToonParserService.parseToToon(message);
+      // Parse the message using ToonParserService (synchronous pattern-based parsing)
+      const transactions = ToonParserUtils.parseTextWithoutLLM(message);
+      const result = {
+        transactions,
+        count: transactions.length,
+        raw: transactions.map(t => `${t.monto} ${t.nota} ${t.origen}`).join('\n'),
+      };
 
       if (result.transactions.length === 0) {
         if (this.currentLanguage === 'es') {

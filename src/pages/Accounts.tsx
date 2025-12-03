@@ -174,7 +174,7 @@ const Accounts: React.FC = () => {
 
   const resetForm = () => {
     const owners = ownerService?.getAllOwners() || [];
-    setFormData({
+        setFormData({
       name: '',
       description: '',
       cbu: '',
@@ -184,7 +184,7 @@ const Accounts: React.FC = () => {
       ownerId: owners.length > 0 ? owners[0].id : 0,
       balance: '0',
       currency: AccountCurrency.USD,
-    });
+        });
     setEditingAccount(null);
     setShowModal(false);
   };

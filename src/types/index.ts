@@ -10,6 +10,9 @@ export const AccountCurrency = {
 
 export type AccountCurrency = (typeof AccountCurrency)[keyof typeof AccountCurrency];
 
+// Generic Currency alias for backwards compatibility
+export type Currency = AccountCurrency;
+
 export interface Owner {
   id: number;
   name: string;
@@ -21,6 +24,7 @@ export interface Asset {
   ticket: string | null;
   price: number | null;
 }
+ 
 
 export interface Category {
   id: number;
@@ -41,6 +45,7 @@ export interface Account {
   ownerId: number;
   balance: string | null;
   currency: AccountCurrency;
+  commissionRate?: number;
 }
 
 export interface Transaction {
@@ -113,4 +118,68 @@ export interface LoanInstallment {
   paid: boolean;
   paidDate: string | null;
   paymentAccountId: number | null;
+}
+
+export interface Quotation {
+  symbol: string; // Asset symbol (e.g., AAPL, GGAL) or currency pair (e.g., USD/ARS)
+  price: number;
+  currency: Currency;
+  lastUpdated: string;
+}
+
+export interface CurrencyExchange {
+  id: number;
+  fromAccountId: number;
+  toAccountId: number;
+  fromAmount: number;
+  toAmount: number;
+  fromCurrency: Currency;
+  toCurrency: Currency;
+  exchangeRate: number;
+  commission: number;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Investment types
+export const InvestmentType = {
+  STOCKS: 'STOCKS',
+  BONDS: 'BONDS',
+  CRYPTO: 'CRYPTO',
+  MUTUAL_FUNDS: 'MUTUAL_FUNDS',
+  REAL_ESTATE: 'REAL_ESTATE',
+  OTHER: 'OTHER',
+} as const;
+
+export type InvestmentType = (typeof InvestmentType)[keyof typeof InvestmentType];
+
+export interface Investment {
+  id: number;
+  accountId: number;
+  type: InvestmentType;
+  name: string;
+  symbol?: string;
+  quantity?: number;
+  purchasePrice?: number;
+  amount: number;
+  commission: number;
+  currency: Currency;
+  purchaseDate: string;
+  currentValue: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Transfer interface
+export interface Transfer {
+  id: number;
+  fromAccountId: number;
+  toAccountId: number;
+  amount: number;
+  currency: Currency;
+  description?: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
 }

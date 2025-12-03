@@ -44,7 +44,7 @@ export class AccountService {
       balance: balance ?? null,
       currency: currency ?? AccountCurrency.USD,
     });
-    
+
     LoggingService.info(LogCategory.ACCOUNT, 'CREATE_ACCOUNT', {
       accountId: account.id,
       name,
@@ -52,32 +52,32 @@ export class AccountService {
       balance,
       currency: account.currency,
     });
-    
+
     return account;
   }
 
   updateAccount(id: number, updates: Partial<Omit<Account, 'id'>>): Account | null {
     const account = this.accountRepo.update(id, updates);
-    
+
     if (account) {
       LoggingService.info(LogCategory.ACCOUNT, 'UPDATE_ACCOUNT', {
         accountId: id,
         updates,
       });
     }
-    
+
     return account;
   }
 
   deleteAccount(id: number): boolean {
     const success = this.accountRepo.delete(id);
-    
+
     if (success) {
       LoggingService.info(LogCategory.ACCOUNT, 'DELETE_ACCOUNT', {
         accountId: id,
       });
     }
-    
+
     return success;
   }
 

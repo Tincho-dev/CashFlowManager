@@ -8,6 +8,8 @@ import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
+import Investments from './pages/Investments';
+import CurrencyExchange from './pages/CurrencyExchange';
 import ExportData from './pages/ExportData';
 import CreditCards from './pages/CreditCards';
 import Loans from './pages/Loans';
@@ -58,6 +60,11 @@ function App() {
                   <Route
                     path="/transactions"
                     element={<Transactions />}
+                  />
+                  <Route path="/investments" element={<Investments />} />
+                  <Route
+                    path="/currency-exchange"
+                    element={<CurrencyExchange />}
                   />
                   <Route path="/credit-cards" element={<CreditCards />} />
                   <Route path="/loans" element={<Loans />} />

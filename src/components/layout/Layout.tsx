@@ -24,7 +24,9 @@ import {
   Menu,
   X,
   Landmark,
-  Upload
+  Upload,
+  RefreshCw,
+  PiggyBank
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import BottomNavigation from './BottomNavigation';
@@ -46,8 +48,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/', icon: Home, label: t('nav.dashboard') },
     { path: '/accounts', icon: Wallet, label: t('nav.accounts') },
     { path: '/transactions', icon: ArrowLeftRight, label: t('nav.transactions') },
-    { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
+    { path: '/investments', icon: PiggyBank, label: t('nav.investments') },
     { path: '/loans', icon: Landmark, label: t('nav.loans') },
+    { path: '/currency-exchange', icon: RefreshCw, label: t('nav.currencyExchange') },
+    { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
     { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
   ];

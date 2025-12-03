@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { initDatabase } from '../data/database';
+import DataAccessLayer from '../data/DataAccessLayer';
 import { AccountService } from '../services/AccountService';
 import { TransactionService } from '../services/TransactionService';
 import { OwnerService } from '../services/OwnerService';
@@ -87,7 +88,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // Step 1: Initialize database
         await initDatabase();
+        
+        // Step 2: Initialize DataAccessLayer (new architecture for future backend migration)
+        await DataAccessLayer.initialize();
+        
+        // Step 3: Create services (they now safely use DataAccessLayer)
         const accService = new AccountService();
         const txService = new TransactionService();
         const ownerSvc = new OwnerService();

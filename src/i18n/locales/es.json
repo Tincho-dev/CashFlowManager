@@ -13,7 +13,8 @@
     "transfers": "Transferencias",
     "export": "Exportar Datos",
     "import": "Importar Registros",
-    "creditCards": "Tarjetas de Crédito"
+    "creditCards": "Tarjetas de Crédito",
+    "currencyExchange": "Cambio de Moneda"
   },
   "dashboard": {
     "title": "Inicio",
@@ -235,9 +236,9 @@
     "selected": "Seleccionados",
     "totalIncome": "Total Ingresos",
     "totalExpense": "Total Gastos",
-    "importButton": "Importar Seleccionadas",
+    "importButton": "Importar Seleccionados",
     "noFileSelected": "Ningún archivo seleccionado",
-    "selectFileHint": "Selecciona un archivo para importar transacciones desde CSV, XLSX, PDF, TXT o imágenes.",
+    "selectFileHint": "Selecciona un archivo para importar transacciones desde CSV, XLSX, PDF, TXT o archivos de imagen.",
     "noTransactionsFound": "No se pudieron extraer transacciones del archivo",
     "analyzeError": "Error al analizar el archivo",
     "importSuccess": "¡Transacciones importadas exitosamente!",

@@ -1,12 +1,28 @@
 import type { Database, SqlValue } from 'sql.js';
 import type { Transaction } from '../../types';
-import { getDatabase, saveDatabase } from '../database';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
 
+// MERGE NOTES: kept HEAD behavior. Preserving origin/main type imports as commented backup.
+/* origin/main imports (backup):
+import { TransactionType, Currency, PaymentType } from '../../types';
+import { saveDatabase } from '../database';
+import DataAccessLayer from '../DataAccessLayer';
+*/
+
+/**
+ * TransactionRepository - Data access for transactions
+ * BACKEND MIGRATION NOTES: See DataAccessLayer.ts for migration guide
+ */
 export class TransactionRepository {
   private db: Database;
 
   constructor(db?: Database) {
-    this.db = db || getDatabase();
+    if (db) {
+      this.db = db;
+    } else {
+      this.db = DataAccessLayer.getDb();
+    }
   }
 
   getAll(): Transaction[] {

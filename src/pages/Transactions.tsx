@@ -142,6 +142,7 @@ const Transactions: React.FC<TransactionsProps> = ({ title }) => {
     }
   };
 
+  
   const resetForm = () => {
     setFormData(getDefaultFormData());
     setEditingTransaction(null);
