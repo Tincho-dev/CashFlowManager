@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -18,7 +18,6 @@ import CreditCards from './pages/CreditCards';
 import Loans from './pages/Loans';
 import ImportRecords from './pages/ImportRecords';
 import LogViewer from './pages/LogViewer';
-import { useContext } from 'react';
 import './App.css';
 
 const getTheme = (mode: 'light' | 'dark') => createTheme({

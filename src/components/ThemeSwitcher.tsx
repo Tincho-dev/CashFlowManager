@@ -23,7 +23,7 @@ const ThemeSwitcher: React.FC = () => {
           },
         }}
       >
-        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        {isDarkMode ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
       </IconButton>
     </Tooltip>
   );

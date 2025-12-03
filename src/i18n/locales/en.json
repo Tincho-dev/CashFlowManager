@@ -15,7 +15,9 @@
     "import": "Import Records",
     "creditCards": "Credit Cards",
     "currencyExchange": "Currency Exchange",
-    "logs": "System Logs"
+    "logs": "System Logs",
+    "mainNavigation": "Main navigation",
+    "closeSidebar": "Close sidebar"
   },
   "theme": {
     "light": "Light Mode",

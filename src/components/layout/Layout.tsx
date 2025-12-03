@@ -95,14 +95,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <IconButton
               onClick={() => setIsSidebarOpen(false)}
               sx={{ color: 'white', p: 0.5 }}
-              aria-label={t('common.close')}
+              aria-label={t('nav.closeSidebar')}
             >
-              <X size={20} />
+              <X size={20} aria-hidden="true" />
             </IconButton>
           )}
         </Box>
       </Box>
-      <List sx={{ flex: 1, py: 2.5 }} role="navigation" aria-label={t('nav.dashboard')}>
+      <List sx={{ flex: 1, py: 2.5 }} role="navigation" aria-label={t('nav.mainNavigation')}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
