@@ -16,6 +16,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { formatAmountUSD } from '../../utils/currencyUtils';
 import styles from './DashboardCharts.module.scss';
 
 interface MonthlyData {
@@ -59,11 +60,6 @@ export function DashboardCharts({ monthlyData, categoryData, selectedYear }: Das
 
   const axisColor = isDarkMode ? '#fff' : '#666';
   const gridColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-
-  // Format currency for tooltips
-  const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-  };
 
   // Custom tooltip for line/bar charts
   const CustomTooltip = ({ active, payload, label }: {

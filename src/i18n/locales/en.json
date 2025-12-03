@@ -16,6 +16,7 @@
     "creditCards": "Credit Cards",
     "currencyExchange": "Currency Exchange",
     "logs": "System Logs",
+    "reports": "Reports",
     "mainNavigation": "Main navigation",
     "closeSidebar": "Close sidebar"
   },
@@ -89,6 +90,11 @@
     "categoryBreakdown": "Category Breakdown",
     "yearOverYear": "Year Over Year",
     "periodComparison": "Period Comparison",
+    "reportType": "Report Type",
+    "year": "Year",
+    "month": "Month",
+    "transactionCount": "Transaction Count",
+    "averageTransaction": "Avg. Transaction",
     "trend": {
       "increasing": "Increasing",
       "decreasing": "Decreasing",

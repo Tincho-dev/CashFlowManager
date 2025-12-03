@@ -71,6 +71,17 @@ export function formatCurrency(
 }
 
 /**
+ * Format an amount as USD without currency prefix
+ * Useful for dashboard displays where the context is clear
+ */
+export function formatAmountUSD(amount: number, decimals: number = 0): string {
+  return `$${amount.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })}`;
+}
+
+/**
  * Parse an amount string to a number
  * Handles different formats: "1,000.00", "1.000,00", "$1,000", etc.
  */

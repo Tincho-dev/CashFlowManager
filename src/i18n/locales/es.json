@@ -16,6 +16,7 @@
     "creditCards": "Tarjetas de Crédito",
     "currencyExchange": "Cambio de Moneda",
     "logs": "Registros del Sistema",
+    "reports": "Reportes",
     "mainNavigation": "Navegación principal",
     "closeSidebar": "Cerrar menú lateral"
   },
@@ -89,6 +90,11 @@
     "categoryBreakdown": "Desglose por Categoría",
     "yearOverYear": "Año vs Año",
     "periodComparison": "Comparación de Períodos",
+    "reportType": "Tipo de Reporte",
+    "year": "Año",
+    "month": "Mes",
+    "transactionCount": "Cantidad de Transacciones",
+    "averageTransaction": "Transacción Promedio",
     "trend": {
       "increasing": "Aumentando",
       "decreasing": "Disminuyendo",

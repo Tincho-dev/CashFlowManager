@@ -27,7 +27,8 @@ import {
   Upload,
   RefreshCw,
   PiggyBank,
-  FileText
+  FileText,
+  BarChart3
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import ThemeSwitcher from '../ThemeSwitcher';
@@ -61,6 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/loans', icon: Landmark, label: t('nav.loans') },
     { path: '/currency-exchange', icon: RefreshCw, label: t('nav.currencyExchange') },
     { path: '/credit-cards', icon: CreditCard, label: t('nav.creditCards') },
+    { path: '/reports', icon: BarChart3, label: t('nav.reports') },
     { path: '/import', icon: Upload, label: t('nav.import') },
     { path: '/export', icon: FileSpreadsheet, label: t('nav.export') },
     { path: '/logs', icon: FileText, label: t('nav.logs') },

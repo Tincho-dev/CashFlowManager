@@ -128,12 +128,21 @@ export interface ExecutiveSummary {
  * - Executive summary generation
  */
 class SpendingAnalysisService {
-  private transactionRepo: TransactionRepository;
-  private categoryRepo: CategoryRepository;
+  private transactionRepo: TransactionRepository | null = null;
+  private categoryRepo: CategoryRepository | null = null;
 
-  constructor() {
-    this.transactionRepo = new TransactionRepository();
-    this.categoryRepo = new CategoryRepository();
+  private getTransactionRepo(): TransactionRepository {
+    if (!this.transactionRepo) {
+      this.transactionRepo = new TransactionRepository();
+    }
+    return this.transactionRepo;
+  }
+
+  private getCategoryRepo(): CategoryRepository {
+    if (!this.categoryRepo) {
+      this.categoryRepo = new CategoryRepository();
+    }
+    return this.categoryRepo;
   }
 
   /**
@@ -144,7 +153,7 @@ class SpendingAnalysisService {
     const startDate = new Date(now.getFullYear(), now.getMonth() - monthsToAnalyze, 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const transactions = this.transactionRepo.getByDateRange(
+    const transactions = this.getTransactionRepo().getByDateRange(
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
@@ -157,7 +166,7 @@ class SpendingAnalysisService {
 
     // Group by category
     const categoryGroups = this.groupByCategory(expenses);
-    const categories = this.categoryRepo.getAll();
+    const categories = this.getCategoryRepo().getAll();
     const categoryMap = new Map(categories.map(c => [c.id, c.name]));
 
     const patterns: SpendingPattern[] = [];
@@ -269,8 +278,8 @@ class SpendingAnalysisService {
       const previousEnd = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0)
         .toISOString().split('T')[0];
 
-      const currentTxs = this.transactionRepo.getByDateRange(currentStart, currentEnd);
-      const previousTxs = this.transactionRepo.getByDateRange(previousStart, previousEnd);
+      const currentTxs = this.getTransactionRepo().getByDateRange(currentStart, currentEnd);
+      const previousTxs = this.getTransactionRepo().getByDateRange(previousStart, previousEnd);
 
       const currentTotal = this.calculateTotalExpenses(currentTxs);
       const previousTotal = this.calculateTotalExpenses(previousTxs);
@@ -306,8 +315,8 @@ class SpendingAnalysisService {
     period1Label: string = 'Period 1',
     period2Label: string = 'Period 2'
   ): PeriodComparison {
-    const txs1 = this.transactionRepo.getByDateRange(period1Start, period1End);
-    const txs2 = this.transactionRepo.getByDateRange(period2Start, period2End);
+    const txs1 = this.getTransactionRepo().getByDateRange(period1Start, period1End);
+    const txs2 = this.getTransactionRepo().getByDateRange(period2Start, period2End);
 
     const income1 = this.calculateByType(txs1, TxType.INCOME);
     const income2 = this.calculateByType(txs2, TxType.INCOME);
@@ -317,7 +326,7 @@ class SpendingAnalysisService {
     const savings2 = this.calculateByType(txs2, TxType.SAVINGS);
 
     // Category breakdown comparison
-    const categories = this.categoryRepo.getAll();
+    const categories = this.getCategoryRepo().getAll();
     const categoryMap = new Map(categories.map(c => [c.id, c.name]));
     
     const allCategoryIds = new Set([
@@ -374,7 +383,7 @@ class SpendingAnalysisService {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    const transactions = this.transactionRepo.getByDateRange(
+    const transactions = this.getTransactionRepo().getByDateRange(
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
@@ -391,7 +400,7 @@ class SpendingAnalysisService {
            t.transactionType === TxType.VARIABLE_EXPENSE
     );
     const categoryTotals = this.groupByCategory(expenseTxs);
-    const categories = this.categoryRepo.getAll();
+    const categories = this.getCategoryRepo().getAll();
     const categoryMap = new Map(categories.map(c => [c.id, c.name]));
 
     const topExpenseCategories = Array.from(categoryTotals.entries())
@@ -444,7 +453,7 @@ class SpendingAnalysisService {
     const startDate = new Date(year, 0, 1);
     const endDate = new Date(year, 11, 31);
 
-    const transactions = this.transactionRepo.getByDateRange(
+    const transactions = this.getTransactionRepo().getByDateRange(
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
@@ -475,7 +484,7 @@ class SpendingAnalysisService {
 
     // Category breakdown
     const categoryTotals = this.groupByCategory(transactions);
-    const categories = this.categoryRepo.getAll();
+    const categories = this.getCategoryRepo().getAll();
     const categoryMap = new Map(categories.map(c => [c.id, c.name]));
 
     const totalAmount = transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
@@ -496,7 +505,7 @@ class SpendingAnalysisService {
     let yearOverYearComparison: TrendAnalysis | undefined;
     const prevYearStart = new Date(year - 1, 0, 1);
     const prevYearEnd = new Date(year - 1, 11, 31);
-    const prevYearTxs = this.transactionRepo.getByDateRange(
+    const prevYearTxs = this.getTransactionRepo().getByDateRange(
       prevYearStart.toISOString().split('T')[0],
       prevYearEnd.toISOString().split('T')[0]
     );
@@ -537,7 +546,7 @@ class SpendingAnalysisService {
    * Generate executive summary
    */
   generateExecutiveSummary(startDate: string, endDate: string): ExecutiveSummary {
-    const transactions = this.transactionRepo.getByDateRange(startDate, endDate);
+    const transactions = this.getTransactionRepo().getByDateRange(startDate, endDate);
     
     const totalIncome = this.calculateByType(transactions, TxType.INCOME);
     const totalExpenses = this.calculateTotalExpenses(transactions);
@@ -551,7 +560,7 @@ class SpendingAnalysisService {
            t.transactionType === TxType.VARIABLE_EXPENSE
     );
     const categoryTotals = this.groupByCategory(expenseTxs);
-    const categories = this.categoryRepo.getAll();
+    const categories = this.getCategoryRepo().getAll();
     const categoryMap = new Map(categories.map(c => [c.id, c.name]));
 
     const topExpenses = Array.from(categoryTotals.entries())
@@ -667,8 +676,8 @@ class SpendingAnalysisService {
   suggestCategory(description: string, _amount: number): Category | null {
     if (!description) return null;
 
-    const transactions = this.transactionRepo.getAll();
-    const categories = this.categoryRepo.getAll();
+    const transactions = this.getTransactionRepo().getAll();
+    const categories = this.getCategoryRepo().getAll();
     
     // Simple keyword matching based on historical data
     const descLower = description.toLowerCase();
@@ -792,7 +801,7 @@ class SpendingAnalysisService {
     const startDate = new Date(now.getFullYear(), now.getMonth() - monthsToAnalyze, 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const transactions = this.transactionRepo.getByDateRange(
+    const transactions = this.getTransactionRepo().getByDateRange(
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
