@@ -147,8 +147,8 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Validate password length
-    if (password.length < 6) {
+    // Validate password length (minimum 8 characters)
+    if (password.length < 8) {
       setLocalError('auth.errors.passwordTooShort');
       return;
     }

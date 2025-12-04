@@ -46,23 +46,31 @@ export class AuthService {
   }
 
   /**
-   * Simple hash function for password storage.
-   * NOTE: This is NOT cryptographically secure and is only for demo purposes.
-   * In production, use bcrypt or argon2 on the backend.
+   * Hash password with SHA-256 and a per-password salt.
+   * NOTE: In production, use bcrypt or argon2 on the backend.
+   * This implementation uses a random salt for each password.
    */
-  private async hashPassword(password: string): Promise<string> {
+  private async hashPassword(password: string, salt?: string): Promise<{ hash: string; salt: string }> {
+    // Generate a random salt if not provided
+    const passwordSalt = salt || crypto.randomUUID();
     const encoder = new TextEncoder();
-    const data = encoder.encode(password + 'cashflow_salt_v1');
+    const data = encoder.encode(password + passwordSalt);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return { hash, salt: passwordSalt };
   }
 
   /**
    * Verify password against stored hash
    */
-  private async verifyPassword(password: string, hash: string): Promise<boolean> {
-    const inputHash = await this.hashPassword(password);
+  private async verifyPassword(password: string, storedHash: string): Promise<boolean> {
+    // The stored hash format is: salt:hash
+    const [salt, hash] = storedHash.split(':');
+    if (!salt || !hash) {
+      return false;
+    }
+    const { hash: inputHash } = await this.hashPassword(password, salt);
     return inputHash === hash;
   }
 
@@ -78,13 +86,15 @@ export class AuthService {
       return { success: false, error: 'auth.errors.emailExists' };
     }
 
-    // Validate password strength
-    if (credentials.password.length < 6) {
+    // Validate password strength (minimum 8 characters for better security)
+    if (credentials.password.length < 8) {
       return { success: false, error: 'auth.errors.passwordTooShort' };
     }
 
-    // Hash password and create user
-    const passwordHash = await this.hashPassword(credentials.password);
+    // Hash password with random salt
+    const { hash, salt } = await this.hashPassword(credentials.password);
+    // Store salt:hash format for later verification
+    const passwordHash = `${salt}:${hash}`;
     
     const storedUser = userRepository.create({
       email: credentials.email,
@@ -178,7 +188,8 @@ export class AuthService {
 
       const user = this.mapStoredUserToUser(storedUser, credential);
       return { success: true, user };
-    } catch {
+    } catch (error) {
+      console.error('[AuthService] Google login failed:', error);
       return { success: false, error: 'auth.errors.googleLoginFailed' };
     }
   }

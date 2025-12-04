@@ -20,14 +20,14 @@
     "logoutConfirm": "¿Estás seguro de que quieres cerrar sesión?",
     "welcomeBack": "Bienvenido de nuevo",
     "guest": "Invitado",
-    "passwordRequirements": "Al menos 6 caracteres",
+    "passwordRequirements": "Al menos 8 caracteres",
     "errors": {
       "invalidCredentials": "Correo electrónico o contraseña inválidos",
       "loginFailed": "Error al iniciar sesión. Por favor, intenta de nuevo.",
       "googleLoginFailed": "Error al iniciar sesión con Google. Por favor, intenta de nuevo.",
       "registrationFailed": "Error al registrarse. Por favor, intenta de nuevo.",
       "emailExists": "Ya existe una cuenta con este correo electrónico",
-      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
       "passwordsDontMatch": "Las contraseñas no coinciden"
     }
   },

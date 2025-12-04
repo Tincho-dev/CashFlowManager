@@ -191,7 +191,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: null,
       });
       return true;
-    } catch {
+    } catch (error) {
+      console.error('[AuthContext] Google login failed:', error);
       setState(prev => ({
         ...prev,
         isLoading: false,

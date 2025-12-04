@@ -127,11 +127,10 @@ export class UserRepository {
 
     fields.push('UpdatedAt = ?');
     values.push(new Date().toISOString());
-    values.push(id.toString());
 
     this.db.run(
       `UPDATE User SET ${fields.join(', ')} WHERE Id = ?`,
-      values
+      [...values, id]
     );
 
     saveDatabase(this.db);

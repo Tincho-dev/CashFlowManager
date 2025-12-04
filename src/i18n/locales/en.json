@@ -20,14 +20,14 @@
     "logoutConfirm": "Are you sure you want to sign out?",
     "welcomeBack": "Welcome back",
     "guest": "Guest",
-    "passwordRequirements": "At least 6 characters",
+    "passwordRequirements": "At least 8 characters",
     "errors": {
       "invalidCredentials": "Invalid email or password",
       "loginFailed": "Login failed. Please try again.",
       "googleLoginFailed": "Google sign-in failed. Please try again.",
       "registrationFailed": "Registration failed. Please try again.",
       "emailExists": "An account with this email already exists",
-      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordTooShort": "Password must be at least 8 characters",
       "passwordsDontMatch": "Passwords do not match"
     }
   },
