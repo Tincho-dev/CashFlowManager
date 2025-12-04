@@ -6,6 +6,8 @@ import {
   Button,
   CircularProgress,
   Box,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { Wallet, UserCircle2 } from 'lucide-react';
 import { useAuth } from '../hooks';
@@ -46,12 +48,17 @@ const Login: React.FC = () => {
     loginAsGuest,
     loginWithCredentials,
     loginWithGoogle,
+    register,
     clearError,
   } = useAuth();
 
+  const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const googleButtonRef = React.useRef<HTMLDivElement>(null);
 
   // Redirect if already authenticated
@@ -105,12 +112,50 @@ const Login: React.FC = () => {
     }
   }, [loginWithGoogle]);
 
-  const handleLocalLogin = async (e: React.FormEvent) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+    clearError();
+    setLocalError(null);
+    setEmail('');
+    setPassword('');
+    setDisplayName('');
+    setConfirmPassword('');
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setLocalError(null);
     setIsSubmitting(true);
     
     const success = await loginWithCredentials({ email, password });
+    setIsSubmitting(false);
+    
+    if (success) {
+      navigate('/');
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+    setLocalError(null);
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setLocalError('auth.errors.passwordsDontMatch');
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setLocalError('auth.errors.passwordTooShort');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const success = await register({ email, password, displayName: displayName || email.split('@')[0] });
     setIsSubmitting(false);
     
     if (success) {
@@ -131,6 +176,8 @@ const Login: React.FC = () => {
     );
   }
 
+  const displayError = error || localError;
+
   return (
     <Box className={styles.loginContainer}>
       <Box className={styles.loginCard}>
@@ -142,49 +189,120 @@ const Login: React.FC = () => {
           <p className={styles.subtitle}>{t('auth.subtitle')}</p>
         </Box>
 
-        {error && (
+        {displayError && (
           <Box className={styles.error}>
-            {t(error)}
+            {t(displayError)}
           </Box>
         )}
 
-        <form onSubmit={handleLocalLogin} className={styles.form}>
-          <TextField
-            label={t('auth.email')}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            required
-            disabled={isSubmitting}
-            autoComplete="email"
-          />
-          <TextField
-            label={t('auth.password')}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            required
-            disabled={isSubmitting}
-            autoComplete="current-password"
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            size="large"
-            fullWidth
-            disabled={isSubmitting}
-            className={styles.submitButton}
-          >
-            {isSubmitting ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              t('auth.login')
-            )}
-          </Button>
-        </form>
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          variant="fullWidth"
+          className={styles.tabs}
+        >
+          <Tab label={t('auth.login')} />
+          <Tab label={t('auth.register')} />
+        </Tabs>
+
+        {activeTab === 0 ? (
+          <form onSubmit={handleLogin} className={styles.form}>
+            <TextField
+              label={t('auth.email')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              required
+              disabled={isSubmitting}
+              autoComplete="email"
+            />
+            <TextField
+              label={t('auth.password')}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              fullWidth
+              required
+              disabled={isSubmitting}
+              autoComplete="current-password"
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              disabled={isSubmitting}
+              className={styles.submitButton}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                t('auth.login')
+              )}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} className={styles.form}>
+            <TextField
+              label={t('auth.displayName')}
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              fullWidth
+              disabled={isSubmitting}
+              autoComplete="name"
+              placeholder={t('auth.displayNamePlaceholder')}
+            />
+            <TextField
+              label={t('auth.email')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              required
+              disabled={isSubmitting}
+              autoComplete="email"
+            />
+            <TextField
+              label={t('auth.password')}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              fullWidth
+              required
+              disabled={isSubmitting}
+              autoComplete="new-password"
+              helperText={t('auth.passwordRequirements')}
+            />
+            <TextField
+              label={t('auth.confirmPassword')}
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              fullWidth
+              required
+              disabled={isSubmitting}
+              autoComplete="new-password"
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              disabled={isSubmitting}
+              className={styles.submitButton}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                t('auth.createAccount')
+              )}
+            </Button>
+          </form>
+        )}
 
         {appConfig.googleClientId && (
           <>

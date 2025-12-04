@@ -14,11 +14,31 @@ export interface User {
   displayName: string;
   photoUrl?: string;
   authMode: AuthMode;
+  googleToken?: string; // Store Google credential for SSO
+}
+
+export interface StoredUser {
+  id: number;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  photoUrl: string | null;
+  authMode: AuthMode;
+  googleId: string | null;
+  googleToken: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LocalCredentials {
   email: string;
   password: string;
+}
+
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  displayName: string;
 }
 
 export interface AuthState {

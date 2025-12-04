@@ -1,14 +1,17 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User, LocalCredentials, AuthState } from '../types/auth';
+import type { User, LocalCredentials, AuthState, RegisterCredentials } from '../types/auth';
 import { AuthMode as AuthModeEnum } from '../types/auth';
+import { AuthService } from '../services/AuthService';
 
 export interface AuthContextType extends AuthState {
   loginAsGuest: () => void;
   loginWithCredentials: (credentials: LocalCredentials) => Promise<boolean>;
   loginWithGoogle: (token: string) => Promise<boolean>;
+  register: (credentials: RegisterCredentials) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
+  getCurrentUserId: () => number | null;
 }
 
 const AUTH_STORAGE_KEY = 'cashflow_auth_state';
@@ -26,8 +29,10 @@ export const AuthContext = createContext<AuthContextType>({
   loginAsGuest: () => {},
   loginWithCredentials: async () => false,
   loginWithGoogle: async () => false,
+  register: async () => false,
   logout: () => {},
   clearError: () => {},
+  getCurrentUserId: () => null,
 });
 
 interface AuthProviderProps {
@@ -49,6 +54,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { ...defaultAuthState, isLoading: false };
   });
 
+  // Lazily create AuthService only when needed (after DataAccessLayer is initialized)
+  const authServiceRef = React.useRef<AuthService | null>(null);
+  const getAuthService = useCallback(() => {
+    if (!authServiceRef.current) {
+      authServiceRef.current = new AuthService();
+    }
+    return authServiceRef.current;
+  }, []);
+
   // Persist auth state to localStorage
   useEffect(() => {
     if (!state.isLoading) {
@@ -60,6 +74,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(toSave));
     }
   }, [state.isAuthenticated, state.user, state.authMode, state.isLoading]);
+
+  const getCurrentUserId = useCallback((): number | null => {
+    if (!state.user || state.authMode === AuthModeEnum.GUEST) {
+      return null;
+    }
+    const id = parseInt(state.user.id, 10);
+    return isNaN(id) ? null : id;
+  }, [state.user, state.authMode]);
 
   const loginAsGuest = useCallback(() => {
     const guestUser: User = {
@@ -77,36 +99,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   }, []);
 
-  const loginWithCredentials = useCallback(async (credentials: LocalCredentials): Promise<boolean> => {
+  const register = useCallback(async (credentials: RegisterCredentials): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // DEVELOPMENT ONLY: This is a mock implementation for local development.
-      // In production, this should call a backend API that properly validates
-      // credentials against a user database with hashed passwords.
-      // TODO: Replace with actual backend authentication endpoint
-      if (!credentials.email || !credentials.password) {
+      const authService = getAuthService();
+      const result = await authService.register(credentials);
+      
+      if (!result.success || !result.user) {
         setState(prev => ({
           ...prev,
           isLoading: false,
-          error: 'auth.errors.invalidCredentials',
+          error: result.error || 'auth.errors.registrationFailed',
         }));
         return false;
       }
 
-      // Simulate API delay (in production, this would be actual API call)
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const localUser: User = {
-        id: `local_${Date.now()}`,
-        email: credentials.email,
-        displayName: credentials.email.split('@')[0],
+      setState({
+        isAuthenticated: true,
+        user: result.user,
         authMode: AuthModeEnum.LOCAL,
-      };
+        isLoading: false,
+        error: null,
+      });
+      return true;
+    } catch {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'auth.errors.registrationFailed',
+      }));
+      return false;
+    }
+  }, [getAuthService]);
+
+  const loginWithCredentials = useCallback(async (credentials: LocalCredentials): Promise<boolean> => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const authService = getAuthService();
+      const result = await authService.login(credentials);
+      
+      if (!result.success || !result.user) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: result.error || 'auth.errors.invalidCredentials',
+        }));
+        return false;
+      }
 
       setState({
         isAuthenticated: true,
-        user: localUser,
+        user: result.user,
         authMode: AuthModeEnum.LOCAL,
         isLoading: false,
         error: null,
@@ -120,38 +165,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
       return false;
     }
-  }, []);
+  }, [getAuthService]);
 
   const loginWithGoogle = useCallback(async (credential: string): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // SECURITY NOTE: JWT token decoding in the frontend is only for extracting
-      // user display information. In production, you MUST verify the JWT signature
-      // on the backend before trusting any claims. The token should be sent to a
-      // backend endpoint that validates it with Google's public keys.
-      // TODO: Implement backend verification endpoint
-      const base64Url = credential.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      const payload = JSON.parse(jsonPayload);
-
-      const googleUser: User = {
-        id: `google_${payload.sub}`,
-        email: payload.email,
-        displayName: payload.name || payload.email.split('@')[0],
-        photoUrl: payload.picture,
-        authMode: AuthModeEnum.GOOGLE,
-      };
+      const authService = getAuthService();
+      const result = await authService.loginWithGoogle(credential);
+      
+      if (!result.success || !result.user) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: result.error || 'auth.errors.googleLoginFailed',
+        }));
+        return false;
+      }
 
       setState({
         isAuthenticated: true,
-        user: googleUser,
+        user: result.user,
         authMode: AuthModeEnum.GOOGLE,
         isLoading: false,
         error: null,
@@ -165,7 +199,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
       return false;
     }
-  }, []);
+  }, [getAuthService]);
 
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -189,8 +223,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loginAsGuest,
         loginWithCredentials,
         loginWithGoogle,
+        register,
         logout,
         clearError,
+        getCurrentUserId,
       }}
     >
       {children}
