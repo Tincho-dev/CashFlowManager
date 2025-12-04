@@ -97,7 +97,10 @@ const Login: React.FC = () => {
       document.head.appendChild(script);
 
       return () => {
-        document.head.removeChild(script);
+        // Check if script is still in the DOM before removing
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
       };
     }
   }, [loginWithGoogle]);

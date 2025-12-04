@@ -81,9 +81,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // For now, simulate local authentication
-      // In production, this would call a backend API
-      // Simple validation - any email/password works for demo
+      // DEVELOPMENT ONLY: This is a mock implementation for local development.
+      // In production, this should call a backend API that properly validates
+      // credentials against a user database with hashed passwords.
+      // TODO: Replace with actual backend authentication endpoint
       if (!credentials.email || !credentials.password) {
         setState(prev => ({
           ...prev,
@@ -93,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      // Simulate API delay
+      // Simulate API delay (in production, this would be actual API call)
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const localUser: User = {
@@ -125,8 +126,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // Decode the JWT token from Google to get user info
-      // In production, this should be verified on the backend
+      // SECURITY NOTE: JWT token decoding in the frontend is only for extracting
+      // user display information. In production, you MUST verify the JWT signature
+      // on the backend before trusting any claims. The token should be sent to a
+      // backend endpoint that validates it with Google's public keys.
+      // TODO: Implement backend verification endpoint
       const base64Url = credential.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
