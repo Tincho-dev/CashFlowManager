@@ -2,6 +2,25 @@
   "app": {
     "title": "Gestor de Flujo de Caja"
   },
+  "auth": {
+    "subtitle": "Administra tus finanzas personales",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "login": "Iniciar Sesión",
+    "or": "o",
+    "loginWithGoogle": "Iniciar sesión con Google",
+    "continueAsGuest": "Continuar como Invitado",
+    "guestNote": "Tus datos se guardarán localmente en este dispositivo",
+    "logout": "Cerrar Sesión",
+    "logoutConfirm": "¿Estás seguro de que quieres cerrar sesión?",
+    "welcomeBack": "Bienvenido de nuevo",
+    "guest": "Invitado",
+    "errors": {
+      "invalidCredentials": "Correo electrónico o contraseña inválidos",
+      "loginFailed": "Error al iniciar sesión. Por favor, intenta de nuevo.",
+      "googleLoginFailed": "Error al iniciar sesión con Google. Por favor, intenta de nuevo."
+    }
+  },
   "nav": {
     "dashboard": "Inicio",
     "accounts": "Cuentas",

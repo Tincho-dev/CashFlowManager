@@ -1,11 +1,12 @@
 import { useMemo, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AppProvider } from './contexts/AppContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { ThemeProvider, ThemeContext } from './contexts/ThemeContext';
+import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
@@ -19,6 +20,7 @@ import Loans from './pages/Loans';
 import ImportRecords from './pages/ImportRecords';
 import LogViewer from './pages/LogViewer';
 import Reports from './pages/Reports';
+import Login from './pages/Login';
 import './App.css';
 
 const getTheme = (mode: 'light' | 'dark') => createTheme({
@@ -64,6 +66,27 @@ const getTheme = (mode: 'light' | 'dark') => createTheme({
   },
 });
 
+// Protected route component
+function ProtectedRoute() {
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <Layout>
+      <ErrorBoundary>
+        <Outlet />
+      </ErrorBoundary>
+    </Layout>
+  );
+}
+
 // Inner component that uses theme context
 function AppContent() {
   const { mode } = useContext(ThemeContext);
@@ -76,37 +99,41 @@ function AppContent() {
       <ErrorBoundary>
         <LanguageProvider>
           <CurrencyProvider>
-            <AppProvider>
+            <AuthProvider>
               <Router>
-                <Layout>
-                  <ErrorBoundary>
-                    <Routes>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<AppProviderWrapper />}>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/accounts" element={<Accounts />} />
-                      <Route
-                        path="/transactions"
-                        element={<Transactions />}
-                      />
+                      <Route path="/transactions" element={<Transactions />} />
                       <Route path="/investments" element={<Investments />} />
-                      <Route
-                        path="/currency-exchange"
-                        element={<CurrencyExchange />}
-                      />
+                      <Route path="/currency-exchange" element={<CurrencyExchange />} />
                       <Route path="/credit-cards" element={<CreditCards />} />
                       <Route path="/loans" element={<Loans />} />
                       <Route path="/import" element={<ImportRecords />} />
                       <Route path="/export" element={<ExportData />} />
                       <Route path="/logs" element={<LogViewer />} />
                       <Route path="/reports" element={<Reports />} />
-                    </Routes>
-                  </ErrorBoundary>
-                </Layout>
+                    </Route>
+                  </Route>
+                </Routes>
               </Router>
-            </AppProvider>
+            </AuthProvider>
           </CurrencyProvider>
         </LanguageProvider>
       </ErrorBoundary>
     </MuiThemeProvider>
+  );
+}
+
+// Wrapper component to provide AppProvider only for authenticated routes
+function AppProviderWrapper() {
+  return (
+    <AppProvider>
+      <Outlet />
+    </AppProvider>
   );
 }
 

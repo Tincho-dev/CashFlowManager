@@ -1,4 +1,5 @@
 export { useApp } from './useApp';
+export { useAuth } from './useAuth';
 export { useCurrency } from './useCurrency';
 export { useLanguage } from './useLanguage';
 export { useTheme } from './useTheme';
