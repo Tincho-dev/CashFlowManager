@@ -52,6 +52,26 @@ export const getDatabase = (): Database => {
 
 const runMigrations = async (db: Database): Promise<void> => {
   // ========================================================================
+  // USER TABLE - Authentication and multi-user support
+  // ========================================================================
+  
+  // Create User table for authentication
+  db.run(`
+    CREATE TABLE IF NOT EXISTS User (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Email TEXT NOT NULL UNIQUE,
+      PasswordHash TEXT NOT NULL,
+      DisplayName TEXT NOT NULL,
+      PhotoUrl TEXT NULL,
+      AuthMode TEXT NOT NULL DEFAULT 'LOCAL',
+      GoogleId TEXT NULL UNIQUE,
+      GoogleToken TEXT NULL,
+      CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
+      UpdatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  // ========================================================================
   // LEGACY SCHEMA (PascalCase) - Original app structure
   // These tables are used by the existing repositories and services
   // ========================================================================
@@ -61,7 +81,9 @@ const runMigrations = async (db: Database): Promise<void> => {
     CREATE TABLE IF NOT EXISTS Owner (
       Id INTEGER PRIMARY KEY AUTOINCREMENT,
       Name TEXT NOT NULL,
-      Description TEXT NULL
+      Description TEXT NULL,
+      UserId INTEGER NULL,
+      FOREIGN KEY (UserId) REFERENCES User (Id)
     );
   `);
 
@@ -70,7 +92,9 @@ const runMigrations = async (db: Database): Promise<void> => {
     CREATE TABLE IF NOT EXISTS Assets (
       Id INTEGER PRIMARY KEY AUTOINCREMENT,
       Ticket TEXT NULL,
-      Price REAL NULL
+      Price REAL NULL,
+      UserId INTEGER NULL,
+      FOREIGN KEY (UserId) REFERENCES User (Id)
     );
   `);
 
@@ -81,7 +105,9 @@ const runMigrations = async (db: Database): Promise<void> => {
       Name TEXT NOT NULL,
       Description TEXT NULL,
       Color TEXT NULL,
-      Icon TEXT NULL
+      Icon TEXT NULL,
+      UserId INTEGER NULL,
+      FOREIGN KEY (UserId) REFERENCES User (Id)
     );
   `);
 
@@ -98,7 +124,9 @@ const runMigrations = async (db: Database): Promise<void> => {
       OwnerId INTEGER NOT NULL,
       Balance TEXT NULL,
       Currency TEXT NOT NULL DEFAULT 'USD',
-      FOREIGN KEY (OwnerId) REFERENCES Owner (Id)
+      UserId INTEGER NULL,
+      FOREIGN KEY (OwnerId) REFERENCES Owner (Id),
+      FOREIGN KEY (UserId) REFERENCES User (Id)
     );
   `);
 
@@ -113,10 +141,12 @@ const runMigrations = async (db: Database): Promise<void> => {
       AuditDate TEXT NULL,
       AssetId INTEGER NULL,
       CategoryId INTEGER NULL,
+      AuditUserId INTEGER NULL,
       FOREIGN KEY (FromAccountId) REFERENCES Account (Id),
       FOREIGN KEY (ToAccountId) REFERENCES Account (Id),
       FOREIGN KEY (AssetId) REFERENCES Assets (Id),
-      FOREIGN KEY (CategoryId) REFERENCES Category (Id)
+      FOREIGN KEY (CategoryId) REFERENCES Category (Id),
+      FOREIGN KEY (AuditUserId) REFERENCES User (Id)
     );
   `);
 
@@ -352,6 +382,100 @@ const runMigrations = async (db: Database): Promise<void> => {
   if (!columnExists('[Transaction]', 'Description')) {
     try {
       db.run(`ALTER TABLE [Transaction] ADD COLUMN Description TEXT NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // ========================================================================
+  // USER-RELATED COLUMN MIGRATIONS - Add UserId to existing tables
+  // ========================================================================
+
+  // Add UserId column to Owner table
+  if (!columnExists('Owner', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE Owner ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to Assets table
+  if (!columnExists('Assets', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE Assets ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to Category table
+  if (!columnExists('Category', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE Category ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to Account table
+  if (!columnExists('Account', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE Account ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add AuditUserId column to Transaction table
+  if (!columnExists('[Transaction]', 'AuditUserId')) {
+    try {
+      db.run(`ALTER TABLE [Transaction] ADD COLUMN AuditUserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to CreditCard table
+  if (!columnExists('CreditCard', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE CreditCard ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to Loan table
+  if (!columnExists('Loan', 'UserId')) {
+    try {
+      db.run(`ALTER TABLE Loan ADD COLUMN UserId INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add UserId column to investments table
+  if (!columnExists('investments', 'user_id')) {
+    try {
+      db.run(`ALTER TABLE investments ADD COLUMN user_id INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add user_id column to currency_exchanges table
+  if (!columnExists('currency_exchanges', 'user_id')) {
+    try {
+      db.run(`ALTER TABLE currency_exchanges ADD COLUMN user_id INTEGER NULL`);
+    } catch {
+      // Column might already exist
+    }
+  }
+
+  // Add user_id column to transfers table
+  if (!columnExists('transfers', 'user_id')) {
+    try {
+      db.run(`ALTER TABLE transfers ADD COLUMN user_id INTEGER NULL`);
     } catch {
       // Column might already exist
     }

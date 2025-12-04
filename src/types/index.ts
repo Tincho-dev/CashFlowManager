@@ -3,6 +3,9 @@
 // Re-export TOON types
 export * from './toon';
 
+// Re-export Auth types
+export * from './auth';
+
 export const AccountCurrency = {
   USD: 'USD',
   ARS: 'ARS',

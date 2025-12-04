@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   Box,
@@ -13,7 +13,9 @@ import {
   ListItemText,
   Typography,
   useMediaQuery,
-  useTheme as useMuiTheme
+  useTheme as useMuiTheme,
+  Divider,
+  Avatar
 } from '@mui/material';
 import { 
   Home, 
@@ -28,13 +30,16 @@ import {
   RefreshCw,
   PiggyBank,
   FileText,
-  BarChart3
+  BarChart3,
+  LogOut,
+  User
 } from 'lucide-react';
 import LanguageSwitcher from '../LanguageSwitcher';
 import ThemeSwitcher from '../ThemeSwitcher';
 import BottomNavigation from './BottomNavigation';
 import Chatbot from '../chatbot/Chatbot';
-import { useTheme } from '../../hooks';
+import { useTheme, useAuth } from '../../hooks';
+import { AuthMode } from '../../types';
 
 interface LayoutProps {
   children: ReactNode;
@@ -43,9 +48,11 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const muiTheme = useMuiTheme();
   const { mode } = useTheme();
+  const { user, authMode, logout } = useAuth();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const isDesktop = useMediaQuery(muiTheme.breakpoints.up('md'));
 
@@ -73,6 +80,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       setIsSidebarOpen(false);
     }
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const displayName = user?.displayName || (authMode === AuthMode.GUEST ? t('auth.guest') : '');
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: sidebarBgColor, color: 'white' }}>
@@ -143,6 +157,71 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           );
         })}
       </List>
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+          {user?.photoUrl ? (
+            <Avatar 
+              src={user.photoUrl} 
+              alt={displayName}
+              sx={{ width: 32, height: 32 }}
+            />
+          ) : (
+            <Avatar sx={{ width: 32, height: 32, bgcolor: '#4a90e2' }}>
+              <User size={18} aria-hidden="true" />
+            </Avatar>
+          )}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontWeight: 500, 
+                color: 'white',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {displayName}
+            </Typography>
+            {user?.email && (
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  display: 'block'
+                }}
+              >
+                {user.email}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            py: 1,
+            px: 1.5,
+            borderRadius: 1,
+            color: 'rgba(255, 255, 255, 0.7)',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+            <LogOut size={18} aria-hidden="true" />
+          </ListItemIcon>
+          <ListItemText 
+            primary={t('auth.logout')} 
+            primaryTypographyProps={{ variant: 'body2' }}
+          />
+        </ListItemButton>
+      </Box>
     </Box>
   );
 

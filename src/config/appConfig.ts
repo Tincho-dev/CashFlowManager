@@ -12,6 +12,9 @@ export interface AppConfig {
     apiKey?: string;
     model?: string;
   };
+
+  // Authentication configuration
+  googleClientId?: string;
 }
 
 // Get configuration from environment variables or use defaults
@@ -60,6 +63,10 @@ export const appConfig: AppConfig = {
     // For Gemini: gemini-pro, gemini-pro-vision, etc.
     model: getEnvVar('VITE_LLM_MODEL', ''),
   },
+
+  // Google OAuth Client ID for Google Sign-In
+  // Get one from: https://console.cloud.google.com/apis/credentials
+  googleClientId: getEnvVar('VITE_GOOGLE_CLIENT_ID', ''),
 };
 
 // Helper function to check if LLM is enabled
